@@ -1,0 +1,85 @@
+<html>
+<head>
+<title>Select Task Group</title>
+<link rel="stylesheet" type="text/css" href="index.css" />
+</head>
+<body>
+	<img src="images\color00.jpg" width="381" height=65 "/>
+	<table class="menu">
+		<tr>
+			<td width="20%" class="bkg-red brd-red"><a href="expert.html"
+				class="menuLink">Expert</a></td>
+			<td width="20%" class="bkg-green brd-green"><a
+				href="taskGroup.html" class="menuLink">Task Group</a></td>
+			<td width="20%" class="bkg-blue brd-blue"><a
+				href="testPanel.html" class="menuLink">Test Panel</a></td>
+			<td width="20%" class="bkg-orange brd-orange"><a
+				href="software.html" class="menuLink">Software</a></td>
+			<td width="20%" class="bkg-purple brd-purple"><a
+				href="testCase.html" class="menuLink">Test Case</a></td>
+		</tr>
+		<tr>
+			<td width="20%" class="brd-red"><a href="expert.html">Nathan
+					Bunker</a></td>
+			<td width="20%" class="brd-green"><a href="taskGroup.html">TCH
+					Expert Team</a></td>
+			<td width="20%" class="brd-blue"><a href="testPanel.html">ACIP
+					2012.5</a></td>
+			<td width="20%" class="brd-orange"><a href="software.html">TCH
+					Forecaster</a></td>
+			<td width="20%" class="brd-purple"><a href="testCase.html">Hep
+					B Test 1</a></td>
+		</tr>
+	</table>
+	<div class="content">
+		<h1>Task Groups</h1>
+		<table>
+			<tr>
+				<th class="bkg-green">Task Group</th>
+				<th class="bkg-green">Member</th>
+				<th class="bkg-green">Select</th>
+			</tr>
+			<tr>
+				<td class="highlight">TCH Expert Team</td>
+				<td class="highlight">Expert</td>
+				<td class="highlight"></td>
+			</tr>
+			<tr>
+				<td>IHS Imm Experts</td>
+				<td>Expert</td>
+				<td><a href="" class="fauxbutton">select</a></td>
+			</tr>
+			<tr>
+				<td>CDC Imm Experts</td>
+				<td>View</td>
+				<td><a href="" class="fauxbutton">select</a></td>
+			</tr>
+			<tr>
+				<td>Pocatello PA</td>
+				<td></td>
+				<td><a href="" class="fauxbutton">select</a></td>
+			</tr>
+		</table>
+		<h1>Create New Task Group</h1>
+		<form action="taskGroup.html" method="GET">
+			<table>
+				<tr>
+					<td>Name</td>
+					<td><input type="text" name="name" value="" size="30" /></td>
+				</tr>
+				<tr>
+					<td>Forecasting Software</td>
+					<td><select name="softwareId">
+							<option value="1">TCH Forecaster</option>
+							<option value="2">CDS Evaluator</option>
+					</select></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						name="submit" value="Create" /></td>
+				</tr>
+			</table>
+		</form>
+	</div>
+</body>
+</html>

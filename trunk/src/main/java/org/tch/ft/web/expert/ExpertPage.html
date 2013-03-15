@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content" wicket:id="contentSection">
+		<h1>
+			Welcome <span wicket:id="name"></span>!
+		</h1>
+		<p>As a registered user of the TCH Immunization System you are
+			considered an expert, whether your expertise is more closely related
+			to immunization practice or software development. As an expert, you
+			may be associated with one or more task groups.</p>
+		<h2>Task Group Assigned</h2>
+		<p>A task group is a set of experts that work together to create a
+			consistent set of test cases and recommendations. If you wish to
+			become part of an existing task group, you will need to contact a
+			member of that task group and request that they add you as a member.
+			If your task group is currently not registered please contact TCH to
+			create a new task group.</p>
+		<p>
+			<wicket:link>
+				<a href="TaskGroupsAssignedPage" class="fauxbutton">Task Groups
+					Assigned</a>
+			</wicket:link>
+		</p>
+		<h2>Personal Details</h2>
+		<p>Your personal details are used to identify you in the system
+			and are visible to all other experts to allow for maximum
+			collaboration.</p>
+		<p>
+			<wicket:link>
+				<a href="PersonalDetailsPage" class="fauxbutton">Personal
+					Details</a>
+			</wicket:link>
+		</p>
+	</div>
+
+
+</body>
+</html>

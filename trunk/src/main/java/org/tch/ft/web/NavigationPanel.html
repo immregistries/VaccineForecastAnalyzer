@@ -1,0 +1,312 @@
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+<title>TCH Forecast Tester</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+<body>
+	<wicket:panel>
+		<div class="bottomSash"></div>
+		<div style="width: 700px;">
+			<table class="menu" wicket:id="loggedInMenu">
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="ExpertPage" class="menuLink">Expert</a>
+						</wicket:link></td>
+				</tr>
+				<tr>
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;"><wicket:link>
+							<a wicket:id="userName" href="ExpertPage"
+								class="submenuLink-darkblue">Expert Name</a>
+						</wicket:link> <br /> <wicket:link>
+							<a href="TaskGroupsAssignedPage" class="submenuLink-darkblue">
+								&#8226; Task Groups</a>
+						</wicket:link><br /> <wicket:link>
+							<a href="LogoutPage" class="submenuLink-darkblue"> &#8226;
+								Logout</a>
+						</wicket:link></td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="TaskGroupPage" class="menuLink">Task Group</a>
+						</wicket:link></td>
+				</tr>
+				<tr>
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;">
+						<div wicket:id="taskGroupSelected">
+							<wicket:link>
+								<a wicket:id="selectedTaskGroupLabel"
+									href="TaskGroupDetailsPage" class="submenuLink-darkblue">Task
+									Group Label</a>
+							</wicket:link>
+							<br />
+							<wicket:link>
+								<a href="SelectTaskPage" class="submenuLink-darkblue">
+									&#8226; Select</a>
+							</wicket:link>
+							<br />
+							<wicket:link>
+								<a href="TestPanelsAssociatedPage" class="submenuLink-darkblue">
+									&#8226; Test Panels</a>
+							</wicket:link>
+							<br />
+							<wicket:link>
+								<a href="ExpertsAssignedPage" class="submenuLink-darkblue">
+									&#8226; Experts</a>
+							</wicket:link>
+						</div>
+						<div wicket:id="taskGroupNotSelected">
+							<wicket:link>
+								<a href="SelectTaskPage" class="submenuLink-darkblue">
+									&#8226; Select</a>
+							</wicket:link>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="TestPanelPage" class="menuLink">Test Panel</a>
+						</wicket:link></td>
+				</tr>
+				<tr>
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;">
+						<div wicket:id="testPanelSelected">
+							<wicket:link>
+								<a wicket:id="selectedTestPanelLabel" href="TestCaseListPage"
+									class="submenuLink-darkblue">Test Panel Label</a>
+							</wicket:link>
+							<br />
+							<wicket:link>
+								<a href="SelectTestPanelPage" class="submenuLink-darkblue">
+									&#8226; Select</a>
+							</wicket:link>
+							<div wicket:id="canEdit">
+								<wicket:link>
+									<a href="AddTestCasePage" class="submenuLink-darkblue">
+										&#8226; Add Test Case</a>
+								</wicket:link>
+								<br />
+								<wicket:link>
+									<a href="UploadTestCasesPage" class="submenuLink-darkblue">
+										&#8226; Upload Test Cases</a>
+								</wicket:link>
+							</div>
+						</div>
+						<div wicket:id="testPanelNotSelected">
+							<wicket:link>
+								<a href="SelectTestPanelPage" class="submenuLink-darkblue">
+									&#8226; Select</a>
+							</wicket:link>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="TestCasePage" class="menuLink">Test Case</a>
+						</wicket:link></td>
+				</tr>
+				<tr>
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;">
+						<div wicket:id="testCaseSelected">
+							<wicket:link>
+								<a wicket:id="selectedTestCaseLabel" href="TestCaseDetailPage"
+									class="submenuLink-darkblue">Test Case Label</a>
+							</wicket:link>
+							<br />
+							<wicket:link>
+								<a href="ActualVsExpectedPage" class="submenuLink-darkblue">
+									&#8226; Test Results</a>
+							</wicket:link>
+							<br />
+							<wicket:link>
+								<a href="ForecastLogPage" class="submenuLink-darkblue">
+									&#8226; Forecast Log</a>
+							</wicket:link>
+							<br />
+							<wicket:link>
+								<a href="CommentsPage" class="submenuLink-darkblue"> &#8226;
+									Comments</a>
+							</wicket:link>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="SoftwarePage" class="menuLink">Software</a>
+						</wicket:link></td>
+				</tr>
+				<tr>
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;">
+						<div wicket:id="softwareNotSelected">
+							<wicket:link>
+								<a href="SelectSoftwarePage" class="submenuLink-darkblue">
+									&#8226; Select </a>
+							</wicket:link>
+						</div>
+						<div wicket:id="softwareSelected">
+							<wicket:link>
+								<a wicket:id="selectedSoftwareLabel" href="SoftwareDetailsPage"
+									class="submenuLink-darkblue">Software Label</a>
+							</wicket:link>
+							<br />
+							<wicket:link>
+								<a href="SelectSoftwarePage" class="submenuLink-darkblue">
+									&#8226; Select </a>
+							</wicket:link>
+							<div wicket:id="testPanelSelected">
+								<wicket:link>
+									<a href="TestResultsPage" class="submenuLink-darkblue">
+										&#8226; Test Results</a>
+								</wicket:link>
+								<br />
+								<wicket:link>
+									<a href="RunForecastTestsPage" class="submenuLink-darkblue">
+										&#8226; Run Tests</a>
+								</wicket:link>
+								<br />
+								<wicket:link>
+									<a href="CompareSoftwarePage" class="submenuLink-darkblue">
+										&#8226; Compare Report</a>
+								</wicket:link>
+							</div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="SoftwarePage" class="menuLink">Software Compare</a>
+						</wicket:link></td>
+				</tr>
+				<tr wicket:id="softwareCompare">
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;">
+
+						<div wicket:id="softwareCompareNotSelected">
+							<wicket:link>
+								<a href="SelectSoftwareComparePage" class="submenuLink-darkblue">
+									&#8226; Select </a>
+							</wicket:link>
+						</div>
+						<div wicket:id="softwareCompareSelected">
+							<wicket:link>
+								<a wicket:id="selectedSoftwareCompareLabel"
+									href="SoftwareDetailsPage" class="submenuLink-darkblue">Software
+									Compare Label</a>
+							</wicket:link>
+							<br />
+							<wicket:link>
+								<a href="SelectSoftwareComparePage" class="submenuLink-darkblue">
+									&#8226; Select </a>
+							</wicket:link>
+							<br />
+							<wicket:link>
+								<a href="ComparisonListPage" class="submenuLink-darkblue">
+									&#8226; Compare Report</a>
+							</wicket:link>
+							<div wicket:id="testPanelSelected"></div>
+						</div> <wicket:link>
+							<a href="CompareSoftwarePage" class="submenuLink-darkblue">
+								&#8226; Original Compare Report</a>
+						</wicket:link>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="title"><br />Texas Children's Hospital <br />
+						Immunization Forecast <br /> Test System &copy; 2013</td>
+				</tr>
+
+			</table>
+			<table class="menu" wicket:id="limitedMenu">
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="ExpertPage" class="menuLink">Expert</a>
+						</wicket:link></td>
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;"><wicket:link>
+							<a wicket:id="userName" href="ExpertPage"
+								class="submenuLink-darkblue">Expert Name</a>
+						</wicket:link> <br /> <wicket:link>
+							<a href="LogoutPage" class="submenuLink-darkblue"> &#8226;
+								Logout</a>
+						</wicket:link></td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="TaskGroupPage" class="menuLink">Task Group</a>
+						</wicket:link></td>
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;"></td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="TestPanelPage" class="menuLink">Test Panel</a>
+						</wicket:link></td>
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;"></td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="TestCasePage" class="menuLink">Test Case</a>
+						</wicket:link></td>
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;"></td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="SoftwarePage" class="menuLink">Software</a>
+						</wicket:link></td>
+					<td class="brd-darkblue"
+						style="text-align: left; vertical-align: top;"></td>
+				</tr>
+			</table>
+			<table class="menu" wicket:id="loggedOutMenu">
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="LoginPage" class="menuLink">Login</a>
+						</wicket:link></td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="RegisterUserPage" class="menuLink">Register</a>
+						</wicket:link></td>
+				</tr>
+				<tr>
+					<td class="bkg-darkblue brd-darkblue"><wicket:link>
+							<a href="ForgotPasswordPage" class="menuLink">Request
+								Password</a>
+						</wicket:link></td>
+				</tr>
+			</table>
+			<div wicket:id="signAgreementSection" style="position: relative; left: 220px; ">
+				<p>Access to this system is controlled by the terms of this
+					agreement. Please review and accept the agreement before
+					continuing.</p>
+				<div wicket:id="agreementText"
+					style="margin: 5px; background-color: #eee; border-style: solid; font-size: smaller; padding: 5px;"></div>
+				<p>
+					<a wicket:id="acceptLink" href="" class="fauxbutton">I have
+						read and accepted</a>
+				</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+			</div>
+			<div wicket:id="notAssignedToGroupSection" style="position: relative; left: 220px; ">
+				<p>You have been registered as a member of the system but you
+					must wait for approval to belong to an expert group. You should be
+					approved shortly by a group member, if not, please contact a member
+					of the group you wish to join and ask them to add you to their
+					expert group.</p>
+			</div>
+		</div>
+	</wicket:panel>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+
+	<div class="content">
+		<h1>Test Results</h1>
+		<div wicket:id="testResultsSection">
+			<table>
+				<tr>
+					<th>Test Case</th>
+					<th>Run Date</th>
+					<th>Status</th>
+					<th>Similarity</th>
+					<th>Select</th>
+				</tr>
+				<tr wicket:id="forecastCompareItems">
+					<td wicket:id="testCaseLabel">Hep B Test 1</td>
+					<td wicket:id="runDate">05/07/2012</td>
+					<td wicket:id="matchStatus">Same</td>
+					<td wicket:id="matchSimilurity">100%</td>
+					<td><a wicket:id="selectTestCase" href="TestCasePage"
+						class="fauxbutton">select</a></td>
+				</tr>
+			</table>
+		</div>
+		<br/>
+		<pre wicket:id="runForecastTestsResults"></pre>
+	</div>
+</body>
+</html>

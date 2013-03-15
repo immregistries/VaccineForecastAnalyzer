@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+
+		<h1>
+			<span wicket:id="forecastLineLabel"> Result Comparison</span>
+		</h1>
+		<p>
+			<span wicket:id="compareLabel"></span>
+		</p>
+		<table>
+			<tr>
+				<th>Forecaster</th>
+				<th>Dose</th>
+				<th>Valid</th>
+				<th>Due</th>
+			</tr>
+			<tr>
+				<td wicket:id="actualLabel"></td>
+				<td wicket:id="actualDoseNumber"></td>
+				<td wicket:id="actualValidDate"></td>
+				<td wicket:id="actualDueDate"></td>
+			</tr>
+			<tr wicket:id="forecastActualItems">
+				<td wicket:id="actualLabel"></td>
+				<td wicket:id="actualDoseNumber"></td>
+				<td wicket:id="actualValidDate"></td>
+				<td wicket:id="actualDueDate"></td>
+			</tr>
+		</table>
+
+		<div wicket:id="changeTestStatus">
+			<h2>
+				Change Test Status for <span wicket:id="primarySoftware"></span>
+			</h2>
+			<table>
+				<tr>
+					<td wicket:id="pass1"><a wicket:id="pass" class="fauxbutton">Pass</a></td>
+					<td wicket:id="pass2">The target software is correct.</td>
+				</tr>
+				<tr>
+					<td wicket:id="accept1"><a wicket:id="accept"
+						class="fauxbutton">Accept</a></td>
+					<td wicket:id="accept2">The target software does not meet all
+						expectations but it is accepted for now as good enough.</td>
+				</tr>
+				<tr>
+					<td wicket:id="fixed1"><a wicket:id="fixed" class="fauxbutton">Fixed</a></td>
+					<td wicket:id="fixed2">The target software has been changed
+						and this test needs to be run again and reviewed.</td>
+				</tr>
+				<tr>
+					<td wicket:id="research1"><a wicket:id="research"
+						class="fauxbutton">Research</a></td>
+					<td wicket:id="research2">More information needs to be
+						gathered before the correct expected values can be determined.</td>
+				</tr>
+				<tr>
+					<td wicket:id="fail1"><a wicket:id="fail" class="fauxbutton">Fail</a></td>
+					<td wicket:id="fail2">The target software does not meet
+						expectations and needs to fixed.</td>
+				</tr>
+			</table>
+		</div>
+		
+		<h3>Comments</h3>
+		<form wicket:id="commentform">
+			<table width="100%">
+				<tr>
+					<td>Comment</td>
+					<td><textarea wicket:id="noteTextField" rows="3" cols="40"></textarea></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit" value="add"
+						class="fauxbutton"/></td>
+				</tr>
+			</table>
+		</form>
+		<table width="100%">
+			<tr>
+				<th>Expert</th>
+				<th>Organization</th>
+				<th>Date</th>
+				<th>Note</th>
+			</tr>
+			<tr wicket:id="testNoteItems">
+				<td wicket:id="userName">Laura King</td>
+				<td wicket:id="userOrganization">TCH</td>
+				<td wicket:id="noteDate">05/07/2012</td>
+				<td wicket:id="noteText"></td>
+			</tr>
+		</table>
+
+
+	</div>
+	<div class="extra">
+
+		<h1>Test Case</h1>
+		<table>
+			<tr>
+				<td>Label</td>
+				<td wicket:id="label">TCH Test 1</td>
+			</tr>
+			<tr>
+				<td>Description</td>
+				<td wicket:id="description">Varicella given two months after
+					measles is valid</td>
+			</tr>
+			<tr>
+				<td>Patient</td>
+				<td><span wicket:id="patientFirst">Harold</span> <span
+					wicket:id="patientLast">Snoot</span> (<span wicket:id="patientSex">M</span>)
+				</td>
+			</tr>
+			<tr>
+				<td>Birth Date</td>
+				<td wicket:id="patientDob">10/01/2001</td>
+			</tr>
+			<tr>
+				<td>Evaluation Date</td>
+				<td wicket:id="evalDate">10/11/2011</td>
+			</tr>
+		</table>
+		<h2>Events</h2>
+		<table>
+			<tr>
+				<th>Type</th>
+				<th>Item</th>
+				<th>CVX</th>
+				<th>MVX</th>
+				<th>Date</th>
+			</tr>
+			<tr wicket:id="testEventItems">
+				<td wicket:id="eventType">Vaccination</td>
+				<td wicket:id="label">MMR</td>
+				<td wicket:id="vacineCvx">78</td>
+				<td wicket:id="vacineMvx"></td>
+				<td wicket:id="eventDate">10/09/2002</td>
+			</tr>
+		</table>
+
+	</div>
+</body>
+</html>

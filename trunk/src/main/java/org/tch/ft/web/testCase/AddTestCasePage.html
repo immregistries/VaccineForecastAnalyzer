@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+
+		<h1>Add New Test Case</h1>
+		<span wicket:id="feedback"></span>
+
+		<form wicket:id="testCaseForm">
+			<table>
+				<tr>
+					<td>Label</td>
+					<td><input type="text" / wicket:id="label" size="50"></td>
+				</tr>
+				<tr>
+					<td>Description</td>
+					<td><textarea type="text" wicket:id="description" cols="50"
+							rows="3" /></td>
+				</tr>
+				<tr>
+					<td>Patient First</td>
+					<td><input type="text" wicket:id="patientFirst" size="15" /></td>
+				</tr>
+				<tr>
+					<td>Patient Last</td>
+					<td><input type="text" wicket:id="patientLast" size="15" /></td>
+				</tr>
+				<tr>
+					<td>Patient Sex</td>
+					<td><select wicket:id="patientSex"></select></td>
+				</tr>
+				<tr>
+					<td>Birth Date</td>
+					<td><input type="text" wicket:id="patientDob" size="10" /></td>
+				</tr>
+				<tr>
+					<td>Evaluation Date</td>
+					<td><input type="text" wicket:id="evalDate" size="10" /></td>
+				</tr>
+				<tr>
+					<td>Category Name</td>
+					<td><input type="text" / wicket:id="categoryName" size="30"></td>
+				</tr>
+				<tr>
+					<td>Test Case Number</td>
+					<td><input type="text" / wicket:id="testCaseNumber" size="5"></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						value="save" class="fauxbutton" /></td>
+				</tr>
+			</table>
+		</form>
+	</div>
+
+
+</body>
+</html>

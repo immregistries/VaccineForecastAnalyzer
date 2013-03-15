@@ -1,0 +1,130 @@
+body {font: 13px 'Arial' , sans-serif; color: #666; background: #FFFFFF;}
+p {color:#2B3E42;}
+.menu {position: absolute; top: 0px; left: 5px; width:200px; padding:0px; margin-left: 0px; margin-right: 0px; margin-top: 10px; margin-bottom: 5px; border-width: 0px; border-style: none; border-collapse:separate; text-align: center;}
+.content {position: relative; left: 220px; width: 500px; padding: 0px 0px 80px 0px; margin-bottom: 80px;}
+.todo {color:#333333; background-color: #CCCCCC; font-size: smaller; border-style: dotted; border-width: 3px; border-color: #EEEEEE; margin: 100px 5px 5px 5px;}
+.menuList { margin: 0px; padding: 0px; }
+.userGuide { border-style: solid; border-width: 1px; border-color: #002144; margin-bottom: 80px; width: 700px; }
+.title {text-align: center; border-style: none; color: #2B3E42;; font-weight: bold;};
+.bottomSash {text-align: center; position: fixed; bottom: 0px; left: 0px; width: 750px; background-color: #fff; border-style: solid; border-width: 1px; border-color: #dc291e; margin: 3px; padding: 2px;} 
+.extra {position: absolute; top: 0px; left: 750px; width: 200px;}
+
+a:link.bottomSashLink {color: #333; text-decoration:none; font-weight: normal; padding:3px; font-size: 9pt;}
+a:visited.bottomSashLink {color: #333; text-decoration:none; font-weight: normal; padding:3px; font-size: 9pt;}
+a:hover.bottomSashLink {color: #333; text-decoration:underline; font-weight: normal; padding:3px; font-size: 9pt;}
+a:active.bottomSashLink {color: #333; text-decoration:none; font-weight: normal; padding:3px; font-size: 9pt;}
+
+.subMenu { text-align: left; font-size: 9pt; padding: 0px; margin: 0px;}
+a:link.menuLink {color: #FFF; text-decoration:none; font-weight: bold; padding:3px; font-size: 12pt;}
+a:visited.menuLink {color: #FFF; text-decoration:none; font-weight: bold; padding:3px; font-size: 12pt;}
+a:hover.menuLink {color: #FFF; text-decoration:underline; font-weight: bold; padding:3px; font-size: 12pt;}
+a:active.menuLink {color: #FFF; text-decoration:none; font-weight: bold; padding:3px; font-size: 12pt;}
+
+a:link.submenuLink {color: #000; text-decoration:none; font-weight: normal; padding:3px; }
+a:visited.submenuLink {color: #000; text-decoration:none; font-weight: normal; padding:3px; }
+a:hover.submenuLink {color: #000; text-decoration:underline; font-weight: normal; padding:3px; }
+a:active.submenuLink {color: #000; text-decoration:none; font-weight: normal; padding:3px; }
+
+a:link.submenuLink-red {color: #dc291e; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px; font-size: 9pt;}
+a:visited.submenuLink-red {color: #dc291e; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px; font-size: 9pt;}
+a:hover.submenuLink-red {color: #dc291e; text-decoration:underline; font-weight: bold; padding:3px; margin-right: 10px; font-size: 9pt;}
+a:active.submenuLink-red {color: #dc291e; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px; font-size: 9pt;}
+
+a:link.submenuLink-orange {color: #E57200; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:visited.submenuLink-orange {color: #E57200; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:hover.submenuLink-orange {color: #E57200; text-decoration:underline; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:active.submenuLink-orange {color: #E57200; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+
+a:link.submenuLink-bluegreen {color: #008998; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:visited.submenuLink-bluegreen {color: #008998; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:hover.submenuLink-bluegreen {color: #008998; text-decoration:underline; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:active.submenuLink-bluegreen {color: #008998; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+
+a:link.submenuLink-green {color: #009a3d; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:visited.submenuLink-green {color: #009a3d; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:hover.submenuLink-green {color: #009a3d; text-decoration:underline; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:active.submenuLink-green {color: #009a3d; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+
+a:link.submenuLink-blue {color: #0063BE; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:visited.submenuLink-blue {color: #0063BE; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:hover.submenuLink-blue {color: #0063BE; text-decoration:underline; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:active.submenuLink-blue {color: #0063BE; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+
+a:link.submenuLink-purple {color: #9B2C98; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:visited.submenuLink-purple {color: #9B2C98; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:hover.submenuLink-purple {color: #9B2C98; text-decoration:underline; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+a:active.submenuLink-purple {color: #9B2C98; text-decoration:none; font-weight: bold; padding:3px; margin-right: 10px;  font-size: 9pt;}
+
+a:link.fauxbutton {text-decoration:none; margin: 1px 0px 1px 0px; padding:0px 3px 0px 3px; border-width: 2px; border-style: outset; border-color: black; font-size: smaller; background: #eee; color: #666; font-variant: small-caps;}
+a:visited.fauxbutton {text-decoration:none; margin: 1px 0px 1px 0px; padding:0px 3px 0px 3px; border-width: 2px; border-style: outset; border-color: black; font-size: smaller; background: #eee; color: #666; font-variant: small-caps;}
+a:hover.fauxbutton {text-decoration:none; margin: 1px 0px 1px 0px; padding:0px 3px 0px 3px; border-width: 2px; border-style: outset; border-color: black; font-size: smaller; background: #34B6E4; color: #FFF; font-variant: small-caps;}
+a:active.fauxbutton {text-decoration:none; margin: 1px 0px 1px 0px; padding:0px 3px 0px 3px; border-width: 2px; border-style: outset; border-color: black; font-size: smaller; background: #eee; color: #666; font-variant: small-caps;}
+
+a:link {color: black; text-decoration:none; padding:3px;}
+a:visited {color: black; text-decoration:none; padding:3px;}
+a:hover {color: black; text-decoration:underline; padding:3px;}
+a:active {color: black; text-decoration:none; padding:3px;}
+
+
+a:link.menuLinkSelected {padding:5px; color:#2B3E42; text-decoration:none; background: #D5E1DD; border-top-style: solid; border-width: 1px; border-left-style:solid; border-right-style:solid;}
+a:visited.menuLinkSelected {padding:5px; color:#2B3E42; text-decoration:none; background: #D5E1DD; border-top-style: solid; border-width: 1px;border-left-style:solid; border-right-style:solid;}
+a:hover.menuLinkSelected {padding:5px; color:#2B3E42; text-decoration:none; background: #D5E1DD; border-top-style: solid; border-width: 1px;border-left-style:solid; border-right-style:solid;}
+a:active.menuLinkSelected {padding:5px; color:#2B3E42; text-decoration:none; background: #D5E1DD; border-top-style: solid; border-width: 1px;border-left-style:solid; border-right-style:solid;}
+.submenu {padding:5px; background-color:#F7F3E8; margin: 0px; border-color: #2B3E42; border-width: 1px; border-style: solid; border-width: 1px;border-left-style:solid; border-right-style:solid;}
+input {border-color: #747E80; border-width: 1px; background-color: #F7F3E8}
+input.fauxbutton {text-decoration:none; margin: 1px 0px 1px 0px; padding:0px 3px 0px 3px;  border-width: 2px; border-style: outset; border-color: black; font-size: smaller; background: #eee; color: #666; font-variant: small-caps;}
+textarea {border-color: #747E80; border-width: 1px; background-color: #F7F3E8}
+select {border-color: #747E80; border-width: 1px; background-color: #F7F3E8}
+pre {background:#F7F3E8; padding:4px; margin: 2px; }
+.scrollbox {width: 700px; overflow:auto;}
+.pass {background:#34B6E4;}
+.fail {background:#dc291e;}
+.none {}
+.help {width:700px; padding: 10px;}
+.smallTitle {padding-right: 5px; padding-left: 5px; border-style:solid; border-width: 1px; border-color: #747E80;}
+.boxed {border-collapse: collapse; border-width: 1px; border-style: solid; padding-left:5px; padding-right:5px;}
+
+.text-purple { color: #9B2C98; font-weight: bold; }
+.text-orange { color: #E57200; font-weight: bold;}
+.text-skyblue { color: #34B6E4; font-weight: bold;}
+.text-blue { color: #0063BE; font-weight: bold;}
+.text-green { color: #009a3d; font-weight: bold;}
+.text-red { color: #dc291e; font-weight: bold;}
+.text-bluegreen { color: #008998; font-weight: bold;}
+.text-darkblue { color: #002144; font-weight: bold;}
+.text-lightgray { color: #eee; font-weight: bold;}
+.text-white { color: #fff; font-weight: bold;}
+
+
+.bkg-purple { background: #9B2C98; color: #FFF; }
+.bkg-orange { background: #E57200; color: #FFF; }
+.bkg-skyblue { background: #34B6E4; color: #FFF; }
+.bkg-blue { background: #0063BE; color: #FFF; }
+.bkg-green { background: #009a3d; color: #FFF; }
+.bkg-red { background: #dc291e; color: #FFF; }
+.bkg-bluegreen { background: #008998; color: #FFF; }
+.bkg-darkblue { background: #002144; color: #FFF; }
+.bkg-lightgray { background: #eee; color: #666; }
+.bkg-white { background: #fff; color: #666; }
+
+.brd-purple { border-color: #9B2C98; border-style: solid; border-width: 1px; }
+.brd-orange { border-color: #E57200; border-style: solid; border-width: 1px; }
+.brd-skyblue { border-color: #34B6E4; border-style: solid; border-width: 1px; }
+.brd-blue { border-color: #0063BE; border-style: solid; border-width: 1px; }
+.brd-green { border-color: #009a3d; border-style: solid; border-width: 1px; }
+.brd-red { border-color: #dc291e; border-style: solid; border-width: 1px; }
+.brd-bluegreen { border-color: #008998; border-style: solid; border-width: 1px; }
+.brd-darkblue { border-color: #002144; border-style: solid; border-width: 1px; }
+.brd-lightgray { border-color: #eee; border-style: solid; border-width: 1px;  }
+.brd-white {border-color: #fff; border-style: solid; border-width: 1px; }
+
+table {border-collapse:collapse}
+th {text-align: left; padding-left: 4px; padding-right: 8px; padding-bottom: 3px; padding-top: 3px; border-width: 1px; border-style: solid; border-color: #666; font-size: smaller;}
+td {padding: 2px; padding-left: 4px; padding-right: 8px; padding-bottom: 3px; padding-top: 3px; border-width: 1px; border-style: solid; border-color: #666; color: #000;}
+.highlight {background: #eee;}
+
+.log{ width: 660px; height: 300px; overflow:scroll; }
+
+.aggreementText { overflow: scroll; width: 400px; height: 300px; }
+
+hr { margin-top: 20px; margin-bottom: 20px; height: 2px; width:95%; color: #dc291e; background-color: #dc291e;}

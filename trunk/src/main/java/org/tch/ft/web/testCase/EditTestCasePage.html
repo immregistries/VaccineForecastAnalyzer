@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+		<h1>Test Case</h1>
+		<span wicket:id="feedback"></span>
+		<form wicket:id="testCaseForm">
+			<table>
+				<tr>
+					<td>Label</td>
+					<td><input type="text" / wicket:id="label" size="50"></td>
+				</tr>
+				<tr>
+					<td>Description</td>
+					<td><textarea type="text" wicket:id="description" cols="50"
+							rows="3" /></td>
+				</tr>
+				<tr>
+					<td>Patient First</td>
+					<td><input type="text" wicket:id="patientFirst" size="15" /></td>
+				</tr>
+				<tr>
+					<td>Patient Last</td>
+					<td><input type="text" wicket:id="patientLast" size="15" /></td>
+				</tr>
+				<tr>
+					<td>Patient Sex</td>
+					<td><select wicket:id="patientSex"></select></td>
+				</tr>
+				<tr>
+					<td>Birth Date</td>
+					<td><input type="text" wicket:id="patientDob" size="10" /></td>
+				</tr>
+				<tr>
+					<td>Evaluation Date</td>
+					<td><input type="text" wicket:id="evalDate" size="10" /></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						value="save" class="fauxbutton" /></td>
+				</tr>
+			</table>
+		</form>
+		<h2>Events</h2>
+		<table>
+			<tr>
+				<th>Type</th>
+				<th>Item</th>
+				<th>CVX</th>
+				<th>MVX</th>
+				<th>Date</th>
+				<th></th>
+			</tr>
+			<tr wicket:id="testEventItems">
+				<td wicket:id="eventType">Vaccination</td>
+				<td wicket:id="label">MMR</td>
+				<td wicket:id="vacineCvx">78</td>
+				<td wicket:id="vacineMvx"></td>
+				<td wicket:id="eventDate">10/09/2002</td>
+				<td><form wicket:id="deleteForm">
+						<input type="submit" value="delete" class="fauxbutton" />
+					</form></td>
+			</tr>
+			<form wicket:id="addTestEventForm">
+				<tr>
+					<td colspan="4"><select wicket:id="event"></select></td>
+					<td><input type="text" wicket:id="eventDate" size="10" /></td>
+					<td><input type="submit" value="add" class="fauxbutton" /></td>
+				</tr>
+			</form>
+		</table>
+		<h2>Assigned to Test Panel</h2>
+		<form wicket:id="editTestPanelCaseForm">
+			<table>
+				<tr>
+					<td>Category Name</td>
+					<td><input type="text" wicket:id="categoryName" size="30" /></td>
+				</tr>
+				<tr>
+					<td>Test Case Number</td>
+					<td><input type="text" wicket:id="testCaseNumber" size="5" /></td>
+				</tr>
+				<tr>
+					<td>Include Status</td>
+					<td><select wicket:id="include"></select></td>
+				</tr>
+				<tr>
+					<td>Result Status</td>
+					<td><select wicket:id="result"></select></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						value="save" class="fauxbutton" /></td>
+				</tr>
+			</table>
+		</form>
+	</div>
+</body>
+</html>

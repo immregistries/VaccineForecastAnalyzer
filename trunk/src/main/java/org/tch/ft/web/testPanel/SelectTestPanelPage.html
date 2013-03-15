@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+		<h2>Select Test Panel</h2>
+		<span wicket:id="testPanelListPanel"></span>
+		<div wicket:id="createTestPanelSection">
+			<h2>Create Test Panel</h2>
+			<form wicket:id="createTestPanelForm">
+				<table>
+					<tr>
+						<td>Label</td>
+						<td><input type="text" size="30"
+							wicket:id="testPanelLabelField" /></td>
+					</tr>
+					<tr>
+						<td colspan="2" align="right"><input type="submit"
+							value="create" class="fauxbutton" /></td>
+					</tr>
+				</table>
+			</form>
+		</div>
+	</div>
+</body>
+</html>

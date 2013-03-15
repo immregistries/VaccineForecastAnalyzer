@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+		<h2>Upload Test Cases</h2>
+		<form wicket:id="simpleUpload">
+
+			<table>
+				<tr>
+					<td>Test Case File</td>
+					<td><input wicket:id="fileInput" type="file" /></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						value="Upload" class="fauxbutton" /></td>
+				</tr>
+			</table>
+
+		</form>
+
+		<div>
+			<span wicket:id="uploadFeedback" />
+		</div>
+	</div>
+</body>
+</html>

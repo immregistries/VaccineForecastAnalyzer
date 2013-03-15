@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+		<h1>Test Case</h1>
+		<p>A Test Case represents a specific scenario and contains enough
+			information for a basic patient record to be created in an IIS.</p>
+		<div wicket:id="selected">
+			<h1 wicket:id="testCaseLabel"></h1>
+			<p>The Test Case detail page shows the basic information for the
+				test case, the associated events (vaccinations) and the status of
+				this test case within the context of the currently selected Test
+				Panel. If the test case is part of the current test panel and you
+				are assigned Expert or Admin role to the Task Group, you can edit
+				the test case.</p>
+			<h3>Test Case</h3>
+			<ul>
+				<li><b>Label</b> A short description of what this test case
+					tests.</li>
+				<li><b>Description</b> A complete description of what this test
+					case tests.</li>
+				<li><b>Patient</b> The assigned (not-real) name and sex of the
+					patient.</li>
+				<li><b>DOB</b> The date of birth for testing.</li>
+				<li><b>Evaluation Date</b> The date to target the forecast at.</li>
+			</ul>
+			<h3>Events</h3>
+			<ul>
+				<li><b>Type</b> Type of event that occurred. This is normally a
+					Vaccination, but could also be a contraindicatin or other
+					condition.</li>
+				<li><b>Item</b> The particular concept, normally a specific
+					vaccination.</li>
+				<li><b>CVX</b> The CDC assigned CVX code, if this is a
+					vaccination.</li>
+				<li><b>MVX</b> The CDC assigned manufacturer code, if this is a
+					vaccination.</li>
+				<li><b>Date</b> The date the event occurred, normally the
+					vaccination date.</li>
+			</ul>
+			<h3>Assigned to Test Panel</h3>
+			<p>A single test case can be assigned to more than one panel.
+				This section shows the values for this test case for the currently
+				selected test panel. This means that a single test may "Pass" under
+				one test panel and "Fail" in another. This situation would occur
+				when a single test case works for one IIS and not for another.</p>
+			<ul>
+				<li><b>Category Name</b> The category this test case is
+					assigned under in the test panel.</li>
+				<li><b>Test Case Number</b> The unique number assigned by the
+					Task Group when this test case was assigned to the test panel.</li>
+				<li><b>Include Status</b> Whether nor this test case is
+					assigned as part of this test panel. Once added a test case is
+					never fully removed, instead it is marked as "Excluded". "Proposed"
+					test cases are ones that have been provisionally added and are
+					waiting for approval from the rest of the group.</li>
+				<li><b>Result Status</b> Indicates the current status of this
+					test case for testing purposes. This is used to help communication
+					between Task Group experts, and is not automatically updated when a
+					test is run.</li>
+			</ul>
+			<p>
+				<wicket:link>
+					<a href="TestCaseDetailPage" class="fauxbutton">Test Case
+						Detail</a>
+				</wicket:link>
+			</p>
+			<h2>Test Results</h2>
+			<p>A comparison of the actual vs expected values. This page will
+				show all expected and actual values with the currently selected Task
+				Groups expected values compared with the currently selected
+				Software. For most test cases there is only one set of actuals vs
+				expected, but some test cases, particular for combinations, may have
+				additional tests for each antigen. In these case the actuals and
+				expected are repeated.</p>
+			<h3>Set Expected Values for ...</h3>
+			<p>This form allows for quickly indicated the expected values for
+				this test case. Every test case can have an official expected value
+				from any Task Group that has this test case in a Test Panel. In
+				addition, any Expert can add their personal expected values. If you
+				are currently assigned as an expert on a panel that includes this
+				test case then your expectations will become the official
+				expectations for this test panel. Otherwise your expectations will
+				be displayed only under your name. (You do not have the ability to
+				change the expectations for any Task Group that you are not an
+				Expert or Admin on. )</p>
+			<ul>
+				<li><b>Dose</b> The dose number that is expected next.</li>
+				<li><b>Valid</b> The earliest date when the next (or first)
+					vaccination could be given. (This does not include any additional
+					grace period that the forecaster may allow for in retrospective
+					analysis.)</li>
+				<li><b>Due</b> The date when this vaccination would normally be
+					recommended. This includes any acceleration due to being behind
+					schedule. This is the date when the patient would normally be asked
+					to return for the first or additional vaccinations.</li>
+				<li><b>Overdue</b> The first date when the next (or first)
+					vaccination should have already been given. Optimally the patient
+					should be scheduled for and received a vaccination by this date.
+					After this point the patient is considered "behind". This value has
+					a higher variability among systems as it depends on both
+					recommendations and local policy.</li>
+			</ul>
+			<h3>Change Test Status for ...</h3>
+			<p>This table allows Task Group experts to quickly change the
+				status of this test case for the currently selected test case panel
+				in context of how well this forecast test case is handled by the
+				primary software system listed in the title.</p>
+			<p>
+			<h3>Add Expected Values</h3>
+			<p>Similar to the Set Expected values above accept this form
+				allows for setting expectations for any forecast line and the
+				results are not entered as the official expectations for this Test
+				Panel.</p>
+			<wicket:link>
+				<a href="ActualVsExpectedPage" class="fauxbutton">Test Results</a>
+			</wicket:link>
+			</p>
+			<h2>Forecast Log</h2>
+			<p>When the test case is run against the selected forecast test
+				system the log with details about what occurred are recorded here.
+				This information is useful for troubleshooting, but may not make
+				sense unless familiar with how the selected software system works.</p>
+			<p>
+				<wicket:link>
+					<a href="ForecastLogPage" class="fauxbutton">Forecast Log</a>
+				</wicket:link>
+			</p>
+			<h2>Comments</h2>
+			<p>Any Expert may leave comments on any test case and read all
+				comments on a test case. Remember, do not put confidential or private
+				information in the comments as they will be visible to any
+				registered system user. The comments are a common bulletin board for
+				notes and comments that can be shared between Task Group members and
+				other Experts.</p>
+			<p>
+				<wicket:link>
+					<a href="CommentsPage" class="fauxbutton">Comments</a>
+				</wicket:link>
+			</p>
+
+		</div>
+	</div>
+</body>
+</html>

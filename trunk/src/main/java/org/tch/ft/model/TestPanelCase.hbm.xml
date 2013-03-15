@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.tch.ft.model">
+  <class name="TestPanelCase" table="test_panel_case">
+    <id name="TestPanelCaseId" column="test_panel_case_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="testPanel" column="test_panel_id" class="TestPanel"/>
+    <many-to-one name="testCase" column="test_case_id" class="TestCase"/>
+    <property name="categoryName" column="category_name" type="string"/>
+    <property name="includeStatus" column="include_status" type="string"/>
+    <property name="resultStatus" column="result_status" type="string"/>
+    <property name="testCaseNumber" column="test_case_number" type="string"/>
+  </class>
+</hibernate-mapping>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+		<h1>Test Case</h1>
+		<table>
+			<tr>
+				<td>Label</td>
+				<td wicket:id="label">TCH Test 1</td>
+			</tr>
+			<tr>
+				<td>Description</td>
+				<td wicket:id="description">Varicella given two months after
+					measles is valid</td>
+			</tr>
+			<tr>
+				<td>Patient</td>
+				<td><span wicket:id="patientFirst">Harold</span> <span
+					wicket:id="patientLast">Snoot</span> (<span wicket:id="patientSex">M</span>)
+				</td>
+			</tr>
+			<tr>
+				<td>Birth Date</td>
+				<td wicket:id="patientDob">10/01/2001</td>
+			</tr>
+			<tr>
+				<td>Evaluation Date</td>
+				<td wicket:id="evalDate">10/11/2011</td>
+			</tr>
+		</table>
+		<h2>Events</h2>
+		<table>
+			<tr>
+				<th>Type</th>
+				<th>Item</th>
+				<th>CVX</th>
+				<th>MVX</th>
+				<th>Date</th>
+			</tr>
+			<tr wicket:id="testEventItems">
+				<td wicket:id="eventType">Vaccination</td>
+				<td wicket:id="label">MMR</td>
+				<td wicket:id="vacineCvx">78</td>
+				<td wicket:id="vacineMvx"></td>
+				<td wicket:id="eventDate">10/09/2002</td>
+			</tr>
+		</table>
+		<h2 wicket:id="testPanelTitle">Assigned to Test Panel</h2>
+		<table wicket:id="testPanelTable">
+			<tr>
+				<td>Category Name</td>
+				<td wicket:id="categoryName"></td>
+			</tr>
+			<tr>
+				<td>Test Case Number</td>
+				<td wicket:id="testCaseNumber"></td>
+			</tr>
+			<tr>
+				<td>Include Status</td>
+				<td wicket:id="includeStatus"></td>
+			</tr>
+			<tr>
+				<td>Result Status</td>
+				<td><span wicket:id="resultStatus"></span></td>
+			</tr>
+		</table>
+		<p wicket:id="editTestCaseLink">
+			<wicket:link>
+				<a href="EditTestCasePage" class="fauxbutton">Edit Test Case</a>
+			</wicket:link>
+		</p>
+	</div>
+</body>
+</html>

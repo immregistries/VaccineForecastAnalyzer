@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.tch.ft.model">
+  <class name="ForecastItem" table="forecast_item">
+    <id name="forecastItemId" column="forecast_item_id">
+      <generator class="native"/>
+    </id>
+    <property name="label" column="label" type="string"/>
+  </class>
+</hibernate-mapping>
