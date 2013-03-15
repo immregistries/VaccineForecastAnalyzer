@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+		<h1>Test Panel</h1>
+		<p>A Test Panel is a set of Test Cases that have been grouped
+			together by a Task Group for a common testing purpose. Test Cases in
+			this system are global, any Test Case, defined by any Task Group may
+			be included in any other Task Group's Test Panel. This then allows
+			for the development of common shared test cases.</p>
+		<div wicket:id="selectTestPanelSection">
+			<h3>Select</h3>
+			<p>
+				<wicket:link>
+					<a href="SelectTestPanelPage" class="fauxbutton">Select Test
+						Panel</a>
+				</wicket:link>
+			</p>
+			<div wicket:id="canEdit">
+				<h3>Add Test Case</h3>
+				<p>Adding an new test case is simple. The following information
+					is needed to create a test case:</p>
+				<ul>
+					<li><b>Label</b> This is a human readable, short description
+						of the test case and will appear labeled as such in any test panel
+						this test case is associated with. This field is required.</li>
+					<li><b>Description</b> A long description that describes what
+						is being tested here in a way that is understandable to other
+						experts. Remember that this test case may be viewed and selected
+						for inclusion in other test panels. Please be clear here.</li>
+					<li><b>Patient First</b> A first name is required in order to
+						support testing systems that require a patient name. A random name
+						is automatically generated for you. You may change the name, if
+						needed, but do not put real patient data here!</li>
+					<li><b>Patient Last</b> A last name is required in order to
+						support testing systems that require a patient name. A random name
+						is automatically generated for you. You may change the name, if
+						needed, but do not put real patient data here!</li>
+					<li><b>Patient Sex</b> A patient sex of 'F' is automatically
+						assigned. This field is required to support testing systems that
+						require this field.</li>
+					<li><b>Birth Date</b> The date the patient was born for
+						testing purposes. The forecast is generated based on this date.</li>
+					<li><b>Evaluation Date</b> The date when the evaluation should
+						be conducted for. It defaults to today's date when creating the
+						test case. Not all forecast system support this date.</li>
+					<li><b>Category Name</b> The label you want to use when this
+						test case is assigned to the test panel. This label is specific to
+						the test panel it is assigned to. Be sure to use consistent values
+						here in order for similar tests to be grouped together properly.
+						If this test case is later added to other test panels it will be
+						associated with a its own category name.</li>
+					<li><b>Test Case Number</b> A unique identifier for this test
+						case within this test panel. This field is optional but if valued
+						must not match any test cases that are currently defined for this
+						test panel.</li>
+				</ul>
+				<p>
+					<wicket:link>
+						<a href="AddTestCasePage" class="fauxbutton">Add Test Case
+							Page</a>
+					</wicket:link>
+				</p>
+			</div>
+		</div>
+	</div>
+
+
+</body>
+</html>

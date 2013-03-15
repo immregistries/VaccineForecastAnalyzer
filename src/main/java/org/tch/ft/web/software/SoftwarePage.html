@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+
+	<div class="content">
+
+		<h1>Software</h1>
+		<p>Software represents a forecast system that can receive a test
+			case and give an actual forecast result that can be compared to the
+			expected results.</p>
+		<div wicket:id="canSelect">
+			<h2>Select</h2>
+			<p>You can select any software system registered with this
+				system. If you need to register a new system that is not listed
+				here, please contact TCH.</p>
+			<p>
+				<wicket:link>
+					<a href="SelectSoftwarePage" class="fauxbutton">Select</a>
+				</wicket:link>
+			</p>
+
+		</div>
+		<div wicket:id="selected">
+			<h1 wicket:id="softwareLabel"></h1>
+			<p>With this forecast system currently selected you can view
+				results and run tests.</p>
+			<p>
+				<wicket:link>
+					<a href="SoftwareDetailPage" class="fauxbutton">Software System
+						Details</a>
+				</wicket:link>
+			</p>
+			<h2>Test Results</h2>
+			<p>Review the test results for the selected Test Panel last test
+				run. Please select a Test Panel to see test results.</p>
+			<div wicket:id="testPanelSelected">
+				<p>
+					<wicket:link>
+						<a href="TestResultsPage" class="fauxbutton"> Test Results</a>
+					</wicket:link>
+				</p>
+				<h2>Run Tests</h2>
+				<p>Request that the test be run for the first time, or again if
+					they have been run before.</p>
+				<p>
+					<wicket:link>
+						<a href="RunForecastTestsPage" class="fauxbutton">Run Tests</a>
+					</wicket:link>
+				</p>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

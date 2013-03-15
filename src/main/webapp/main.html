@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>Select Task Group</title>
+<link rel="stylesheet" type="text/css" href="index.css" />
+</head>
+<body>
+	<img src="images\color00.jpg" width="381" height=65 "/>
+	<table class="menu">
+		<tr>
+			<td class="bkg-red">Expert</td>
+			<td class="bkg-red"><a href="logout.html" class="menuLink">Nathan Bunker</a></td>
+		</tr>
+		<tr>
+			<td class="bkg-green">Task Group</td>
+			<td class="bkg-green">TCH Expert Team</td>
+		</tr>
+		<tr>
+			<td class="bkg-blue">Test Panel</td>
+			<td class="bkg-blue">ACIP 2012.5</td>
+		</tr>
+		<tr>
+			<td class="bkg-orange">Software</td>
+			<td class="bkg-orange">TCH Forecaster</td>
+		</tr>
+		<tr>
+			<td class="bkg-purple">Test Case</td>
+			<td class="bkg-purple">Hep B Test 1</td>
+		</tr>
+	</table>
+	<div class="content">
+		<div class="bkg-green">
+			<h1>Select Task Group</h1>
+		</div>
+		<form action="taskGroup.html" method="GET">
+			<table>
+				<tr>
+					<td>Choose</td>
+					<td><select name="taskGroupId">
+							<option value="1">Personal</option>
+							<option value="2">TCH IP Expert Team</option>
+							<option value="3">IHS Imm Experts</option>
+							<option value="4">CDC CDS Workgroup</option>
+					</select></td>
+					<td><input type="submit" name="submit" value="Select" /></td>
+				</tr>
+			</table>
+		</form>
+		<h1>Add New Task Group</h1>
+		<form action="taskGroup.html" method="GET">
+			<table>
+				<tr>
+					<td>Name</td>
+					<td><input type="text" name="name" value="" size="30" /></td>
+				</tr>
+				<tr>
+					<td>Forecasting Software</td>
+					<td><select name="softwareId">
+							<option value="1">TCH Forecaster</option>
+							<option value="2">CDS Evaluator</option>
+					</select></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						name="submit" value="Create" /></td>
+				</tr>
+			</table>
+		</form>
+	</div>
+</body>
+</html>

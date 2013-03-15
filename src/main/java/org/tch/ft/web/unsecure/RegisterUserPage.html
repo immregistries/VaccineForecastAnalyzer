@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+		<h1>Register</h1>
+		<p>Registration is open for any immunization expert or technical
+			expert who is testing and verifying forecast test cases and forecast
+			systems. After registration, an email will be sent with your assigned
+			password. If you have already registered under your name or email
+			address, but have forgotten your password, please request it using
+			the menu link above. If you have further questions please contact a
+			member of the TCH expert team for assistance.</p>
+		<h2>Confidentiality</h2>
+		<p>Please note that this system is designed to enable maximum
+			collaboration between immunization forecast experts and all
+			information provided by you, including your contact information, will
+			be available to all registered users of this system. Please do not
+			provide any information below or within this site that you consider
+			confidential or which should be specifically protected.</p>
+		<span wicket:id="feedback"></span>
+		<form wicket:id="registerUserForm">
+			<table>
+				<tr>
+					<td>Name</td>
+					<td><input type="text" wicket:id="name" size="20" /></td>
+				</tr>
+				<tr>
+					<td>Position</td>
+					<td><input type="text" wicket:id="position" value="" size="30" /></td>
+				</tr>
+				<tr>
+					<td>Organization</td>
+					<td><input type="text" wicket:id="organization" value=""
+						size="30"></td>
+				</tr>
+				<tr>
+					<td>Email</td>
+					<td><input type="text" wicket:id="email" value="" size="20" /></td>
+				</tr>
+				<tr>
+					<td>Phone</td>
+					<td><input type="text" wicket:id="phone" value="" /></td>
+				</tr>
+				<tr>
+					<td>User Agreement</td>
+					<td><div class="aggreementText" wicket:id="agreementText"></div>
+						<br>I accept the terms of the software usage agreement: <input
+						type="checkbox" wicket:id="agreedToAgreement" /></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						name="submit" value="register" class="fauxbutton" /></td>
+				</tr>
+			</table>
+		</form>
+	</div>
+</body>
+</html>

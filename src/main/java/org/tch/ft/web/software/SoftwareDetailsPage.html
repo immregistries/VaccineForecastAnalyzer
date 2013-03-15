@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+
+	<div class="content">
+
+		<h2>Software</h2>
+		<table>
+			<tr>
+				<td>Software Name</td>
+				<td wicket:id="softwareLabel">Software Name</td>
+			</tr>
+			<tr>
+				<td>Service Type</td>
+				<td wicket:id="serviceType">Service Type</td>
+			</tr>
+			<tr>
+				<td>Service URL</td>
+				<td wicket:id="serviceUrl">Service URL</td>
+			</tr>
+			<tr>
+				<td>Schedule Name</td>
+				<td wicket:id="scheduleName">Service URL</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="right"><wicket:link>
+						<a href="EditSoftwarePage" class="fauxbutton">Edit</a>
+					</wicket:link></td>
+			</tr>
+		</table>
+	</div>
+</body>
+</html>

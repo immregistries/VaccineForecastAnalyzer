@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.tch.ft.model">
+  <class name="TestCase" table="test_case">
+    <id name="testCaseId" column="test_case_id">
+      <generator class="native"/>
+    </id>
+    <property name="label" column="label" type="string"/>
+    <property name="description" column="description" type="string"/>
+    <property name="evalDate" column="eval_date" type="date"/>
+    <property name="patientFirst" column="patient_first" type="string"/>
+    <property name="patientLast" column="patient_last" type="string"/>
+    <property name="patientSex" column="patient_sex" type="string"/>
+    <property name="patientDob" column="patient_dob" type="date"/>
+  </class>
+</hibernate-mapping>

@@ -1,0 +1,117 @@
+<html>
+<head>
+<title>Test Panel</title>
+<link rel="stylesheet" type="text/css" href="index.css" />
+</head>
+<body>
+	<img src="images\color00.jpg" width="381" height=65 "/>
+	<table class="menu">
+		<tr>
+			<td width="20%" class="bkg-red brd-red"><a href="expert.html"
+				class="menuLink">Expert</a></td>
+			<td width="20%" class="bkg-green brd-green"><a
+				href="taskGroup.html" class="menuLink">Task Group</a></td>
+			<td width="20%" class="bkg-blue brd-blue"><a
+				href="testPanel.html" class="menuLink">Test Panel</a></td>
+			<td width="20%" class="bkg-orange brd-orange"><a
+				href="software.html" class="menuLink">Software</a></td>
+			<td width="20%" class="bkg-purple brd-purple"><a
+				href="testCase.html" class="menuLink">Test Case</a></td>
+		</tr>
+		<tr>
+			<td width="20%" class="brd-red"><a href="expert.html">Nathan
+					Bunker</a></td>
+			<td width="20%" class="brd-green"><a href="taskGroup.html">TCH
+					Expert Team</a></td>
+			<td width="20%" class="brd-blue"><a href="testPanel.html">ACIP
+					2012.5</a></td>
+			<td width="20%" class="brd-orange"><a href="software.html">TCH
+					Forecaster</a></td>
+			<td width="20%" class="brd-purple"><a href="testCase.html">Hep
+					B Test 1</a></td>
+		</tr>
+	</table>
+	<div class="content">
+		<h1>Test Panel</h1>
+		<h2>Included Test Cases</h2>
+		<table>
+			<tr>
+				<th>Test Case</th>
+				<th>Status</th>
+				<th>Description</th>
+				<th>Author</th>
+			</tr>
+			<tr>
+				<td><a href="testCase.html">VZ Test 1</a></td>
+				<td>Pass</td>
+				<td>Vz can be administered at one year of age (minus 4 days)</td>
+				<td>Nathan Bunker</td>
+			</tr>
+			<tr>
+				<td><a href="testCase.html">VZ Test 2</a></td>
+				<td>Pass</td>
+				<td>Minimum age for administration of Vz is one year. Vaccine
+					administered greater than 4 days before 1st birthday is invalid.</td>
+				<td>Laura King</td>
+			</tr>
+			<tr>
+				<td><a href="testCase.html">VZ Test 3</a></td>
+				<td>Pass</td>
+				<td>If MMR and VZ are not administered on the same day, the
+					minimum interval is 28 days between doses, nothing less</td>
+				<td>Laura King</td>
+			</tr>
+			<tr>
+				<td><a href="testCase.html">VZ Test 4</a></td>
+				<td>Fail</td>
+				<td>If there is less than a 28 day interval between an MMR and
+					VZ, the second is invalid and must be repeated. No grace period
+					applies.</td>
+				<td>Laura King</td>
+			</tr>
+		</table>
+		<h2>Proposed Test Cases</h2>
+		<table>
+			<tr>
+				<th>Test Case</th>
+				<th>Status</th>
+				<th>Description</th>
+				<th>Author</th>
+			</tr>
+			<tr>
+				<td><a href="testCase.html">TCH Test 1</a></td>
+				<td>Fail</td>
+				<td>Varicella given two months after measles is valid</td>
+				<td>Nathan Bunker</td>
+			</tr>
+		</table>
+
+
+		<h1>Add New Test Case</h1>
+		<form action="testPanel.html">
+			<table>
+				<tr>
+					<td>Label</td>
+					<td><input type="text" name="label" value="" size="30" /></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						name="submit" value="Create" /></td>
+				</tr>
+			</table>
+		</form>
+
+		<h1>Scripts</h1>
+		<p>
+			<a href="">Download Script</a>
+		</p>
+		<form action="testPanel.html">
+			<table>
+				<tr>
+					<td>Upload Script</td>
+					<td><input type="text" name="script" value="" /></td>
+			</table>
+		</form>
+	</div>
+</body>
+</html>

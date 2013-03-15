@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration SYSTEM "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+  <session-factory>
+    <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+
+    <!--
+    <property name="hibernate.connection.url">jdbc:mysql://localhost/forecast_tester</property>
+    <property name="hibernate.connection.username">ft_web</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+    <property name="connection.password">cArn88rOw</property>
+    -->
+
+    <property name="hibernate.connection.url">jdbc:mysql://localhost/tchforec_ft</property>
+    <property name="hibernate.connection.username">tchforec_ftweb</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+    <property name="connection.password">YellsSolvesGearsDotage</property>
+    
+    <property name="show_sql">false</property>
+    <property name="hibernate.c3p0.acquire_increment">1</property>
+    <property name="hibernate.c3p0.idle_test_period">100</property><!--  seconds -->
+    <property name="hibernate.c3p0.timeout">100</property><!--  seconds -->
+    <property name="hibernate.c3p0.max_size">30</property>
+    <property name="hibernate.c3p0.min_size">5</property>
+    <property name="hibernate.c3p0.max_statements">10</property>
+    <mapping resource="org/tch/ft/model/Agreement.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/Event.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/Expert.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/ExpertRating.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/ForecastActual.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/ForecastCompare.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/ForecastExpected.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/ForecastTarget.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/ForecastItem.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/Software.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/SoftwareCompare.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/SoftwareTarget.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/SystemProperty.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/TaskGroup.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/TestCase.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/TestEvent.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/TestNote.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/TestPanel.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/TestPanelExpected.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/TestPanelCase.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/User.hbm.xml"/>
+  </session-factory>
+</hibernate-configuration>
