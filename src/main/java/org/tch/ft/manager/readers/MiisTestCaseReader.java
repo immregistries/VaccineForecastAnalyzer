@@ -1,25 +1,20 @@
-package org.tch.ft.manager;
+package org.tch.ft.manager.readers;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.mapping.Array;
 import org.tch.ft.model.Event;
-import org.tch.ft.model.EventType;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.ForecastItem;
 import org.tch.ft.model.TestCase;
 import org.tch.ft.model.TestEvent;
-import org.tch.ft.model.User;
 
-public class MiisTestCaseReader {
+public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseReader {
 
   private static final String FIELD_CASE = "Case";
   private static final String FIELD_IZ_SERIES = "IZ Series";
@@ -66,45 +61,6 @@ public class MiisTestCaseReader {
   }
 
   private String[] ignoredItems = { "Typhoid" };
-
-  private SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
-  private List<List<String>> testCaseFieldListList = new ArrayList<List<String>>();
-  private List<TestCase> testCaseList = new ArrayList<TestCase>();
-  private List<String> headerFields = null;
-  private Map<TestCase, ForecastExpected> forecastExpectedMap = new HashMap<TestCase, ForecastExpected>();
-  private Map<TestCase, List<TestEvent>> testEventListMap = new HashMap<TestCase, List<TestEvent>>();
-  private Map<String, Event> cvxToEventMap = new HashMap<String, Event>();
-  private User user = null;
-
-  public Map<TestCase, List<TestEvent>> getTestEventListMap() {
-    return testEventListMap;
-  }
-
-  public User getUser() {
-    return user;
-  }
-
-  private String problemText = null;
-
-  public List<TestCase> getTestCaseList() {
-    return testCaseList;
-  }
-
-  public Map<TestCase, ForecastExpected> getForecastExpectedMap() {
-    return forecastExpectedMap;
-  }
-
-  public void setEventList(List<Event> eventList) {
-    for (Event event : eventList) {
-      if (event.getEventType() == EventType.VACCINE) {
-        cvxToEventMap.put(event.getVaccineCvx(), event);
-      }
-    }
-  }
-
-  public void setUser(User user) {
-    this.user = user;
-  }
 
   public void read(InputStream in) throws IOException {
     readInputStream(in);
@@ -188,86 +144,17 @@ public class MiisTestCaseReader {
         forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCase));
         forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCase));
         forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCase));
-        forecastExpectedMap.put(testCase, forecastExpected);
-      }
-    }
-  }
-
-  private String readField(int position, List<String> testCaseFieldList) {
-    if (position < testCaseFieldList.size()) {
-      return testCaseFieldList.get(position).trim();
-    }
-    return "";
-  }
-
-  private Date readDateField(int position, List<String> testCaseFieldList, TestCase testCase) {
-    String dateValue = readField(position, testCaseFieldList);
-    if (dateValue.equals("")) {
-      return null;
-    }
-    try {
-      return sdf.parse(dateValue);
-    } catch (ParseException parseException) {
-      throw new IllegalArgumentException("Unable to parse date '" + dateValue + "' for test case "
-          + testCase.getTestCaseNumber() + "");
-    }
-  }
-
-  private int findFieldPos(String fieldName) {
-    fieldName = fieldName.toUpperCase();
-    for (int i = 0; i < headerFields.size(); i++) {
-      String headerName = headerFields.get(i).toUpperCase();
-      // System.out.print("[" + headerName + "]-");
-      if (headerName.startsWith(fieldName)) {
-        // System.out.println();
-        return i;
-      }
-    }
-    throw new IllegalArgumentException("Unable to find field that starts with '" + fieldName + "'");
-  }
-
-  private void readInputStream(InputStream in) throws IOException {
-    List<String> testCaseFieldList = new ArrayList<String>();
-    StringBuilder fieldValue = new StringBuilder();
-    boolean quoted = false;
-    boolean justQuoted = false;
-    int nextChar = in.read();
-    while (nextChar != -1) {
-      if (nextChar == '"') {
-        if (justQuoted) {
-          fieldValue.append((char) nextChar);
-          justQuoted = false;
-        } else if (quoted) {
-          quoted = false;
-          justQuoted = true;
-        } else {
-          quoted = true;
-
+        List<ForecastExpected> forecastExpectedList = forecastExpectedListMap.get(testCase);
+        if (forecastExpectedList == null)
+        {
+          forecastExpectedList = new ArrayList<ForecastExpected>();
+          forecastExpectedListMap.put(testCase, forecastExpectedList);
         }
-      } else if (!quoted && nextChar == ',') {
-        testCaseFieldList.add(fieldValue.toString());
-        fieldValue.setLength(0);
-        justQuoted = false;
-      } else {
-        justQuoted = false;
-        if (!quoted && nextChar == '\r') {
-          testCaseFieldList.add(fieldValue.toString());
-          fieldValue.setLength(0);
-          if (testCaseFieldList.size() > 0 && testCaseFieldList.get(0).length() > 0) {
-            testCaseFieldListList.add(testCaseFieldList);
-          }
-          testCaseFieldList = new ArrayList<String>();
-        } else {
-          if (nextChar >= ' ') {
-            fieldValue.append((char) nextChar);
-          } else {
-            fieldValue.append(' ');
-          }
-        }
+        forecastExpectedList.add(forecastExpected);
+        
       }
-      nextChar = in.read();
     }
-    in.close();
   }
+
 
 }
