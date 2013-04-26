@@ -27,6 +27,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.tch.ft.CentralControl;
+import org.tch.ft.manager.readers.MiisTestCaseReader;
 import org.tch.ft.model.Event;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.ForecastItem;
@@ -64,8 +65,8 @@ public class TestMiisTestCaseReader extends TestCase{
     assertNotNull(testCase);
     assertEquals("1003", testCase.getTestCaseNumber());
     assertEquals("HepA", testCase.getCategoryName());
-    ForecastExpected forecastExpected = miisTestCaseReader.getForecastExpectedMap().get(testCase);
-    assertNotNull(forecastExpected);
+    List<ForecastExpected> forecastExpectedList = miisTestCaseReader.getForecastExpectedListMap().get(testCase);
+    assertNotNull(forecastExpectedList);
     List<TestEvent> testEventList = miisTestCaseReader.getTestEventListMap().get(testCase);
     assertNotNull(testEventList);
     for (TestEvent testEvent : testEventList)
