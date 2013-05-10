@@ -16,6 +16,8 @@
 package org.tch.ft.web.testCase;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.wicket.markup.html.basic.Label;
@@ -55,27 +57,99 @@ public class TestCaseDetail extends FTBasePage implements SecurePage {
     add(new Label("patientSex", testCase.getPatientSex()));
     add(new Label("patientDob", sdf.format(testCase.getPatientDob())));
     add(new Label("evalDate", sdf.format(testCase.getEvalDate())));
-    
+
     {
-    Query query = webSession.getDataSession().createQuery("from TestEvent where testCase = ?");
-    query.setParameter(0, testCase);
-    List<TestEvent> testEventList = query.list();
+      Query query = webSession.getDataSession().createQuery("from TestEvent where testCase = ?");
+      query.setParameter(0, testCase);
+      List<TestEvent> testEventList = query.list();
 
-    ListView<TestEvent> testEventItems = new ListView<TestEvent>("testEventItems", testEventList) {
+      ListView<TestEvent> testEventItems = new ListView<TestEvent>("testEventItems", testEventList) {
 
-      protected void populateItem(ListItem<TestEvent> item) {
-        final TestEvent testEvent = item.getModelObject();
+        protected void populateItem(ListItem<TestEvent> item) {
+          final TestEvent testEvent = item.getModelObject();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-        item.add(new Label("eventType", testEvent.getEvent().getEventType().getLabel()));
-        item.add(new Label("label", testEvent.getEvent().getLabel()));
-        item.add(new Label("vacineCvx", testEvent.getEvent().getVaccineCvx()));
-        item.add(new Label("vacineMvx", testEvent.getEvent().getVaccineMvx()));
-        item.add(new Label("eventDate", sdf.format(testEvent.getEventDate())));
-      }
-    };
-    add(testEventItems);
+          SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+          item.add(new Label("eventType", testEvent.getEvent().getEventType().getLabel()));
+          item.add(new Label("label", testEvent.getEvent().getLabel()));
+          item.add(new Label("vacineCvx", testEvent.getEvent().getVaccineCvx()));
+          item.add(new Label("vacineMvx", testEvent.getEvent().getVaccineMvx()));
+          item.add(new Label("eventDate", sdf.format(testEvent.getEventDate())));
+          item.add(new Label("eventAge", createAgeAlmost(testEvent.getEventDate(), testCase.getPatientDob())));
+        }
+      };
+      add(testEventItems);
     }
+  }
+
+  protected static String createAgeAlmost(Date eventDate, Date referenceDate) {
+    int monthsBetween = monthsYearsBetween(eventDate, referenceDate);
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(eventDate);
+    calendar.add(Calendar.DAY_OF_MONTH, 4);
+    int almostMonthsBetween = monthsYearsBetween(calendar.getTime(), referenceDate);
+    if (almostMonthsBetween > monthsBetween) {
+      return "Almost " + createAge(calendar.getTime(), referenceDate);
+    }
+    return createAge(eventDate, referenceDate);
+  }
+  
+  private static int monthsYearsBetween(Date eventDate, Date referenceDate)
+  {
+    int months = monthsBetween(eventDate, referenceDate);
+    if (months > 24)
+    {
+      months = months - (months % 12); 
+    }
+    return months;
+  }
+
+  private static int monthsBetween(Date eventDate, Date referenceDate) {
+    Calendar eventCal = Calendar.getInstance();
+    Calendar referenceCal = Calendar.getInstance();
+    eventCal.setTime(eventDate);
+    referenceCal.setTime(referenceDate);
+    int eventYear = eventCal.get(Calendar.YEAR);
+    int referenceYear = referenceCal.get(Calendar.YEAR);
+    int maxMonth = eventCal.getMaximum(Calendar.MONTH);
+    int eventMonth = eventCal.get(Calendar.MONTH);
+    int referenceMonth = referenceCal.get(Calendar.MONTH);
+    int months = (eventYear - referenceYear) * (maxMonth + 1) + (eventMonth - referenceMonth);
+
+    if (eventCal.get(Calendar.DAY_OF_MONTH) < referenceCal.get(Calendar.DAY_OF_MONTH)) {
+      months--;
+    }
+    return months;
+  }
+
+  private static String createAge(Date eventDate, Date referenceDate) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(referenceDate);
+    calendar.add(Calendar.YEAR, 2);
+    if (calendar.getTime().after(eventDate)) {
+      // child was under 2 years of age, use months
+      for (int months = 0; months < 24; months++) {
+        calendar = Calendar.getInstance();
+        calendar.setTime(referenceDate);
+        calendar.add(Calendar.MONTH, months + 1);
+        if (calendar.getTime().after(eventDate)) {
+          if (months == 1) {
+            return "1 Month";
+          }
+          return months + " Months";
+        }
+      }
+      return "23 Months";
+    }
+    // child is over 2 years of age, now show in years
+    for (int years = 2; years < 100; years++) {
+      calendar = Calendar.getInstance();
+      calendar.setTime(referenceDate);
+      calendar.add(Calendar.YEAR, years + 1);
+      if (calendar.getTime().after(eventDate)) {
+        return years + " Years";
+      }
+    }
+    return "Over 100 Years";
   }
 
 }

@@ -26,6 +26,10 @@ public class ConnectFactory {
     {
       return new STCConnector(software, forecastItemList);
     }
+    if (software.getService() == Service.ICE)
+    {
+      return new ICEConnector(software, forecastItemList);
+    }
     return null;
   }
 }
