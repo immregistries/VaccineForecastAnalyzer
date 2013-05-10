@@ -47,6 +47,11 @@ public abstract class ForecastResult {
   public void setForecastItem(ForecastItem forecastItem) {
     this.forecastItem = forecastItem;
   }
+  
+  public void setComplete()
+  {
+    this.doseNumber = "COMP";
+  }
 
   public String getDoseNumber() {
     return doseNumber;
