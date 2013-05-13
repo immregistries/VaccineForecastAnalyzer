@@ -47,6 +47,7 @@ import org.tch.ft.manager.readers.TestCaseReaderFactory;
 import org.tch.ft.model.Event;
 import org.tch.ft.model.ForecastItem;
 import org.tch.ft.model.Role;
+import org.tch.ft.model.Software;
 import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.User;
@@ -54,10 +55,13 @@ import org.tch.ft.web.FTBasePage;
 import org.tch.ft.web.MenuSection;
 import org.tch.ft.web.SecurePage;
 import org.tch.ft.web.WebSession;
+import org.tch.ft.web.software.SelectSoftwarePage;
+import org.tch.ft.web.softwareCompare.SelectSoftwareComparePage;
 
 public class UploadTestCasesPage extends FTBasePage implements SecurePage {
 
   private Model<TestCaseReader.FormatType> fileFormat;
+  private Model<Software> softwareModel;
 
   /**
    * 
@@ -134,6 +138,7 @@ public class UploadTestCasesPage extends FTBasePage implements SecurePage {
             }
             TestCaseReader.FormatType formatType = (TestCaseReader.FormatType) fileFormat.getObject();
             TestCaseReader testCaseReader = TestCaseReaderFactory.createTestCaseReader(formatType);
+            testCaseReader.setLoadExpectationsSoftware((Software) softwareModel.getObject());
 
             testCaseReader.setEventList(eventList);
             testCaseReader.setUser(user);
@@ -161,8 +166,14 @@ public class UploadTestCasesPage extends FTBasePage implements SecurePage {
 
             transaction.commit();
 
-            UploadTestCasesPage.this.info("Imported " + testCaseReader.getTestCaseList().size()
-                + " test cases into test panel: " + filename);
+            if (testCaseReader.getErrorMessage() != null) {
+              UploadTestCasesPage.this.info("Imported " + testCaseReader.getTestCaseList().size()
+                  + " test cases into test panel: " + filename + ", reader encountered problem: "
+                  + testCaseReader.getErrorMessage());
+            } else {
+              UploadTestCasesPage.this.info("Imported " + testCaseReader.getTestCaseList().size()
+                  + " test cases into test panel: " + filename);
+            }
 
           } catch (Exception e) {
             throw new IllegalStateException("Unable to write file", e);
@@ -210,6 +221,10 @@ public class UploadTestCasesPage extends FTBasePage implements SecurePage {
         fileFormat, fileFormatOptions);
     format.setRequired(true);
     simpleUploadForm.add(format);
+    softwareModel = new Model<Software>();
+    DropDownChoice<Software> software = new DropDownChoice<Software>("software", softwareModel,
+        SelectSoftwarePage.getSoftwareList(webSession));
+    simpleUploadForm.add(software);
 
     add(simpleUploadForm);
   }

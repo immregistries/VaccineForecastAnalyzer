@@ -119,11 +119,6 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
 
       private static final long serialVersionUID = 1L;
 
-      private Model<String> expectedDoseNumberModel;
-      private Model<Date> expectedValidDateModel;
-      private Model<Date> expectedDueDateModel;
-      private Model<Date> expectedOverdueDateModel;
-
       protected void populateItem(ListItem<ForecastActualExpectedCompare> item) {
 
         final ForecastActualExpectedCompare forecastCompare = item.getModelObject();
@@ -246,79 +241,30 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
 
         };
 
-        Form<Void> editExpectedform = new Form<Void>("editExpectedform") {
-          private static final long serialVersionUID = 2L;
-
-          @Override
-          protected void onSubmit() {
-            ForecastExpected forecastExpectedByUser = null;
-            Transaction trans = dataSession.beginTransaction();
-            try {
-              Query query = dataSession
-                  .createQuery("from ForecastExpected where testCase = ? and forecastItem = ? and author = ?");
-              query.setParameter(0, testCase);
-              query.setParameter(1, forecastItem);
-              query.setParameter(2, user);
-              List<ForecastExpected> forecastExpectedByUserList = query.list();
-              if (forecastExpectedByUserList.size() > 0) {
-                forecastExpectedByUser = (ForecastExpected) forecastExpectedByUserList.get(0);
-              } else {
-                forecastExpectedByUser = new ForecastExpected();
-                forecastExpectedByUser.setTestCase(testCase);
-                forecastExpectedByUser.setForecastItem(forecastItem);
-                forecastExpectedByUser.setAuthor(user);
-              }
-              forecastExpectedByUser.setDoseNumber(expectedDoseNumberModel.getObject());
-              forecastExpectedByUser.setValidDate(expectedValidDateModel.getObject());
-              forecastExpectedByUser.setDueDate(expectedDueDateModel.getObject());
-              forecastExpectedByUser.setOverdueDate(expectedOverdueDateModel.getObject());
-              dataSession.saveOrUpdate(forecastExpectedByUser);
-              if (canEdit) {
-                TestPanelExpected testPanelExpected = null;
-                query = dataSession
-                    .createQuery("from TestPanelExpected where testPanelCase = ? and forecastExpected.forecastItem = ?");
-                query.setParameter(0, testPanelCase);
-                query.setParameter(1, forecastItem);
-                List<TestPanelExpected> testPanelExpectedList = query.list();
-                if (testPanelExpectedList != null && testPanelExpectedList.size() > 0) {
-                  testPanelExpected = testPanelExpectedList.get(0);
-                } else {
-                  testPanelExpected = new TestPanelExpected();
-                }
-                testPanelExpected.setTestPanelCase(testPanelCase);
-                testPanelExpected.setForecastExpected(forecastExpectedByUser);
-                dataSession.saveOrUpdate(testPanelExpected);
-              }
-              setResponsePage(new ActualVsExpectedPage());
-            } finally {
-              trans.commit();
-            }
-          }
-
-        };
+        ExpectedValuesForm editExpectedform = new ExpectedValuesForm("editExpectedform", dataSession, forecastItem, testCase, user, canEdit);
 
         {
-          expectedDoseNumberModel = new Model<String>(expectedDoseNumber);
-          expectedValidDateModel = new Model<Date>(expectedValidDate);
-          expectedDueDateModel = new Model<Date>(expectedDueDate);
-          expectedOverdueDateModel = new Model<Date>(expectedOverdueDate);
+          editExpectedform.setExpectedDoseNumber(expectedDoseNumber);
+          editExpectedform.setExpectedValidDate(expectedValidDate);
+          editExpectedform.setExpectedDueDate(expectedDueDate);
+          editExpectedform.setExpectedOverdueDate(expectedOverdueDate);
           TextField<String> expectedDoseNumberField = new TextField<String>("expectedDoseNumberField",
-              expectedDoseNumberModel);
+              editExpectedform.getExpectedDoseNumberModel());
           expectedDoseNumberField.setRequired(true);
           editExpectedform.add(expectedDoseNumberField);
 
-          TextField<Date> expectedDueDateField = new TextField<Date>("expectedDueDateField", expectedDueDateModel,
+          TextField<Date> expectedDueDateField = new TextField<Date>("expectedDueDateField", editExpectedform.getExpectedDueDateModel(),
               Date.class);
           expectedDueDateField.add(new DatePicker());
           editExpectedform.add(expectedDueDateField);
 
           TextField<Date> expectedOverdueDateField = new TextField<Date>("expectedOverdueDateField",
-              expectedOverdueDateModel, Date.class);
+              editExpectedform.getExpectedOverdueDateModel(), Date.class);
           expectedOverdueDateField.add(new DatePicker());
           editExpectedform.add(expectedOverdueDateField);
 
           TextField<Date> expectedValidDateField = new TextField<Date>("expectedValidDateField",
-              expectedValidDateModel, Date.class);
+              editExpectedform.getExpectedValidDateModel(), Date.class);
           expectedValidDateField.add(new DatePicker());
           editExpectedform.add(expectedValidDateField);
         }
@@ -514,5 +460,115 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
       part2.add(AttributeModifier.replace("class", style));
     }
   }
+  
+  private class ExpectedValuesForm extends Form<Void> {
+    public ExpectedValuesForm(String id, Session dataSession, ForecastItem forecastItem, TestCase testCase, User user, boolean canEdit)
+    {
+      super(id);
+      this.dataSession = dataSession;
+      this.forecastItem = forecastItem;
+      this.testCase = testCase;
+      this.user = user;
+      this.canEdit = canEdit;
+    }
+    
+    private Session dataSession;
+    private ForecastItem forecastItem = null;
+    private TestCase testCase = null;
+    private User user = null;
+    private boolean canEdit;
+    
+    private static final long serialVersionUID = 2L;
+
+    protected Model<String> expectedDoseNumberModel;
+    protected Model<Date> expectedValidDateModel;
+    protected Model<Date> expectedDueDateModel;
+    protected Model<Date> expectedOverdueDateModel;
+
+    public Model<String> getExpectedDoseNumberModel() {
+      return expectedDoseNumberModel;
+    }
+
+    public Model<Date> getExpectedValidDateModel() {
+      return expectedValidDateModel;
+    }
+
+    public Model<Date> getExpectedDueDateModel() {
+      return expectedDueDateModel;
+    }
+
+    public Model<Date> getExpectedOverdueDateModel() {
+      return expectedOverdueDateModel;
+    }
+
+    public void setExpectedDoseNumber(String expectedDoseNumber) {
+      this.expectedDoseNumberModel = new Model<String>(expectedDoseNumber);
+    }
+
+    public void setExpectedValidDate(Date expectedValidDate) {
+      this.expectedValidDateModel = new Model<Date>(expectedValidDate);
+    }
+
+    public void setExpectedDueDate(Date expectedDueDate) {
+      this.expectedDueDateModel = new Model<Date>(expectedDueDate);
+    }
+
+    public void setExpectedOverdueDate(Date expectedOverdueDate) {
+      this.expectedOverdueDateModel = new Model<Date>(expectedOverdueDate);
+    }
+
+
+    @Override
+    protected void onSubmit() {
+      ForecastExpected forecastExpectedByUser = null;
+      Transaction trans = dataSession.beginTransaction();
+      try {
+        Query query = dataSession
+            .createQuery("from ForecastExpected where testCase = ? and forecastItem = ? and author = ?");
+        query.setParameter(0, testCase);
+        query.setParameter(1, forecastItem);
+        query.setParameter(2, user);
+        List<ForecastExpected> forecastExpectedByUserList = query.list();
+        if (forecastExpectedByUserList.size() > 0) {
+          forecastExpectedByUser = (ForecastExpected) forecastExpectedByUserList.get(0);
+        } else {
+          forecastExpectedByUser = new ForecastExpected();
+          forecastExpectedByUser.setTestCase(testCase);
+          forecastExpectedByUser.setForecastItem(forecastItem);
+          forecastExpectedByUser.setAuthor(user);
+        }
+        forecastExpectedByUser.setDoseNumber(expectedDoseNumberModel.getObject());
+        System.out.println("--> dose = " + forecastExpectedByUser.getDoseNumber());
+        forecastExpectedByUser.setValidDate(expectedValidDateModel.getObject());
+        forecastExpectedByUser.setDueDate(expectedDueDateModel.getObject());
+        forecastExpectedByUser.setOverdueDate(expectedOverdueDateModel.getObject());
+        dataSession.saveOrUpdate(forecastExpectedByUser);
+        if (canEdit) {
+          TestPanelExpected testPanelExpected = null;
+          query = dataSession
+              .createQuery("from TestPanelExpected where testPanelCase = ? and forecastExpected.forecastItem = ?");
+          query.setParameter(0, testPanelCase);
+          query.setParameter(1, forecastItem);
+          List<TestPanelExpected> testPanelExpectedList = query.list();
+          if (testPanelExpectedList != null && testPanelExpectedList.size() > 0) {
+            System.out.println("--> found old test panel");
+            testPanelExpected = testPanelExpectedList.get(0);
+          } else {
+            System.out.println("--> creating new one");
+            testPanelExpected = new TestPanelExpected();
+          }
+          testPanelExpected.setTestPanelCase(testPanelCase);
+          testPanelExpected.setForecastExpected(forecastExpectedByUser);
+          System.out.println("--> dose number = " + testPanelExpected.getForecastExpected().getDoseNumber());
+          System.out.println("--> label       = " + testPanelExpected.getForecastExpected().getForecastItem().getLabel());
+          dataSession.saveOrUpdate(testPanelExpected);
+        }
+        setResponsePage(new ActualVsExpectedPage());
+      } finally {
+        trans.commit();
+      }
+    }
+
+  };
 
 }

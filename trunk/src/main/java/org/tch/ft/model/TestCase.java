@@ -39,6 +39,15 @@ public class TestCase implements Serializable {
   }
 
   private List<TestEvent> testEventList = null;
+  private List<ForecastExpected> forecastExpectedList = null;
+
+  public List<ForecastExpected> getForecastExpectedList() {
+    return forecastExpectedList;
+  }
+
+  public void setForecastExpectedList(List<ForecastExpected> forecastExpectedList) {
+    this.forecastExpectedList = forecastExpectedList;
+  }
 
   public List<TestEvent> getTestEventList() {
     return testEventList;

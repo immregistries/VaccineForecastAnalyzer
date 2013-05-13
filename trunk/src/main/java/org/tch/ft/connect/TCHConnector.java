@@ -43,6 +43,7 @@ public class TCHConnector implements ConnectorInterface {
     addForcastItem(forecastItemList, "HPV", 7);
     addForcastItem(forecastItemList, "Rota", 12);
     addForcastItem(forecastItemList, "PCV13", 10);
+    addForcastItem(forecastItemList, "Zoster", 14);
   }
 
   private void addForcastItem(List<ForecastItem> forecastItemList, String familyName, int forecastItemId) {

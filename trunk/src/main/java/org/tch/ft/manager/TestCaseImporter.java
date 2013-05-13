@@ -17,7 +17,6 @@ import org.tch.ft.model.TestPanelExpected;
 
 public class TestCaseImporter {
   public void importTestCases(TestCaseReader testCaseReader, TestPanel testPanel, Session dataSession) {
-    Map<TestCase, List<ForecastExpected>> forecastExpectedListMap = testCaseReader.getForecastExpectedListMap();
     for (TestCase testCaseImported : testCaseReader.getTestCaseList()) {
       Query query = dataSession.createQuery("from TestPanelCase where testCaseNumber = ? and testPanel = ?");
       query.setParameter(0, testCaseImported.getTestCaseNumber());
@@ -32,14 +31,14 @@ public class TestCaseImporter {
         dataSession.update(testPanelCase);
         testCase = testPanelCase.getTestCase();
         testCase.setLabel(testCaseImported.getLabel());
-        testCase.setDescription(testCaseImported.getLabel());
+        testCase.setDescription(testCaseImported.getDescription());
         testCase.setEvalDate(testCaseImported.getEvalDate());
         testCase.setPatientFirst(testCaseImported.getPatientFirst());
         testCase.setPatientLast(testCaseImported.getPatientLast());
         testCase.setPatientSex(testCaseImported.getPatientSex());
         testCase.setPatientDob(testCaseImported.getPatientDob());
         dataSession.update(testCase);
-        List<ForecastExpected> forecastExpectedImportedList = forecastExpectedListMap.get(testCaseImported);
+        List<ForecastExpected> forecastExpectedImportedList = testCase.getForecastExpectedList();
         if (forecastExpectedImportedList != null) {
           for (ForecastExpected forecastExpectedImported : forecastExpectedImportedList) {
             query = dataSession
@@ -71,10 +70,31 @@ public class TestCaseImporter {
             }
           }
         }
+        query = dataSession.createQuery("from TestEvent where testCase = ?");
+        query.setParameter(0, testCase);
+        List<TestEvent> testEventList = query.list();
+        for (TestEvent testEventToDelete : testEventList) {
+          dataSession.delete(testEventToDelete);
+        }
+        testEventList = testCase.getTestEventList();
+        if (testEventList != null) {
+          for (TestEvent testEvent : testEventList) {
+            testEvent.setTestCase(testCase);
+            dataSession.save(testEvent);
+          }
+        }
+
       } else {
         testCase = testCaseImported;
         // new test panel case, very easy
         dataSession.save(testCase);
+        List<TestEvent> testEventList = testCase.getTestEventList();
+        if (testEventList != null) {
+          for (TestEvent testEvent : testEventList) {
+            testEvent.setTestCase(testCase);
+            dataSession.save(testEvent);
+          }
+        }
         TestPanelCase testPanelCase = new TestPanelCase();
         testPanelCase.setTestPanel(testPanel);
         testPanelCase.setTestCase(testCaseImported);
@@ -83,7 +103,7 @@ public class TestCaseImporter {
         testPanelCase.setResult(Result.RESEARCH);
         testPanelCase.setTestCaseNumber(testCaseImported.getTestCaseNumber());
         dataSession.save(testPanelCase);
-        List<ForecastExpected> forecastExpectedListImported = forecastExpectedListMap.get(testCaseImported);
+        List<ForecastExpected> forecastExpectedListImported = testCase.getForecastExpectedList();
         if (forecastExpectedListImported != null) {
           for (ForecastExpected forecastExpectedImported : forecastExpectedListImported) {
             forecastExpectedImported.setTestCase(testCase);
@@ -94,20 +114,8 @@ public class TestCaseImporter {
             dataSession.save(testPanelExpected);
           }
         }
-        query = dataSession.createQuery("from TestEvent where testCase = ?");
-        query.setParameter(0, testCase);
-        List<TestEvent> testEventList = query.list();
-        for (TestEvent testEventToDelete : testEventList) {
-          dataSession.delete(testEventToDelete);
-        }
-        testEventList = testCaseReader.getTestEventListMap().get(testCaseImported);
-        if (testEventList != null) {
-          for (TestEvent testEvent : testEventList) {
-            testEvent.setTestCase(testCase);
-            dataSession.save(testEvent);
-          }
-        }
       }
+
     }
   }
 }
