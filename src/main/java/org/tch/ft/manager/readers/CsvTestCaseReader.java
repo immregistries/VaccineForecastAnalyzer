@@ -13,6 +13,7 @@ import java.util.Map;
 import org.tch.ft.model.Event;
 import org.tch.ft.model.EventType;
 import org.tch.ft.model.ForecastExpected;
+import org.tch.ft.model.Software;
 import org.tch.ft.model.TestCase;
 import org.tch.ft.model.TestEvent;
 import org.tch.ft.model.User;
@@ -23,13 +24,24 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
   protected List<List<String>> testCaseFieldListList = new ArrayList<List<String>>();
   protected List<TestCase> testCaseList = new ArrayList<TestCase>();
   protected List<String> headerFields = null;
-  protected Map<TestCase, List<ForecastExpected>> forecastExpectedListMap = new HashMap<TestCase, List<ForecastExpected>>();
-  protected Map<TestCase, List<TestEvent>> testEventListMap = new HashMap<TestCase, List<TestEvent>>();
   protected Map<String, Event> cvxToEventMap = new HashMap<String, Event>();
   protected User user = null;
+  
+  protected Software loadExpectationsSoftware;
+  
+  public Software getLoadExpectationsSoftware() {
+    return loadExpectationsSoftware;
+  }
 
-  public Map<TestCase, List<TestEvent>> getTestEventListMap() {
-    return testEventListMap;
+  public void setLoadExpectationsSoftware(Software loadExpecationsSoftware) {
+    this.loadExpectationsSoftware = loadExpecationsSoftware;
+  }
+
+  protected String errorMessage = null;
+  
+  public String getErrorMessage()
+  {
+    return errorMessage;
   }
 
   public User getUser() {
@@ -38,10 +50,6 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
 
   public List<TestCase> getTestCaseList() {
     return testCaseList;
-  }
-
-  public Map<TestCase, List<ForecastExpected>> getForecastExpectedListMap() {
-    return forecastExpectedListMap;
   }
 
   public void setEventList(List<Event> eventList) {

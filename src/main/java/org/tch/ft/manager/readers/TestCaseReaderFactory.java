@@ -11,6 +11,10 @@ public class TestCaseReaderFactory {
     {
       return new IhsTestCaseReader();
     }
+    else if (formatType == TestCaseReader.FormatType.CDC)
+    {
+      return new CdcTestCaseReader();
+    }
     return null;
   }
 }

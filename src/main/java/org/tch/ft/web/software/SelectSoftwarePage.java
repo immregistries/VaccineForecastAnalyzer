@@ -41,13 +41,7 @@ public class SelectSoftwarePage extends FTBasePage implements SecurePage {
     super(MenuSection.SOFTWARE, pageParameters);
 
     WebSession webSession = (WebSession) getSession();
-    List<Software> softwareList = makeListObjects(webSession.getDataSession());
-    for (Iterator<Software> it = softwareList.iterator(); it.hasNext();) {
-      Software software = it.next();
-      if (SoftwareManager.isSoftwareAccessRestricted(software, webSession.getUser(), webSession.getDataSession())) {
-        it.remove();
-      }
-    }
+    List<Software> softwareList = getSoftwareList(webSession);
     setOutputMarkupId(true);
 
     ListView<Software> softwareItems = new ListView<Software>("softwareItems", softwareList) {
@@ -86,7 +80,18 @@ public class SelectSoftwarePage extends FTBasePage implements SecurePage {
 
   }
 
-  private List<Software> makeListObjects(Session session) {
+  public static List<Software> getSoftwareList(WebSession webSession) {
+    List<Software> softwareList = makeListObjects(webSession.getDataSession());
+    for (Iterator<Software> it = softwareList.iterator(); it.hasNext();) {
+      Software software = it.next();
+      if (SoftwareManager.isSoftwareAccessRestricted(software, webSession.getUser(), webSession.getDataSession())) {
+        it.remove();
+      }
+    }
+    return softwareList;
+  }
+
+  private static List<Software> makeListObjects(Session session) {
     Query query = session.createQuery("from Software order by label");
     List<Software> softwareList = query.list();
     return softwareList;

@@ -65,6 +65,7 @@ public class ForecastActualGenerator {
           errorLog = null;
           forecastActualList = connector.queryForForecast(testCase);
         } catch (Exception e) {
+          e.printStackTrace();
           Writer writer = new StringWriter();
           PrintWriter printWriter = new PrintWriter(writer);
           printWriter.println("Unable to run forecast, exception ocurred:");

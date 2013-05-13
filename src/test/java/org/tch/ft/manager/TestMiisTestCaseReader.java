@@ -65,9 +65,9 @@ public class TestMiisTestCaseReader extends TestCase{
     assertNotNull(testCase);
     assertEquals("1003", testCase.getTestCaseNumber());
     assertEquals("HepA", testCase.getCategoryName());
-    List<ForecastExpected> forecastExpectedList = miisTestCaseReader.getForecastExpectedListMap().get(testCase);
+    List<ForecastExpected> forecastExpectedList = testCase.getForecastExpectedList();
     assertNotNull(forecastExpectedList);
-    List<TestEvent> testEventList = miisTestCaseReader.getTestEventListMap().get(testCase);
+    List<TestEvent> testEventList = testCase.getTestEventList();
     assertNotNull(testEventList);
     for (TestEvent testEvent : testEventList)
     {

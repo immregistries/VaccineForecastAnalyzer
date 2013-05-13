@@ -25,6 +25,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.ft.SoftwareVersion;
 import org.tch.ft.model.Agreement;
 import org.tch.ft.model.User;
 import org.tch.ft.web.expert.ExpertPage;
@@ -49,6 +50,7 @@ public class NavigationPanel extends Panel {
     setTaskGroupLabel(loggedInMenu);
     setTestPanelLabel(loggedInMenu);
     setSoftwareLabel(loggedInMenu);
+    loggedInMenu.add(new Label("version", SoftwareVersion.VERSION));
     
     setTestCaseLabel(loggedInMenu);
     final User user = webSession.getUser();

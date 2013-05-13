@@ -15,50 +15,50 @@ import org.tch.ft.model.Software;
 import org.tch.ft.model.TestCase;
 import org.tch.ft.model.TestEvent;
 
-public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseReader {
+public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseReader {
 
-  private static final String FIELD_CASE = "Case";
-  private static final String FIELD_IZ_SERIES = "IZ Series";
-  private static final String FIELD_BIRTHDATE = "birthdate";
+  private static final String FIELD_CDC_TEST_ID = "CDC_Test_ID";
+  private static final String FIELD_TEST_CASE_NAME = "Test_Case_Name";
+  private static final String FIELD_DOB = "DOB";
   private static final String FIELD_GENDER = "Gender";
-  private static final String FIELD_VACCINE_NAMES = "Dosage History";
-  private static final String FIELD_SHOT_ = "Shot";
-  private static final String FIELD_SHOT_CVX = " CVX";
-  private static final String FIELD_SHOT_DATE = " Date";
-  private static final String FIELD_FORECAST_NUM = "Forecast#";
-  private static final String FIELD_EARLIEST_DATE = "Earliest Date";
-  private static final String FIELD_REC_DATE = "Rec Date";
-  private static final String FIELD_OVERDUE_DATE = "Overdue Date";
-  private static final String FIELD_REFERENCE_DATE = "Reference Date";
+//  private static final String FIELD_MED_HISTORY_TEXT = "Med_History_Text";
+//  private static final String FIELD_MED_HISTORY_CODE = "Med_History_Code";
+//  private static final String FIELD_MED_HISTORY_CODE_SYS = "Med_History_Code_Sys";
+  private static final String FIELD_SERIES_STATUS = "Series_Status";
+
+  private static final String FIELD_DATE_ADMINISTERED_ = "Date_Administered_";
+//   private static final String FIELD_VACCINE_NAME_ = "Vaccine_Name_";
+  private static final String FIELD_CVX_ = "CVX_";
+  private static final String FIELD_MVX_ = "MVX_";
+//  private static final String FIELD_EVALUATION_STATUS_ = "Evaluation_Status_";
+//  private static final String FIELD_EVALUATION_REASON_ = "Evaluation_Reason_";
+
+  private static final String FIELD_FORECAST_NUM = "Forecast_#";
+  private static final String FIELD_EARLIEST_DATE = "Earliest_Date";
+  private static final String FIELD_RECOMMENDED_DATE = "Recommended_Date";
+  private static final String FIELD_PAST_DUE_DATE = "Past_Due_Date";
+  private static final String FIELD_VACCINE_GROUP = "Vaccine_Group";
+  private static final String FIELD_ASSESSMENT_DATE = "Assessment_Date";
+  private static final String FIELD_EVALUATION_TEST_TYPE = "Evaluation_Test_Type";
+//  private static final String FIELD_DATE_ADDED = "Date_added";
+//  private static final String FIELD_DATE_UPDATED = "Date_updated";
+//  private static final String FIELD_FORECAST_TEST_TYPE = "Forecast_Test_Type";
 
   private Map<String, ForecastItem> forecastItemMap = new HashMap<String, ForecastItem>();
 
   public void setForecastItems(Map<Integer, ForecastItem> forecastItemListMap) {
-    forecastItemMap.put("DTP", forecastItemListMap.get(2));
     forecastItemMap.put("DTaP", forecastItemListMap.get(2));
-    forecastItemMap.put("H1N1", forecastItemListMap.get(3));
     forecastItemMap.put("HepA", forecastItemListMap.get(4));
     forecastItemMap.put("HepB", forecastItemListMap.get(5));
-    forecastItemMap.put("HerpesZoster", forecastItemListMap.get(14));
+    forecastItemMap.put("Flu", forecastItemListMap.get(3));
     forecastItemMap.put("Hib", forecastItemListMap.get(6));
     forecastItemMap.put("HPV", forecastItemListMap.get(7));
-    forecastItemMap.put("Influenza", forecastItemListMap.get(3));
-    forecastItemMap.put("Flu", forecastItemListMap.get(3));
-    forecastItemMap.put("MCV4", forecastItemListMap.get(8));
     forecastItemMap.put("MCV", forecastItemListMap.get(8));
     forecastItemMap.put("MMR", forecastItemListMap.get(9));
-    forecastItemMap.put("MPSV", forecastItemListMap.get(8));
-    forecastItemMap.put("Pneumo-Poly", forecastItemListMap.get(10));
-    forecastItemMap.put("Pneumonia", forecastItemListMap.get(10));
     forecastItemMap.put("PCV", forecastItemListMap.get(10));
-    forecastItemMap.put("Polio", forecastItemListMap.get(11));
     forecastItemMap.put("POL", forecastItemListMap.get(11));
-    forecastItemMap.put("Rotavirus", forecastItemListMap.get(12));
     forecastItemMap.put("Rota", forecastItemListMap.get(12));
-    forecastItemMap.put("Td/Tdap", forecastItemListMap.get(15));
-    forecastItemMap.put("Varicella", forecastItemListMap.get(13));
     forecastItemMap.put("Var", forecastItemListMap.get(13));
-    forecastItemMap.put("Typhoid", forecastItemListMap.get(0));
   }
 
   private String[] ignoredItems = { "Typhoid" };
@@ -71,40 +71,45 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
     headerFields = testCaseFieldListList.get(0);
     testCaseFieldListList.remove(0);
 
-    int caseNumberPosition = findFieldPos(FIELD_CASE);
-    int izSeriesPos = findFieldPos(FIELD_IZ_SERIES);
-    int birthdatePos = findFieldPos(FIELD_BIRTHDATE);
+    int testIdPosition = findFieldPos(FIELD_CDC_TEST_ID);
+    int testCaseNamePosition = findFieldPos(FIELD_TEST_CASE_NAME);
+    int birthdatePos = findFieldPos(FIELD_DOB);
     int genderPos = findFieldPos(FIELD_GENDER);
-    int vaccineNamesPos = findFieldPos(FIELD_VACCINE_NAMES);
+    int vaccineGroupPos = findFieldPos(FIELD_VACCINE_GROUP);
     int shotCvxPos[] = new int[10];
     int shotDatePos[] = new int[10];
-    for (int i = 1; i <= 9; i++) {
-      shotCvxPos[i] = findFieldPos(FIELD_SHOT_ + i + FIELD_SHOT_CVX);
-      shotDatePos[i] = findFieldPos(FIELD_SHOT_ + i + FIELD_SHOT_DATE);
+    int shotMvxPos[] = new int[8];
+    for (int i = 1; i <= 7; i++) {
+      shotCvxPos[i] = findFieldPos(FIELD_CVX_ + i);
+      shotDatePos[i] = findFieldPos(FIELD_DATE_ADMINISTERED_ + i);
+      shotMvxPos[i] = findFieldPos(FIELD_MVX_ + i);
     }
     int forecastNumPos = findFieldPos(FIELD_FORECAST_NUM);
     int earliestDatePos = findFieldPos(FIELD_EARLIEST_DATE);
-    int recDatePos = findFieldPos(FIELD_REC_DATE);
-    int overdueDatePos = findFieldPos(FIELD_OVERDUE_DATE);
-    int referenceDatePos = findFieldPos(FIELD_REFERENCE_DATE);
-
+    int recDatePos = findFieldPos(FIELD_RECOMMENDED_DATE);
+    int overdueDatePos = findFieldPos(FIELD_PAST_DUE_DATE);
+    int assessmentDatePos = findFieldPos(FIELD_ASSESSMENT_DATE);
+    int evaluationTestTypePos = findFieldPos(FIELD_EVALUATION_TEST_TYPE);
+    int seriesStatusPos = findFieldPos(FIELD_SERIES_STATUS);
+    
     Date referenceDate = null;
     for (List<String> testCaseFieldList : testCaseFieldListList) {
       TestCase testCase = new TestCase();
       testCaseList.add(testCase);
-      testCase.setTestCaseNumber(readField(caseNumberPosition, testCaseFieldList));
-      testCase.setCategoryName(readField(izSeriesPos, testCaseFieldList));
-      testCase.setLabel("Test Case " + testCase.getTestCaseNumber());
-      testCase.setDescription(readField(vaccineNamesPos, testCaseFieldList));
+      testCase.setTestCaseNumber(readField(testIdPosition, testCaseFieldList));
+      testCase.setCategoryName(readField(vaccineGroupPos, testCaseFieldList));
+      testCase.setLabel(testCase.getTestCaseNumber() + " " + testCase.getCategoryName() + " "
+          + readField(evaluationTestTypePos, testCaseFieldList));
+      testCase.setDescription(readField(testCaseNamePosition, testCaseFieldList));
       testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCase));
       testCase.setPatientSex(readField(genderPos, testCaseFieldList).toUpperCase().startsWith("M") ? "M" : "F");
       if (referenceDate == null) {
-        referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCase);
+        referenceDate = readDateField(assessmentDatePos, testCaseFieldList, testCase);
       }
       testCase.setEvalDate(referenceDate);
       List<TestEvent> testEventList = new ArrayList<TestEvent>();
       testCase.setTestEventList(testEventList);
-      for (int i = 1; i <= 9; i++) {
+      for (int i = 1; i <= 7; i++) {
         String cvxCode = readField(shotCvxPos[i], testCaseFieldList);
         if (cvxCode.length() == 1) {
           cvxCode = "0" + cvxCode;
@@ -141,10 +146,18 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
         forecastExpected.setTestCase(testCase);
         forecastExpected.setAuthor(user);
         forecastExpected.setForecastItem(forecastItem);
-        forecastExpected.setDoseNumber(readField(forecastNumPos, testCaseFieldList));
-        forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCase));
-        forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCase));
-        forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCase));
+        String seriesStatus = readField(seriesStatusPos, testCaseFieldList);
+        if (!seriesStatus.equals("Not Completed"))
+        {
+          forecastExpected.setDoseNumber(readField(forecastNumPos, testCaseFieldList));
+          forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCase));
+          forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCase));
+          forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCase));
+        }
+        else
+        {
+          forecastExpected.setDoseNumber("COMP");
+        }
         List<ForecastExpected> forecastExpectedList = testCase.getForecastExpectedList();
         if (forecastExpectedList == null) {
           forecastExpectedList = new ArrayList<ForecastExpected>();
