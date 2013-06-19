@@ -13,7 +13,7 @@ import org.tch.ft.model.User;
 
 public interface TestCaseReader {
   
-  public static enum FormatType {MIIS, IHS, CDC}
+  public static enum FormatType {MIIS, IHS, CDC, STC}
 
   public void setForecastItems(Map<Integer, ForecastItem> forecastItemListMap);
   
