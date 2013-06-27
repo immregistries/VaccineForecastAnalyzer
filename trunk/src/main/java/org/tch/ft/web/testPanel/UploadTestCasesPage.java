@@ -217,6 +217,7 @@ public class UploadTestCasesPage extends FTBasePage implements SecurePage {
     fileFormatOptions.add(TestCaseReader.FormatType.CDC);
     fileFormatOptions.add(TestCaseReader.FormatType.IHS);
     fileFormatOptions.add(TestCaseReader.FormatType.MIIS);
+    fileFormatOptions.add(TestCaseReader.FormatType.STC);
     DropDownChoice<TestCaseReader.FormatType> format = new DropDownChoice<TestCaseReader.FormatType>("format",
         fileFormat, fileFormatOptions);
     format.setRequired(true);

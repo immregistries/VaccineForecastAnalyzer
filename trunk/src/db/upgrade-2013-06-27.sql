@@ -1,0 +1,1 @@
+insert into forecast_item (forecast_item_id, label) values (16, 'PPSV');

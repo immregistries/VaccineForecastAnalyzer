@@ -1,0 +1,183 @@
+Schedule Description,Eval Date,Configuration,Test Case ID,DOB,Gender,Antigen,ASIIS,CPT,CVX,Vacc Date,Contraindicated (Y/N),Valid (Y/N),Vaccination Messages,Family Code,Dose #,Rec Date,Min Date,Past Due,Max Date,Comments,Evaluate (Y/N),Test Results,SOAP Request,SOAP Response
+"New Tdap Recommendations:
+1) Children age 7+ years with less than 5 doses Pertussis containing vaccine (unless dose 4 DTaP was administered >= 4th birthday) should receive 1 dose Tdap at 7 years of age
+2) Persons age 19+ will still show recommended date at 10 year interval between doses
+3) Persons < 19 years of age will show 1 day interval when forecast for Tdap following a Td if no Tdap on record
+4) Td or Tdap used in catch up schedule should still follow regular catch up intervals
+5) Tdap booster following regular primary series is still forecast at 11 years of age",,,,,,,,,,,,,,,,,,,,,,,,
+DTaP 0 - 6 Years - On Schedule,,,DTAP01,01/01/2004,,,,,,,,,,1,1,03/01/2004,02/12/2004,04/01/2004,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,03/01/2004,,Y,-,1,2,05/01/2004,03/29/2004,06/01/2004,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,05/01/2004,,Y,-,1,3,07/01/2004,05/29/2004,08/01/2004,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,07/01/2004,,Y,-,1,4,01/01/2005,01/01/2005,08/01/2005,01/01/2124,Dose 4 can be administered as early as 12 months as long as 6 months has elapsed since dose 3.,,PASS,,
+,,,,,,DTaP,,,,01/01/2005,,Y,-,1,5,01/01/2008,01/01/2008,01/01/2011,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,01/01/2008,,Y,-,1,6,01/01/2015,01/01/2015,02/01/2017,01/01/2124,,,PASS,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+DTaP 0 - 6 Years - Int Dose 3 to 4 of 4 Months,,,DTAP02,01/01/2004,,,,,,,,,,1,1,03/01/2004,02/12/2004,04/01/2004,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,03/01/2004,,Y,-,1,2,05/01/2004,03/29/2004,06/01/2004,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,05/01/2004,,Y,-,1,3,07/01/2004,05/29/2004,08/01/2004,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,09/01/2004,,Y,-,1,4,03/01/2005,03/01/2005,08/01/2005,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,01/01/2005,,Y,"WARNING: DTaP/DT/Td/Tdap - The minimum recommended interval between DTaP-3 and DTaP-4 is 6 months. However, DTaP-4 need not be repeated if administered at least 4 months after DTaP-3.;",1,5,01/01/2008,01/01/2008,01/01/2011,01/01/2124,Min Interval of 4 months can be accepted,,PASS,,
+,,,,,,DTaP,,,,01/01/2008,,Y,-,1,6,01/01/2015,01/01/2015,02/01/2017,01/01/2124,,,PASS,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+DTaP 0 - 6 Years - Dose 4 at >= 48 Months,,,DTAP03,01/01/2004,,,,,,,,,,1,1,03/01/2004,02/12/2004,04/01/2004,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,03/01/2004,,Y,-,1,2,05/01/2004,03/29/2004,06/01/2004,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,05/01/2004,,Y,-,1,3,07/01/2004,05/29/2004,08/01/2004,01/01/2124,,,PASS,,
+,,,,,,DTaP,,,,07/01/2004,,Y,-,1,4,01/01/2005,01/01/2005,08/01/2005,01/01/2124,Dose 4 >= 48 months,,PASS,,
+,,,,,,DTaP,,,,01/01/2008,,Y,-,1,5,01/01/2015,01/01/2015,02/01/2017,01/01/2124,,,PASS,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+"Dose #4 at > 4 years of age, but less than 4 Pertussis vaccines",,,DTAP04,04/07/2002,,,,,,,,,,1,1,06/07/2002,05/19/2002,07/07/2002,04/07/2122,,,PASS,,
+,,,,,,DTaP,,,,06/07/2002,,Y,-,1,2,08/07/2002,07/05/2002,09/07/2002,04/07/2122,,,PASS,,
+,,,,,,DTaP,,,,08/30/2002,,Y,-,1,3,10/30/2002,09/27/2002,11/29/2002,04/07/2122,,,PASS,,
+,,,,,,DT (Pediatric),,,,10/16/2002,,Y,-,1,4,04/16/2003,04/16/2003,11/07/2003,04/07/2122,,,PASS,,
+,,,,,,DT (Pediatric),,,,08/13/2002,,Y,-,1,4,04/16/2003,04/16/2003,11/07/2003,04/07/2122,,,PASS,,
+,,,,,,DTaP,,,,08/31/2007,,Y,-,1,5,04/07/2009,04/07/2009,05/07/2009,04/07/2122,"known issue: SAF-278
+Needs Tdap at 7 years",,FAIL (evaluation date: 08/31/2007); saf[rec_date]=04/07/2013; saf[min_date]=04/07/2013; saf[past_due]=05/07/2015,"<?xml version=""1.0"" encoding=""UTF-8""?>
+<SOAP-ENV:Envelope xmlns:ns0=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ns1=""http://saf.stchome.com/messages/get/1.2"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:SOAP-ENV=""http://schemas.xmlsoap.org/soap/envelope/"">
+   <SOAP-ENV:Header/>
+   <ns0:Body>
+      <ns1:GetForecastRequest>
+         <ns1:personDetails>
+            <ns1:dateOfBirth>20020407</ns1:dateOfBirth>
+            <ns1:vaccination codeType=""ASIIS"">
+               <ns1:vaccCode>20</ns1:vaccCode>
+               <ns1:vaccDate>20020607</ns1:vaccDate>
+               <ns1:doseSize>1</ns1:doseSize>
+            </ns1:vaccination>
+            <ns1:vaccination codeType=""ASIIS"">
+               <ns1:vaccCode>20</ns1:vaccCode>
+               <ns1:vaccDate>20020830</ns1:vaccDate>
+               <ns1:doseSize>1</ns1:doseSize>
+            </ns1:vaccination>
+            <ns1:vaccination codeType=""ASIIS"">
+               <ns1:vaccCode>28</ns1:vaccCode>
+               <ns1:vaccDate>20021016</ns1:vaccDate>
+               <ns1:doseSize>1</ns1:doseSize>
+            </ns1:vaccination>
+            <ns1:vaccination codeType=""ASIIS"">
+               <ns1:vaccCode>28</ns1:vaccCode>
+               <ns1:vaccDate>20020813</ns1:vaccDate>
+               <ns1:doseSize>1</ns1:doseSize>
+            </ns1:vaccination>
+            <ns1:vaccination codeType=""ASIIS"">
+               <ns1:vaccCode>20</ns1:vaccCode>
+               <ns1:vaccDate>20070831</ns1:vaccDate>
+               <ns1:doseSize>1</ns1:doseSize>
+            </ns1:vaccination>
+         </ns1:personDetails>
+      </ns1:GetForecastRequest>
+   </ns0:Body>
+</SOAP-ENV:Envelope>","<?xml version=""1.0"" encoding=""UTF-8""?>
+<SOAP-ENV:Envelope>
+   <SOAP-ENV:Header/>
+   <SOAP-ENV:Body>
+      <ns:GetForecastResponse>
+         <ns:responses>
+            <ns:personDetails personId="""">
+               <ns:dateOfBirth>20020407</ns:dateOfBirth>
+               <ns:vaccination codeType=""ASIIS"">
+                  <ns:vaccCode>20</ns:vaccCode>
+                  <ns:vaccDate>20020607</ns:vaccDate>
+                  <ns:doseSize>1</ns:doseSize>
+               </ns:vaccination>
+               <ns:vaccination codeType=""ASIIS"">
+                  <ns:vaccCode>20</ns:vaccCode>
+                  <ns:vaccDate>20020830</ns:vaccDate>
+                  <ns:doseSize>1</ns:doseSize>
+                  <ns:message messageType=""INVALID-VACC"">
+                     <com:message>DTaP/DT/Td/Tdap - Minimum interval from previous dose not met.</com:message>
+                  </ns:message>
+               </ns:vaccination>
+               <ns:vaccination codeType=""ASIIS"">
+                  <ns:vaccCode>28</ns:vaccCode>
+                  <ns:vaccDate>20021016</ns:vaccDate>
+                  <ns:doseSize>1</ns:doseSize>
+               </ns:vaccination>
+               <ns:vaccination codeType=""ASIIS"">
+                  <ns:vaccCode>28</ns:vaccCode>
+                  <ns:vaccDate>20020813</ns:vaccDate>
+                  <ns:doseSize>1</ns:doseSize>
+               </ns:vaccination>
+               <ns:vaccination codeType=""ASIIS"">
+                  <ns:vaccCode>20</ns:vaccCode>
+                  <ns:vaccDate>20070831</ns:vaccDate>
+                  <ns:doseSize>1</ns:doseSize>
+               </ns:vaccination>
+            </ns:personDetails>
+            <ns:forecastDetails>
+               <ns:familyCode>4</ns:familyCode>
+               <ns:doseNumber>1</ns:doseNumber>
+               <ns:maxAllowableDate>21220407</ns:maxAllowableDate>
+               <ns:minAllowableDate>20020407</ns:minAllowableDate>
+               <ns:recommendedDate>20020407</ns:recommendedDate>
+               <ns:pastDueDate>20020707</ns:pastDueDate>
+            </ns:forecastDetails>
+            <ns:forecastDetails>
+               <ns:familyCode>3</ns:familyCode>
+               <ns:doseNumber>1</ns:doseNumber>
+               <ns:maxAllowableDate>21220407</ns:maxAllowableDate>
+               <ns:minAllowableDate>20020519</ns:minAllowableDate>
+               <ns:recommendedDate>20020607</ns:recommendedDate>
+               <ns:pastDueDate>20020707</ns:pastDueDate>
+            </ns:forecastDetails>
+            <ns:forecastDetails>
+               <ns:familyCode>10</ns:familyCode>
+               <ns:doseNumber>1</ns:doseNumber>
+               <ns:maxAllowableDate>21220407</ns:maxAllowableDate>
+               <ns:minAllowableDate>20021007</ns:minAllowableDate>
+               <ns:recommendedDate>20021007</ns:recommendedDate>
+               <ns:pastDueDate>20021106</ns:pastDueDate>
+            </ns:forecastDetails>
+            <ns:forecastDetails>
+               <ns:familyCode>9</ns:familyCode>
+               <ns:doseNumber>1</ns:doseNumber>
+               <ns:maxAllowableDate>21220407</ns:maxAllowableDate>
+               <ns:minAllowableDate>20030407</ns:minAllowableDate>
+               <ns:recommendedDate>20030407</ns:recommendedDate>
+               <ns:pastDueDate>20040407</ns:pastDueDate>
+            </ns:forecastDetails>
+            <ns:forecastDetails>
+               <ns:familyCode>5</ns:familyCode>
+               <ns:doseNumber>1</ns:doseNumber>
+               <ns:maxAllowableDate>21220407</ns:maxAllowableDate>
+               <ns:minAllowableDate>20030407</ns:minAllowableDate>
+               <ns:recommendedDate>20030407</ns:recommendedDate>
+               <ns:pastDueDate>20030807</ns:pastDueDate>
+            </ns:forecastDetails>
+            <ns:forecastDetails>
+               <ns:familyCode>6</ns:familyCode>
+               <ns:doseNumber>1</ns:doseNumber>
+               <ns:maxAllowableDate>21220407</ns:maxAllowableDate>
+               <ns:minAllowableDate>20030407</ns:minAllowableDate>
+               <ns:recommendedDate>20030407</ns:recommendedDate>
+               <ns:pastDueDate>20030807</ns:pastDueDate>
+            </ns:forecastDetails>
+            <ns:forecastDetails>
+               <ns:familyCode>1</ns:familyCode>
+               <ns:doseNumber>5</ns:doseNumber>
+               <ns:maxAllowableDate>21220407</ns:maxAllowableDate>
+               <ns:minAllowableDate>20130407</ns:minAllowableDate>
+               <ns:recommendedDate>20130407</ns:recommendedDate>
+               <ns:pastDueDate>20150507</ns:pastDueDate>
+            </ns:forecastDetails>
+            <ns:forecastDetails>
+               <ns:familyCode>21</ns:familyCode>
+               <ns:doseNumber>1</ns:doseNumber>
+               <ns:maxAllowableDate>21020407</ns:maxAllowableDate>
+               <ns:minAllowableDate>20110407</ns:minAllowableDate>
+               <ns:recommendedDate>20130407</ns:recommendedDate>
+               <ns:pastDueDate>20150407</ns:pastDueDate>
+            </ns:forecastDetails>
+            <ns:forecastDetails>
+               <ns:familyCode>7</ns:familyCode>
+               <ns:doseNumber>1</ns:doseNumber>
+               <ns:maxAllowableDate>21220407</ns:maxAllowableDate>
+               <ns:minAllowableDate>20130407</ns:minAllowableDate>
+               <ns:recommendedDate>20130407</ns:recommendedDate>
+               <ns:pastDueDate>20150407</ns:pastDueDate>
+            </ns:forecastDetails>
+            <ns:information>Forecast success.</ns:information>
+         </ns:responses>
+      </ns:GetForecastResponse>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>"
+,,,,,,,,,,,,,,,,,,,,,,,,

@@ -11,7 +11,7 @@ import java.util.Map;
 import org.tch.ft.model.Event;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.ForecastItem;
-import org.tch.ft.model.Software;
+import org.tch.ft.model.ForecastResult;
 import org.tch.ft.model.TestCase;
 import org.tch.ft.model.TestEvent;
 
@@ -156,7 +156,7 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         }
         else
         {
-          forecastExpected.setDoseNumber("COMP");
+          forecastExpected.setDoseNumber(ForecastResult.DOSE_NUMBER_COMPLETE);
         }
         List<ForecastExpected> forecastExpectedList = testCase.getForecastExpectedList();
         if (forecastExpectedList == null) {

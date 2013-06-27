@@ -14,6 +14,7 @@ import org.tch.ft.model.Event;
 import org.tch.ft.model.ForecastActual;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.ForecastItem;
+import org.tch.ft.model.ForecastResult;
 import org.tch.ft.model.TestCase;
 import org.tch.ft.model.TestEvent;
 import org.tch.ft.web.testCase.RandomNames;
@@ -122,7 +123,7 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         }
         if (forecastExpected == null) {
           forecastExpected = new ForecastExpected();
-          forecastExpected.setDoseNumber("COMP");
+          forecastExpected.setDoseNumber(ForecastResult.DOSE_NUMBER_COMPLETE);
         }
         forecastExpected.setTestCase(testCase);
         forecastExpected.setAuthor(user);

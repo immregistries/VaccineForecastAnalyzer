@@ -17,6 +17,7 @@ import java.util.Map;
 import org.tch.ft.model.EventType;
 import org.tch.ft.model.ForecastActual;
 import org.tch.ft.model.ForecastItem;
+import org.tch.ft.model.ForecastResult;
 import org.tch.ft.model.Software;
 import org.tch.ft.model.TestCase;
 import org.tch.ft.model.TestEvent;
@@ -114,7 +115,7 @@ public class TCHConnector implements ConnectorInterface {
             ForecastActual forecastActual = new ForecastActual();
             forecastActual.setForecastItem(forecastItem);
             if ("complete".equalsIgnoreCase(parts[2])) {
-              forecastActual.setDoseNumber("COMP");
+              forecastActual.setDoseNumber(ForecastResult.DOSE_NUMBER_COMPLETE);
             } else {
               if (parts.length > 3 && "dose".equals(parts[2])) {
                 forecastActual.setDoseNumber(parts[3]);
