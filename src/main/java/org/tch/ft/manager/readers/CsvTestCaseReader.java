@@ -108,12 +108,12 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
         if (justQuoted) {
           fieldValue.append((char) nextChar);
           justQuoted = false;
+          quoted = true;
         } else if (quoted) {
           quoted = false;
           justQuoted = true;
         } else {
           quoted = true;
-
         }
       } else if (!quoted && nextChar == ',') {
         testCaseFieldList.add(fieldValue.toString());

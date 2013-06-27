@@ -87,7 +87,7 @@ public class TestConnect extends junit.framework.TestCase {
     assertEquals(1, testEventList.size());
     testCase.setTestEventList(testEventList);
     Software software = (Software) session.get(Software.class, 2);
-    assertEquals("TCH Forecaster", software.getLabel());
+    assertEquals("TCH Forecaster Validator", software.getLabel());
     assertEquals(Service.TCH, software.getService());
 
     query = session.createQuery("from ForecastItem");

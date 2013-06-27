@@ -50,7 +50,7 @@ public abstract class ForecastResult {
   
   public void setComplete()
   {
-    this.doseNumber = "COMP";
+    this.doseNumber = DOSE_NUMBER_COMPLETE;
   }
 
   public String getDoseNumber() {

@@ -21,6 +21,24 @@ public class TestCase implements Serializable {
   private Date patientDob = null;
   private String categoryName = null;
   private String testCaseNumber = "";
+  
+  public TestCase()
+  {
+    // default;
+  }
+  
+  public TestCase(TestCase parentTestCase)
+  {
+    this.setLabel(parentTestCase.getLabel());
+    this.setDescription(parentTestCase.getDescription());
+    this.setEvalDate(parentTestCase.getEvalDate());
+    this.setPatientFirst(parentTestCase.getPatientFirst());
+    this.setPatientLast(parentTestCase.getPatientLast());
+    this.setPatientSex(parentTestCase.getPatientSex());
+    this.setPatientDob(parentTestCase.getPatientDob());
+    this.setCategoryName(parentTestCase.getCategoryName());
+    this.setTestCaseNumber(parentTestCase.getTestCaseNumber());
+  }
 
   public String getTestCaseNumber() {
     return testCaseNumber;
