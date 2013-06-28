@@ -33,16 +33,16 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.fc.model.ForecastActual;
+import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.Software;
+import org.tch.fc.model.TestCase;
 import org.tch.ft.StyleClassLabel;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.manager.SoftwareManager;
-import org.tch.ft.model.ForecastActual;
 import org.tch.ft.model.ForecastCompare;
-import org.tch.ft.model.ForecastItem;
 import org.tch.ft.model.ForecastTarget;
 import org.tch.ft.model.Result;
-import org.tch.ft.model.Software;
-import org.tch.ft.model.TestCase;
 import org.tch.ft.model.TestNote;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
@@ -145,7 +145,6 @@ public class CompareForecastPage extends TestCaseDetail implements SecurePage {
         .getLabel() : "";
     changeTestStatus.add(new Label("primarySoftware", testPanelLabel));
 
-    
     query = webSession.getDataSession().createQuery("from TestNote where testCase = ?");
     query.setParameter(0, testCase);
     final List<TestNote> testNoteList = query.list();
@@ -233,7 +232,7 @@ public class CompareForecastPage extends TestCaseDetail implements SecurePage {
       if (nextForecastCompareId > 0) {
         forecastCompare = (ForecastCompare) dataSession.get(ForecastCompare.class, nextForecastCompareId);
         User user = ((WebSession) getSession()).getUser();
-        user.setSelectedTestCase(forecastCompare.getForecastActual().getTestCase());
+        user.setSelectedTestCase((TestCase)  forecastCompare.getForecastActual().getTestCase());
         webSession.setForecastCompare(forecastCompare);
       }
 

@@ -18,7 +18,7 @@ package org.tch.ft.web.testCase;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
-import org.tch.ft.model.TestCase;
+import org.tch.fc.model.TestCase;
 import org.tch.ft.model.User;
 import org.tch.ft.web.FTBasePage;
 import org.tch.ft.web.MenuSection;

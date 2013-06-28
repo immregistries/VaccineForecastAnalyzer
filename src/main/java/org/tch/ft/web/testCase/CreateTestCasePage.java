@@ -29,15 +29,12 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.tch.ft.model.TaskGroup;
-import org.tch.ft.model.TestCase;
-import org.tch.ft.model.TestPanelCase;
+import org.tch.fc.model.TestCase;
 import org.tch.ft.model.User;
-import org.tch.ft.web.WebSession;
 import org.tch.ft.web.FTBasePage;
 import org.tch.ft.web.MenuSection;
 import org.tch.ft.web.SecurePage;
-import org.tch.ft.web.taskGroup.ExpertsAssignedPage;
+import org.tch.ft.web.WebSession;
 
 public class CreateTestCasePage extends FTBasePage implements SecurePage {
   private static final long serialVersionUID = 1L;

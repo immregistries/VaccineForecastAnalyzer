@@ -15,7 +15,6 @@
  */
 package org.tch.ft.web.softwareCompare;
 
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,14 +33,14 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.Model;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.tch.fc.model.ForecastActual;
+import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.Software;
+import org.tch.fc.model.TestCase;
+import org.tch.fc.model.TestEvent;
 import org.tch.ft.StyleClassLabel;
 import org.tch.ft.manager.AgeUtil;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
-import org.tch.ft.model.ForecastActual;
-import org.tch.ft.model.ForecastItem;
-import org.tch.ft.model.Software;
-import org.tch.ft.model.TestCase;
-import org.tch.ft.model.TestEvent;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.User;
@@ -101,7 +100,7 @@ public class CompareSoftwarePage extends FTBasePage implements SecurePage {
             String label;
             TestCase testCase = null;
             if (forecastCompare != null && forecastCompare.getForecastResultA() != null) {
-              testCase = forecastCompare.getForecastResultA().getTestCase();
+              testCase = (TestCase) forecastCompare.getForecastResultA().getTestCase();
               Query query = dataSession.createQuery("from TestEvent where testCase = ?");
               query.setParameter(0, testCase);
               testCase.setTestEventList(query.list());

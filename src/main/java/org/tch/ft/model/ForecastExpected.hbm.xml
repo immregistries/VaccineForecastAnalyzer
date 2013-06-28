@@ -5,9 +5,9 @@
     <id name="ForecastExpectedId" column="forecast_expected_id">
       <generator class="native"/>
     </id>
-    <many-to-one name="testCase" column="test_case_id" class="TestCase"/>
+    <many-to-one name="testCase" column="test_case_id" class="org.tch.fc.model.TestCase"/>
     <many-to-one name="author" column="author_user_id" class="User"/>
-    <many-to-one name="forecastItem" column="forecast_item_id" class="ForecastItem"/>
+    <many-to-one name="forecastItem" column="forecast_item_id" class="org.tch.fc.model.ForecastItem"/>
     <property name="doseNumber" column="dose_number" type="string"/>
     <property name="validDate" column="valid_date" type="date"/>
     <property name="dueDate" column="due_date" type="date"/>

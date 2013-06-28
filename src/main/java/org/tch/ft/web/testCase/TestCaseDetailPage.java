@@ -19,12 +19,14 @@ import java.util.List;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.fc.TCHConnector;
+import org.tch.fc.model.TestCase;
 import org.tch.ft.model.Include;
-import org.tch.ft.model.TestCase;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.User;

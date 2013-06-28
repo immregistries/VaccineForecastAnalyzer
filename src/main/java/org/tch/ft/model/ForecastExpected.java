@@ -2,6 +2,9 @@ package org.tch.ft.model;
 
 import java.io.Serializable;
 
+import org.tch.fc.model.ForecastResult;
+import org.tch.fc.model.TestCase;
+
 public class ForecastExpected extends ForecastResult implements Serializable {
   private static final long serialVersionUID = 1L;
 

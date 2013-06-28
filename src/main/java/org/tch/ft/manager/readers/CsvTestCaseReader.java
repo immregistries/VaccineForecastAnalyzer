@@ -10,19 +10,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.tch.ft.model.Event;
-import org.tch.ft.model.EventType;
-import org.tch.ft.model.ForecastExpected;
-import org.tch.ft.model.Software;
-import org.tch.ft.model.TestCase;
-import org.tch.ft.model.TestEvent;
+import org.tch.fc.model.Event;
+import org.tch.fc.model.EventType;
+import org.tch.fc.model.Software;
+import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.model.User;
 
 public abstract class CsvTestCaseReader implements TestCaseReader {
 
   protected SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
   protected List<List<String>> testCaseFieldListList = new ArrayList<List<String>>();
-  protected List<TestCase> testCaseList = new ArrayList<TestCase>();
+  protected List<TestCaseWithExpectations> testCaseList = new ArrayList<TestCaseWithExpectations>();
   protected List<String> headerFields = null;
   protected Map<String, Event> cvxToEventMap = new HashMap<String, Event>();
   protected User user = null;
@@ -48,7 +46,7 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
     return user;
   }
 
-  public List<TestCase> getTestCaseList() {
+  public List<TestCaseWithExpectations> getTestCaseList() {
     return testCaseList;
   }
 
@@ -71,7 +69,7 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
     return "";
   }
 
-  protected Date readDateField(int position, List<String> testCaseFieldList, TestCase testCase) {
+  protected Date readDateField(int position, List<String> testCaseFieldList, TestCaseWithExpectations testCase) {
     String dateValue = readField(position, testCaseFieldList);
     if (dateValue.equals("")) {
       return null;

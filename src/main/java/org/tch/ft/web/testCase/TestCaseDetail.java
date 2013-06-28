@@ -21,12 +21,14 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.hibernate.Query;
-import org.tch.ft.model.TestCase;
-import org.tch.ft.model.TestEvent;
+import org.tch.fc.TCHConnector;
+import org.tch.fc.model.TestCase;
+import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.User;
 import org.tch.ft.web.FTBasePage;
 import org.tch.ft.web.MenuSection;
@@ -62,6 +64,7 @@ public class TestCaseDetail extends FTBasePage implements SecurePage {
       Query query = webSession.getDataSession().createQuery("from TestEvent where testCase = ?");
       query.setParameter(0, testCase);
       List<TestEvent> testEventList = query.list();
+      testCase.setTestEventList(testEventList);
 
       ListView<TestEvent> testEventItems = new ListView<TestEvent>("testEventItems", testEventList) {
 
@@ -79,6 +82,7 @@ public class TestCaseDetail extends FTBasePage implements SecurePage {
       };
       add(testEventItems);
     }
+    
   }
 
   protected static String createAgeAlmost(Date eventDate, Date referenceDate) {

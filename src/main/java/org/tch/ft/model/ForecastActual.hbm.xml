@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<hibernate-mapping package="org.tch.ft.model">
+<hibernate-mapping package="org.tch.fc.model">
   <class name="ForecastActual" table="forecast_actual">
     <id name="forecastActualId" column="forecast_actual_id">
       <generator class="native"/>
     </id>
-    <many-to-one name="software" column="software_id" class="Software"/>
+    <many-to-one name="software" column="software_id" class="org.tch.fc.model.Software"/>
     <property name="scheduleName" column="schedule_name" type="string"/>
     <property name="runDate" column="run_date" type="timestamp"/>
     <property name="logText" column="log_text" type="string"/>
-    <many-to-one name="testCase" column="test_case_id" class="TestCase"/>
-    <many-to-one name="forecastItem" column="forecast_item_id" class="ForecastItem"/>
+    <many-to-one name="testCase" column="test_case_id" class="org.tch.fc.model.TestCase"/>
+    <many-to-one name="forecastItem" column="forecast_item_id" class="org.tch.fc.model.ForecastItem"/>
     <property name="doseNumber" column="dose_number" type="string"/>
     <property name="validDate" column="valid_date" type="date"/>
     <property name="dueDate" column="due_date" type="date"/>

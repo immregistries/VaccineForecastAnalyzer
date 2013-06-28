@@ -3,6 +3,9 @@ package org.tch.ft.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.tch.fc.model.Software;
+import org.tch.fc.model.TestCase;
+
 public class User implements Serializable {
 
   private static final long serialVersionUID = 1L;

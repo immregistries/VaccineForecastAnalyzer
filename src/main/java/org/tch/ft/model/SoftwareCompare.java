@@ -3,6 +3,8 @@ package org.tch.ft.model;
 import java.io.Serializable;
 import java.util.List;
 
+import org.tch.fc.model.Software;
+
 public class SoftwareCompare implements Serializable {
 
   private int softwareCompareId = 0;

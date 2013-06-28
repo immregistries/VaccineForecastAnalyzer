@@ -6,6 +6,6 @@
       <generator class="native"/>
     </id>
     <property name="label" column="label" type="string"/>
-    <many-to-one name="primarySoftware" column="primary_software_id" class="Software"/>
+    <many-to-one name="primarySoftware" column="primary_software_id" class="org.tch.fc.model.Software"/>
   </class>
 </hibernate-mapping>

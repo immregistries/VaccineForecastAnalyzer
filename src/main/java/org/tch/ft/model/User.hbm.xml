@@ -15,9 +15,9 @@
     <property name="agreementDate" column="agreement_date" type="timestamp"/>
     <many-to-one name="selectedTaskGroup" column="selected_task_group_id" class="TaskGroup"/>
     <many-to-one name="selectedTestPanel" column="selected_test_panel_id" class="TestPanel"/>
-    <many-to-one name="selectedSoftware" column="selected_software_id" class="Software"/>
+    <many-to-one name="selectedSoftware" column="selected_software_id" class="org.tch.fc.model.Software"/>
     <many-to-one name="selectedTestPanelCase" column="selected_test_panel_case_id" class="TestPanelCase"/>
-    <many-to-one name="selectedTestCase" column="selected_test_case_id" class="TestCase"/>
+    <many-to-one name="selectedTestCase" column="selected_test_case_id" class="org.tch.fc.model.TestCase"/>
     <many-to-one name="selectedSoftwareCompare" column="selected_software_compare_id" class="SoftwareCompare"/>
     
   </class>

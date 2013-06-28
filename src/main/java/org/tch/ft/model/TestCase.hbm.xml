@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<hibernate-mapping package="org.tch.ft.model">
+<hibernate-mapping package="org.tch.fc.model">
   <class name="TestCase" table="test_case">
     <id name="testCaseId" column="test_case_id">
       <generator class="native"/>

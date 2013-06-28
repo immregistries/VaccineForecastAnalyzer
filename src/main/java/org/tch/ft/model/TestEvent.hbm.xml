@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<hibernate-mapping package="org.tch.ft.model">
+<hibernate-mapping package="org.tch.fc.model">
   <class name="TestEvent" table="test_event">
     <id name="TestEventId" column="test_event_id">
       <generator class="native"/>
     </id>
-    <many-to-one name="testCase" column="test_case_id" class="TestCase"/>
+    <many-to-one name="testCase" column="test_case_id" class="org.tch.fc.model.TestCase"/>
     <many-to-one name="event" column="event_id" class="Event"/>
     <property name="eventDate" column="event_date" type="date"/>
   </class>

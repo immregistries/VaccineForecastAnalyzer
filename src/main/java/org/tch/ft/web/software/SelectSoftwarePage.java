@@ -27,7 +27,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.ft.StyleClassLabel;
 import org.tch.ft.manager.SoftwareManager;
-import org.tch.ft.model.Software;
+import org.tch.fc.model.Software;
 import org.tch.ft.model.User;
 import org.tch.ft.web.FTBasePage;
 import org.tch.ft.web.MenuSection;

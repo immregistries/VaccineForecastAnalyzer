@@ -5,10 +5,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.tch.ft.model.Event;
-import org.tch.ft.model.ForecastItem;
-import org.tch.ft.model.Software;
-import org.tch.ft.model.TestCase;
+import org.tch.fc.model.Event;
+import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.Software;
+import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.model.User;
 
 public interface TestCaseReader {
@@ -19,7 +19,7 @@ public interface TestCaseReader {
   
   public User getUser() ;
 
-  public List<TestCase> getTestCaseList();
+  public List<TestCaseWithExpectations> getTestCaseList();
 
   public void setEventList(List<Event> eventList) ;
 
