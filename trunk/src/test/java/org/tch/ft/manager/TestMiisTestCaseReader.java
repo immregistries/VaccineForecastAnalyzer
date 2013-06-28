@@ -26,13 +26,14 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.tch.fc.model.Event;
+import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.TestEvent;
 import org.tch.ft.CentralControl;
 import org.tch.ft.manager.readers.MiisTestCaseReader;
-import org.tch.ft.model.Event;
 import org.tch.ft.model.ForecastExpected;
-import org.tch.ft.model.ForecastItem;
 import org.tch.ft.model.TaskGroup;
-import org.tch.ft.model.TestEvent;
+import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.User;
 
@@ -61,7 +62,7 @@ public class TestMiisTestCaseReader extends TestCase{
     miisTestCaseReader.read(in);
     assertEquals(840, miisTestCaseReader.getTestCaseList().size());
     
-    org.tch.ft.model.TestCase testCase = miisTestCaseReader.getTestCaseList().get(3);
+    TestCaseWithExpectations testCase = miisTestCaseReader.getTestCaseList().get(3);
     assertNotNull(testCase);
     assertEquals("1003", testCase.getTestCaseNumber());
     assertEquals("HepA", testCase.getCategoryName());

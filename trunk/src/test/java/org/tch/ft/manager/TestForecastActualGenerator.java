@@ -21,9 +21,9 @@ import junit.framework.TestCase;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.tch.fc.model.ForecastActual;
+import org.tch.fc.model.Software;
 import org.tch.ft.CentralControl;
-import org.tch.ft.model.ForecastActual;
-import org.tch.ft.model.Software;
 import org.tch.ft.model.TestPanel;
 
 public class TestForecastActualGenerator extends TestCase {
