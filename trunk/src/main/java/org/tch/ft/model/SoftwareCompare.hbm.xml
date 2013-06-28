@@ -5,7 +5,7 @@
     <id name="softwareCompareId" column="software_compare_id">
       <generator class="native"/>
     </id>
-    <many-to-one name="software" column="software_id" class="Software"/>
+    <many-to-one name="software" column="software_id" class="org.tch.fc.model.Software"/>
     <many-to-one name="testPanel" column="test_panel_id" class="TestPanel"/>
   </class>
 </hibernate-mapping>

@@ -6,6 +6,6 @@
       <generator class="native"/>
     </id>
     <many-to-one name="forecastCompare" column="forecast_compare_id" class="ForecastCompare"/>
-    <many-to-one name="forecastActual" column="forecast_actual_id" class="ForecastActual"/>
+    <many-to-one name="forecastActual" column="forecast_actual_id" class="org.tch.fc.model.ForecastActual"/>
   </class>
 </hibernate-mapping>

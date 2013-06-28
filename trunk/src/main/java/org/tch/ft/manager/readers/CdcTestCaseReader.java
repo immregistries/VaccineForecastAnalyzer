@@ -8,12 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.tch.ft.model.Event;
+import org.tch.fc.model.Event;
+import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.ForecastResult;
+import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.ForecastExpected;
-import org.tch.ft.model.ForecastItem;
-import org.tch.ft.model.ForecastResult;
-import org.tch.ft.model.TestCase;
-import org.tch.ft.model.TestEvent;
+import org.tch.ft.model.TestCaseWithExpectations;
 
 public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseReader {
 
@@ -94,7 +94,7 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     
     Date referenceDate = null;
     for (List<String> testCaseFieldList : testCaseFieldListList) {
-      TestCase testCase = new TestCase();
+      TestCaseWithExpectations testCase = new TestCaseWithExpectations();
       testCaseList.add(testCase);
       testCase.setTestCaseNumber(readField(testIdPosition, testCaseFieldList));
       testCase.setCategoryName(readField(vaccineGroupPos, testCaseFieldList));

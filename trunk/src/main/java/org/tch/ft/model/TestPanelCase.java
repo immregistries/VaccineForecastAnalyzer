@@ -3,6 +3,8 @@ package org.tch.ft.model;
 import java.io.Serializable;
 import java.util.Comparator;
 
+import org.tch.fc.model.TestCase;
+
 public class TestPanelCase implements Serializable {
 
   public static class TestPanelCaseComparator implements Comparator<TestPanelCase> {

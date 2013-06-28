@@ -2,6 +2,8 @@ package org.tch.ft.model;
 
 import java.io.Serializable;
 
+import org.tch.fc.model.ForecastActual;
+
 public class ForecastCompare implements Serializable{
   /*
    * CREATE TABLE forecast_compare (

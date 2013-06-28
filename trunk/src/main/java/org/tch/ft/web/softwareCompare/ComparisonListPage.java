@@ -16,41 +16,27 @@
 package org.tch.ft.web.softwareCompare;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
-import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.DropDownChoice;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.TextArea;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
-import org.apache.wicket.validation.validator.StringValidator;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.fc.model.TestCase;
 import org.tch.ft.StyleClassLabel;
 import org.tch.ft.model.ForecastCompare;
-import org.tch.ft.model.Include;
 import org.tch.ft.model.Result;
 import org.tch.ft.model.SoftwareCompare;
-import org.tch.ft.model.TestCase;
-import org.tch.ft.model.TestPanel;
-import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.User;
 import org.tch.ft.web.FTBasePage;
 import org.tch.ft.web.MenuSection;
 import org.tch.ft.web.SecurePage;
 import org.tch.ft.web.WebSession;
-import org.tch.ft.web.testCase.EditTestCasePage;
-import org.tch.ft.web.testCase.TestCaseDetailPage;
 
 public class ComparisonListPage extends FTBasePage implements SecurePage {
   private static final long serialVersionUID = 1L;
@@ -115,7 +101,7 @@ public class ComparisonListPage extends FTBasePage implements SecurePage {
           @Override
           protected void populateItem(ListItem<ForecastCompare> item) {
             final ForecastCompare forecastCompareItem = item.getModelObject();
-            TestCase testCase = forecastCompareItem.getForecastActual().getTestCase();
+            TestCase testCase = (TestCase) forecastCompareItem.getForecastActual().getTestCase();
             item.add(new Label("testCaseLabel", testCase.getLabel()));
             String description = testCase.getDescription();
             if (description.length() > 30) {
@@ -143,7 +129,7 @@ public class ComparisonListPage extends FTBasePage implements SecurePage {
                 WebSession webSession = ((WebSession) getSession());
                 Transaction trans = webSession.getDataSession().beginTransaction();
                 User user = ((WebSession) getSession()).getUser();
-                user.setSelectedTestCase(forecastCompareItem.getForecastActual().getTestCase());
+                user.setSelectedTestCase((TestCase) forecastCompareItem.getForecastActual().getTestCase());
                 webSession.setForecastCompare(forecastCompareItem);
                 trans.commit();
                 setResponsePage(new CompareForecastPage(pageParameters));

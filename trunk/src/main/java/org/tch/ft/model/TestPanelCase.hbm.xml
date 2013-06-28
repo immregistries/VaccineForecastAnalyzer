@@ -6,7 +6,7 @@
       <generator class="native"/>
     </id>
     <many-to-one name="testPanel" column="test_panel_id" class="TestPanel"/>
-    <many-to-one name="testCase" column="test_case_id" class="TestCase"/>
+    <many-to-one name="testCase" column="test_case_id" class="org.tch.fc.model.TestCase"/>
     <property name="categoryName" column="category_name" type="string"/>
     <property name="includeStatus" column="include_status" type="string"/>
     <property name="resultStatus" column="result_status" type="string"/>

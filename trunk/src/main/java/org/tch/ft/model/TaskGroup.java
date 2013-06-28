@@ -2,6 +2,8 @@ package org.tch.ft.model;
 
 import java.io.Serializable;
 
+import org.tch.fc.model.Software;
+
 public class TaskGroup implements Serializable {
 
   private static final long serialVersionUID = 1L;

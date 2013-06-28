@@ -25,9 +25,12 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.basic.MultiLineLabel;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -36,17 +39,18 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.fc.TCHConnector;
+import org.tch.fc.model.ForecastActual;
+import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.Software;
+import org.tch.fc.model.TestCase;
 import org.tch.ft.StyleClassLabel;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.manager.SoftwareManager;
-import org.tch.ft.manager.UserManager;
-import org.tch.ft.model.ForecastActual;
 import org.tch.ft.model.ForecastExpected;
-import org.tch.ft.model.ForecastItem;
 import org.tch.ft.model.Result;
-import org.tch.ft.model.Software;
 import org.tch.ft.model.TaskGroup;
-import org.tch.ft.model.TestCase;
+import org.tch.ft.model.TestNote;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.TestPanelExpected;
@@ -57,6 +61,7 @@ import org.tch.ft.web.taskGroup.ExpertsAssignedPage;
 
 public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
   private static final long serialVersionUID = 1L;
+  private Model<String> noteTextModel = null;
 
   private Model<ForecastItem> addExpectedForeastItemModel;
   private Model<String> addExpectedDoseNumberModel;
@@ -401,6 +406,61 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
       addExpectedForm.add(addExpectedOverdueDateField);
     }
     add(addExpectedForm);
+    
+    query = webSession.getDataSession().createQuery("from TestNote where testCase = ?");
+    query.setParameter(0, testCase);
+    final List<TestNote> testNoteList = query.list();
+    ListView<TestNote> testNoteItems = new ListView<TestNote>("testNoteItems", testNoteList) {
+      protected void populateItem(ListItem<TestNote> item) {
+        final TestNote testNote = item.getModelObject();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        item.add(new Label("userName", testNote.getUser().getName()));
+        item.add(new Label("userOrganization", testNote.getUser().getOrganization()));
+        item.add(new Label("noteDate", sdf.format(testNote.getNoteDate())));
+        item.add(new MultiLineLabel("noteText", testNote.getNoteText()));
+      }
+    };
+    add(testNoteItems);
+
+    Form<Void> commentForm = new Form<Void>("commentform") {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      protected void onSubmit() {
+        TestNote testNote = new TestNote();
+        testNote.setNoteText(noteTextModel.getObject());
+        testNote.setUser(user);
+        testNote.setTestCase(testCase);
+        testNote.setNoteDate(new Date());
+        Transaction trans = dataSession.beginTransaction();
+        try {
+          dataSession.save(testNote);
+        } finally {
+          trans.commit();
+        }
+        testNoteList.add(testNote);
+        noteTextModel.setObject("");
+      }
+    };
+
+    {
+      noteTextModel = new Model<String>("");
+      TextArea<String> noteTextField = new TextArea<String>("noteTextField", noteTextModel);
+      commentForm.add(noteTextField);
+    }
+
+    add(commentForm);
+    
+    WebMarkupContainer editTestCaseLink = new WebMarkupContainer("editTestCaseLink");
+    editTestCaseLink.setVisible(canEdit);
+    add(editTestCaseLink);
+    
+    ExternalLink stepLink = new ExternalLink("stepLink","http://localhost:8086/fv/fv/step" + TCHConnector.createQueryString(testCase));
+    add(stepLink);
+
+
+
 
   }
 
@@ -538,7 +598,6 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
           forecastExpectedByUser.setAuthor(user);
         }
         forecastExpectedByUser.setDoseNumber(expectedDoseNumberModel.getObject());
-        System.out.println("--> dose = " + forecastExpectedByUser.getDoseNumber());
         forecastExpectedByUser.setValidDate(expectedValidDateModel.getObject());
         forecastExpectedByUser.setDueDate(expectedDueDateModel.getObject());
         forecastExpectedByUser.setOverdueDate(expectedOverdueDateModel.getObject());
@@ -551,16 +610,12 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
           query.setParameter(1, forecastItem);
           List<TestPanelExpected> testPanelExpectedList = query.list();
           if (testPanelExpectedList != null && testPanelExpectedList.size() > 0) {
-            System.out.println("--> found old test panel");
             testPanelExpected = testPanelExpectedList.get(0);
           } else {
-            System.out.println("--> creating new one");
             testPanelExpected = new TestPanelExpected();
           }
           testPanelExpected.setTestPanelCase(testPanelCase);
           testPanelExpected.setForecastExpected(forecastExpectedByUser);
-          System.out.println("--> dose number = " + testPanelExpected.getForecastExpected().getDoseNumber());
-          System.out.println("--> label       = " + testPanelExpected.getForecastExpected().getForecastItem().getLabel());
           dataSession.saveOrUpdate(testPanelExpected);
         }
         setResponsePage(new ActualVsExpectedPage());

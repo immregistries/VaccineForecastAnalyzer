@@ -6,6 +6,6 @@
       <generator class="native"/>
     </id>
     <many-to-one name="softwareCompare" column="software_compare_id" class="SoftwareCompare"/>
-    <many-to-one name="software" column="software_id" class="Software"/>
+    <many-to-one name="software" column="software_id" class="org.tch.fc.model.Software"/>
   </class>
 </hibernate-mapping>

@@ -156,6 +156,34 @@
 			</table>
 		</form>
 
+		<h3>Comments</h3>
+		<form wicket:id="commentform">
+			<table width="100%">
+				<tr>
+					<td>Comment</td>
+					<td><textarea wicket:id="noteTextField" rows="3" cols="40"></textarea></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit" value="add"
+						class="fauxbutton" /></td>
+				</tr>
+			</table>
+		</form>
+		<table width="100%">
+			<tr>
+				<th>Expert</th>
+				<th>Organization</th>
+				<th>Date</th>
+				<th>Note</th>
+			</tr>
+			<tr wicket:id="testNoteItems">
+				<td wicket:id="userName">Laura King</td>
+				<td wicket:id="userOrganization">TCH</td>
+				<td wicket:id="noteDate">05/07/2012</td>
+				<td wicket:id="noteText"></td>
+			</tr>
+		</table>
+
 	</div>
 	<div class="extra">
 
@@ -204,6 +232,15 @@
 				<td wicket:id="eventAge">10 Months</td>
 			</tr>
 		</table>
+		<p wicket:id="editTestCaseLink">
+			<wicket:link>
+				<a href="EditTestCasePage" class="fauxbutton">Edit Test Case</a>
+			</wicket:link>
+		</p>
+		<p>
+			<a href="http://localhost:8086/fv/step" class="fauxbutton"
+				wicket:id="stepLink" target="_new">Step through with TCH Forecaster</a>
+		</p>
 
 	</div>
 </body>

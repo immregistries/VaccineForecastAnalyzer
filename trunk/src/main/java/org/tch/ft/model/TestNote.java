@@ -3,6 +3,8 @@ package org.tch.ft.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.tch.fc.model.TestCase;
+
 public class TestNote implements Serializable {
 
   private static final long serialVersionUID = 1L;

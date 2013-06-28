@@ -8,12 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.tch.ft.model.Event;
+import org.tch.fc.model.Event;
+import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.ForecastResult;
+import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.ForecastExpected;
-import org.tch.ft.model.ForecastItem;
-import org.tch.ft.model.ForecastResult;
-import org.tch.ft.model.TestCase;
-import org.tch.ft.model.TestEvent;
+import org.tch.ft.model.TestCaseWithExpectations;
 
 public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseReader {
 
@@ -154,7 +154,7 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     int cvxPos = findFieldPos(FIELD_CVX);
     int familyCodePos = findFieldPos(FIELD_FAMILY_CODE);
 
-    TestCase testCase = null;
+    TestCaseWithExpectations testCase = null;
     List<TestEvent> testEventList = null;
     int testCaseNumberCount = 0;
     String currentTestCaseId = "";
@@ -168,7 +168,7 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
       if (!testCaseId.equals("")) {
         currentTestCaseId = testCaseId;
         testCaseNumberCount = 1;
-        testCase = new TestCase();
+        testCase = new TestCaseWithExpectations();
         testCase.setTestCaseNumber(testCaseId + "." + testCaseNumberCount);
         testCase.setLabel("Test Case " + testCase.getTestCaseNumber());
         testCase.setDescription(readField(scheduleDescriptionPosition, testCaseFieldList));
@@ -177,10 +177,15 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         testCase.setCategoryName(readCategoryName(testCase.getTestCaseNumber()));
         testEventList = new ArrayList<TestEvent>();
         testCase.setTestEventList(testEventList);
+        Date referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCase);
+        if (referenceDate == null) {
+          referenceDate = new Date();
+        }
+        testCase.setEvalDate(referenceDate);
         testCaseList.add(testCase);
       } else if (!antigen.equals("")) {
         testCaseNumberCount++;
-        testCase = new TestCase(testCase);
+        testCase = new TestCaseWithExpectations(testCase);
         testCase.setTestCaseNumber(currentTestCaseId + "." + testCaseNumberCount);
         testCase.setLabel("Test Case " + testCase.getTestCaseNumber());
         testEventList = new ArrayList<TestEvent>(testEventList);

@@ -2,6 +2,8 @@ package org.tch.ft.model;
 
 import java.io.Serializable;
 
+import org.tch.fc.model.ForecastActual;
+
 public class ForecastTarget implements Serializable {
 
   /*
