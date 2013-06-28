@@ -17,12 +17,13 @@ package org.tch.ft.model;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.tch.fc.model.TestEvent;
 import org.tch.ft.CentralControl;
-
-import junit.framework.TestCase;
 
 public class TestTestCase extends TestCase {
 
@@ -32,9 +33,9 @@ public class TestTestCase extends TestCase {
     Session session = factory.openSession();
 
     Query query = session.createQuery("from TestCase");
-    List<org.tch.ft.model.TestCase> testCaseList = query.list();
+    List<TestCase> testCaseList = query.list();
     assertTrue(testCaseList.size() >= 257);
-    org.tch.ft.model.TestCase testCase = (org.tch.ft.model.TestCase) session.get(org.tch.ft.model.TestCase.class, 2);
+    TestCase testCase = (TestCase) session.get(TestCase.class, 2);
     query = session.createQuery("from TestEvent where testCase = ?");
     query.setParameter(0, testCase);
     List<TestEvent> testEventList = query.list();

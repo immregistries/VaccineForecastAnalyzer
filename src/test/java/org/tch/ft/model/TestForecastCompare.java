@@ -19,13 +19,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.tch.fc.model.ForecastActual;
+import org.tch.fc.model.Software;
 import org.tch.ft.CentralControl;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
-
-import junit.framework.TestCase;
 
 public class TestForecastCompare extends TestCase{
 
@@ -34,7 +36,7 @@ public class TestForecastCompare extends TestCase{
     SessionFactory factory = CentralControl.getSessionFactory();
     Session dataSession = factory.openSession();
     
-    org.tch.ft.model.TestCase testCase = (org.tch.ft.model.TestCase) dataSession.get(org.tch.ft.model.TestCase.class, 62);
+    org.tch.fc.model.TestCase testCase = (org.tch.fc.model.TestCase) dataSession.get(org.tch.fc.model.TestCase.class, 62);
     Software software = (Software) dataSession.get(Software.class, 2);
     TaskGroup taskGroup = (TaskGroup) dataSession.get(TaskGroup.class, 2);
     TestPanel testPanel = (TestPanel) dataSession.get(TestPanel.class, 2);
@@ -80,8 +82,8 @@ public class TestForecastCompare extends TestCase{
     ForecastActualExpectedCompare compare2 = new ForecastActualExpectedCompare();
     ForecastExpected expected1 = new ForecastExpected();
     ForecastExpected expected2 = new ForecastExpected();
-    org.tch.ft.model.TestCase testCase1 = new org.tch.ft.model.TestCase();
-    org.tch.ft.model.TestCase testCase2 = new org.tch.ft.model.TestCase();
+    org.tch.fc.model.TestCase testCase1 = new org.tch.fc.model.TestCase();
+    org.tch.fc.model.TestCase testCase2 = new org.tch.fc.model.TestCase();
     testCase1.setLabel("This Test 2");
     testCase2.setLabel("This Test 1");
     expected1.setTestCase(testCase1);

@@ -7,7 +7,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.tch.ft.model.ForecastItem;
+import org.tch.fc.model.ForecastItem;
 
 public class TestCaseReaderTest extends TestCase {
 
