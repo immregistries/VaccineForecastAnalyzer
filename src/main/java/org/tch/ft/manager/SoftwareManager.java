@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.tch.fc.model.Software;
 import org.tch.ft.model.Expert;
-import org.tch.ft.model.Software;
 import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.User;
 

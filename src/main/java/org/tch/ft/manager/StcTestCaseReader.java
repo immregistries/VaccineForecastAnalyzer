@@ -10,13 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.mapping.Array;
-import org.tch.ft.model.Event;
-import org.tch.ft.model.EventType;
+import org.tch.fc.model.Event;
+import org.tch.fc.model.EventType;
+import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.TestCase;
+import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.ForecastExpected;
-import org.tch.ft.model.ForecastItem;
-import org.tch.ft.model.TestCase;
-import org.tch.ft.model.TestEvent;
 import org.tch.ft.model.User;
 
 public class StcTestCaseReader {

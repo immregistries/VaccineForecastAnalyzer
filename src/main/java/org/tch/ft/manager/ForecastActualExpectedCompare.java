@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Date;
 
-import org.tch.ft.model.ForecastItem;
-import org.tch.ft.model.ForecastResult;
-import org.tch.ft.model.TestCase;
+import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.ForecastResult;
+import org.tch.fc.model.TestCase;
 
 public class ForecastActualExpectedCompare implements Serializable {
 

@@ -1,35 +1,34 @@
 package org.tch.ft.manager;
 
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.tch.fc.model.TestEvent;
 import org.tch.ft.manager.readers.TestCaseReader;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.Include;
 import org.tch.ft.model.Result;
-import org.tch.ft.model.TestCase;
-import org.tch.ft.model.TestEvent;
+import org.tch.fc.model.TestCase;
+import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.TestPanelExpected;
 
 public class TestCaseImporter {
   public void importTestCases(TestCaseReader testCaseReader, TestPanel testPanel, Session dataSession) {
-    for (TestCase testCaseImported : testCaseReader.getTestCaseList()) {
+    for (TestCaseWithExpectations testCaseImported : testCaseReader.getTestCaseList()) {
       Query query = dataSession.createQuery("from TestPanelCase where testCaseNumber = ? and testPanel = ?");
       query.setParameter(0, testCaseImported.getTestCaseNumber());
       query.setParameter(1, testPanel);
       List<TestPanelCase> testPanelCaseList = query.list();
-      TestCase testCase = null;
       if (testPanelCaseList.size() > 0) {
         // found test panel case, need to update
         TestPanelCase testPanelCase = testPanelCaseList.get(0);
         testPanelCase.setCategoryName(testCaseImported.getCategoryName());
         testPanelCase.setResult(Result.RESEARCH);
         dataSession.update(testPanelCase);
-        testCase = testPanelCase.getTestCase();
+        TestCase testCase = testPanelCase.getTestCase();
         testCase.setLabel(testCaseImported.getLabel());
         testCase.setDescription(testCaseImported.getDescription());
         testCase.setEvalDate(testCaseImported.getEvalDate());
@@ -38,7 +37,7 @@ public class TestCaseImporter {
         testCase.setPatientSex(testCaseImported.getPatientSex());
         testCase.setPatientDob(testCaseImported.getPatientDob());
         dataSession.update(testCase);
-        List<ForecastExpected> forecastExpectedImportedList = testCase.getForecastExpectedList();
+        List<ForecastExpected> forecastExpectedImportedList = testCaseImported.getForecastExpectedList();
         if (forecastExpectedImportedList != null) {
           for (ForecastExpected forecastExpectedImported : forecastExpectedImportedList) {
             query = dataSession
@@ -76,7 +75,7 @@ public class TestCaseImporter {
         for (TestEvent testEventToDelete : testEventList) {
           dataSession.delete(testEventToDelete);
         }
-        testEventList = testCase.getTestEventList();
+        testEventList = testCaseImported.getTestEventList();
         if (testEventList != null) {
           for (TestEvent testEvent : testEventList) {
             testEvent.setTestCase(testCase);
@@ -85,13 +84,13 @@ public class TestCaseImporter {
         }
 
       } else {
-        testCase = testCaseImported;
+        
         // new test panel case, very easy
-        dataSession.save(testCase);
-        List<TestEvent> testEventList = testCase.getTestEventList();
+        dataSession.save(testCaseImported);
+        List<TestEvent> testEventList = testCaseImported.getTestEventList();
         if (testEventList != null) {
           for (TestEvent testEvent : testEventList) {
-            testEvent.setTestCase(testCase);
+            testEvent.setTestCase(testCaseImported);
             dataSession.save(testEvent);
           }
         }
@@ -103,10 +102,10 @@ public class TestCaseImporter {
         testPanelCase.setResult(Result.RESEARCH);
         testPanelCase.setTestCaseNumber(testCaseImported.getTestCaseNumber());
         dataSession.save(testPanelCase);
-        List<ForecastExpected> forecastExpectedListImported = testCase.getForecastExpectedList();
+        List<ForecastExpected> forecastExpectedListImported = testCaseImported.getForecastExpectedList();
         if (forecastExpectedListImported != null) {
           for (ForecastExpected forecastExpectedImported : forecastExpectedListImported) {
-            forecastExpectedImported.setTestCase(testCase);
+            forecastExpectedImported.setTestCase(testCaseImported);
             dataSession.save(forecastExpectedImported);
             TestPanelExpected testPanelExpected = new TestPanelExpected();
             testPanelExpected.setTestPanelCase(testPanelCase);

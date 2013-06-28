@@ -4,11 +4,7 @@ import java.util.List;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.tch.ft.model.Expert;
-import org.tch.ft.model.Software;
-import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.User;
-import org.tch.ft.web.WebSession;
 
 public class UserManager {
   public static User login(User userCredentials, Session session) {
