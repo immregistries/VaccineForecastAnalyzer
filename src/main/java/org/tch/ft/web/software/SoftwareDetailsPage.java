@@ -15,9 +15,17 @@
  */
 package org.tch.ft.web.software;
 
+import java.util.List;
+
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.tch.fc.model.Software;
+import org.tch.fc.model.SoftwareSetting;
 import org.tch.ft.model.User;
 import org.tch.ft.web.FTBasePage;
 import org.tch.ft.web.MenuSection;
@@ -36,14 +44,34 @@ public class SoftwareDetailsPage extends FTBasePage implements SecurePage {
 
     WebSession webSession = (WebSession) getSession();
     User user = webSession.getUser();
-    if (user.getSelectedSoftware() == null) {
+    Software software = user.getSelectedSoftware();
+    if (software == null) {
       throw new RestartResponseException(SoftwarePage.class);
     }
 
-    add(new Label("softwareLabel", user.getSelectedSoftware().getLabel()));
-    add(new Label("serviceType", user.getSelectedSoftware().getServiceType()));
-    add(new Label("serviceUrl", user.getSelectedSoftware().getServiceUrl()));
-    add(new Label("scheduleName", user.getSelectedSoftware().getScheduleName()));
+    add(new Label("softwareLabel", software.getLabel()));
+    add(new Label("serviceType", software.getServiceType()));
+    add(new Label("serviceUrl", software.getServiceUrl()));
+    add(new Label("scheduleName", software.getScheduleName()));
+    
+    Session dataSession = webSession.getDataSession();
+    Query query = dataSession.createQuery("from SoftwareSetting where software = ? order by serviceOption.optionLabel");
+    query.setParameter(0, software);
+    List<SoftwareSetting> softwareSettingList = query.list();
+    
+    ListView<SoftwareSetting> softwareSettingItems = new ListView<SoftwareSetting>("softwareSettingItems", softwareSettingList) {
+      
+      @Override
+      protected void populateItem(ListItem<SoftwareSetting> item) {
+        final SoftwareSetting softwareSetting = item.getModelObject();
+        item.add(new Label("optionLabel", softwareSetting.getServiceOption().getOptionLabel()));
+        item.add(new Label("optionValue", softwareSetting.getOptionValue()));
+        item.add(new Label("description", softwareSetting.getServiceOption().getDescription()));
+      }
+    };
+    add(softwareSettingItems);
+
+    
 
   }
 

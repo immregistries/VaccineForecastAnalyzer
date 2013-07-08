@@ -63,6 +63,7 @@ public class SelectSoftwarePage extends FTBasePage implements SecurePage {
           public void onClick() {
             WebSession webSession = ((WebSession) getSession());
             Session dataSession = webSession.getDataSession();
+            SoftwareManager.initSoftware(software, dataSession);
             Transaction trans = dataSession.beginTransaction();
             User user = ((WebSession) getSession()).getUser();
             user.setSelectedSoftware(software);

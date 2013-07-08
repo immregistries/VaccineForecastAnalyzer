@@ -15,6 +15,7 @@ import org.tch.fc.model.ForecastActual;
 import org.tch.fc.model.ForecastItem;
 import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.TestEvent;
+import org.tch.ft.manager.SoftwareManager;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.web.testCase.RandomNames;

@@ -5,6 +5,7 @@ import java.util.List;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.tch.fc.model.Software;
+import org.tch.fc.model.SoftwareSetting;
 import org.tch.ft.model.Expert;
 import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.User;
@@ -27,9 +28,8 @@ public class SoftwareManager {
     }
     return restricted;
   }
-  
-  public static boolean canEditSoftwareCompare(Software software, User user, Session session)
-  {
+
+  public static boolean canEditSoftwareCompare(Software software, User user, Session session) {
     boolean canEdit = false;
     Query query = session.createQuery("from TaskGroup where primarySoftware = ?");
     query.setParameter(0, software);
@@ -44,6 +44,13 @@ public class SoftwareManager {
       }
     }
     return canEdit;
-    
+
+  }
+
+  public static void initSoftware(Software software, Session session) {
+    Query query = session.createQuery("from SoftwareSetting where software = ?");
+    query.setParameter(0, software);
+    List<SoftwareSetting> softwareSettingList = query.list();
+    software.setSoftwareSettingList(softwareSettingList);
   }
 }
