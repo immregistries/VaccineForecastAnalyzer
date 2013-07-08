@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.tch.fc.model">
+  <class name="ServiceOption" table="service_option">
+    <id name="optionId" column="option_id">
+      <generator class="native"/>
+    </id>
+    <property name="serviceType" column="service_type" type="string"/>
+    <property name="optionName" column="option_name" type="string"/>
+    <property name="optionLabel" column="option_label" type="string"/>
+    <property name="description" column="description" type="string"/>
+    <property name="validValues" column="valid_values" type="string"/>
+    <many-to-one name="baseServiceOption" column="base_option_id" class="ServiceOption"/>
+  </class>
+</hibernate-mapping>

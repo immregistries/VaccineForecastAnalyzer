@@ -84,6 +84,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
 
     final Session dataSession = webSession.getDataSession();
     Software software = user.getSelectedSoftware();
+    SoftwareManager.initSoftware(software, dataSession);
     final TaskGroup taskGroup = user.getSelectedTaskGroup();
     final TestPanel testPanel = user.getSelectedTestPanel();
     testPanelCase = findTestPanel(testCase, dataSession, testPanel);
@@ -456,11 +457,10 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
     editTestCaseLink.setVisible(canEdit);
     add(editTestCaseLink);
     
-    ExternalLink stepLink = new ExternalLink("stepLink","http://localhost:8086/fv/fv/step" + TCHConnector.createQueryString(testCase));
+    ExternalLink forecastLink = new ExternalLink("forecastLink","http://tchforecasttester.org/fv/forecast" + TCHConnector.createQueryString(testCase, software));
+    add(forecastLink);
+    ExternalLink stepLink = new ExternalLink("stepLink","http://tchforecasttester.org/fv/fv/step" + TCHConnector.createQueryString(testCase, software));
     add(stepLink);
-
-
-
 
   }
 

@@ -26,6 +26,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.ft.StyleClassLabel;
+import org.tch.ft.manager.SoftwareManager;
 import org.tch.ft.model.Expert;
 import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.User;

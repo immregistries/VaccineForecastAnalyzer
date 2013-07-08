@@ -14,3 +14,30 @@ insert into forecast_item (forecast_item_id, label) values (23, 'Mumps Only');
 insert into forecast_item (forecast_item_id, label) values (24, 'Rubella Only');
 insert into forecast_item (forecast_item_id, label) values (25, 'Tdap Only');
 
+CREATE TABLE software_setting
+(
+  setting_id           INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  software_id          INTEGER NOT NULL,
+  option_id            INTEGER NOT NULL,
+  option_value         VARCHAR(120) NOT NULL
+);
+
+CREATE TABLE test_case_setting
+(
+  setting_id           INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  test_case_id         INTEGER NOT NULL,
+  option_id            INTEGER NOT NULL,
+  option_value         VARCHAR(120) NOT NULL
+);
+
+CREATE TABLE service_option
+(
+  option_id            INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  service_type         VARCHAR(10) NOT NULL,
+  option_name          VARCHAR(120) NOT NULL,
+  option_label         VARCHAR(120) NOT NULL,
+  description          VARCHAR(4000),
+  valid_values         VARCHAR(1000),
+  base_option_id       INTEGER
+);
+

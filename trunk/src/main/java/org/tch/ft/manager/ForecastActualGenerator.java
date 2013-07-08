@@ -36,6 +36,7 @@ public class ForecastActualGenerator {
     // Get list of items to forecast for
     query = session.createQuery("from ForecastItem");
     List<ForecastItem> forecastItemList = query.list();
+    SoftwareManager.initSoftware(software, session);
     ConnectorInterface connector = ConnectFactory.createConnecter(software, forecastItemList);
 
     Map<TestCase, List<ForecastExpected>> testCaseMap = new HashMap<TestCase, List<ForecastExpected>>();

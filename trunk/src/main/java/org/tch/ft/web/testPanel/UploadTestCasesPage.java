@@ -40,6 +40,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.tch.ft.CentralControl;
 import org.tch.ft.WicketApplication;
+import org.tch.ft.manager.SoftwareManager;
 import org.tch.ft.manager.TestCaseImporter;
 import org.tch.ft.manager.readers.MiisTestCaseReader;
 import org.tch.ft.manager.readers.TestCaseReader;
@@ -139,6 +140,7 @@ public class UploadTestCasesPage extends FTBasePage implements SecurePage {
             TestCaseReader.FormatType formatType = (TestCaseReader.FormatType) fileFormat.getObject();
             TestCaseReader testCaseReader = TestCaseReaderFactory.createTestCaseReader(formatType);
             testCaseReader.setLoadExpectationsSoftware((Software) softwareModel.getObject());
+            SoftwareManager.initSoftware(testCaseReader.getLoadExpectationsSoftware(), dataSession);
 
             testCaseReader.setEventList(eventList);
             testCaseReader.setUser(user);
