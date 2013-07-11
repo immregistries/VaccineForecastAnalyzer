@@ -23,15 +23,40 @@ import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestPanel;
+import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.TestPanelExpected;
 
 public class ForecastActualGenerator {
-  public static List<ForecastActualExpectedCompare> runForecastActual(TestPanel testPanel, Software software, Session session)
-      throws Exception {
+  public static List<ForecastActualExpectedCompare> runForecastActual(TestPanel testPanel, Software software,
+      Session session) throws Exception {
+
+    List<TestPanelExpected> testPanelExpectedList = null;
+    {
+      Query query = session.createQuery("from TestPanelExpected where testPanelCase.testPanel = ?");
+      query.setParameter(0, testPanel);
+      testPanelExpectedList = query.list();
+    }
+
+    return runForecastActual(software, session, testPanelExpectedList);
+  }
+
+  public static List<ForecastActualExpectedCompare> runForecastActual(TestPanelCase testPanelCase, Software software,
+      Session session) throws Exception {
+
+    List<TestPanelExpected> testPanelExpectedList = null;
+    {
+      Query query = session.createQuery("from TestPanelExpected where testPanelCase = ?");
+      query.setParameter(0, testPanelCase);
+      testPanelExpectedList = query.list();
+    }
+
+    return runForecastActual(software, session, testPanelExpectedList);
+  }
+
+  public static List<ForecastActualExpectedCompare> runForecastActual(Software software, Session session,
+      List<TestPanelExpected> testPanelExpectedList) throws Exception {
     // Get list of previously run forecast results
-    Query query = session.createQuery("from ForecastActual where software = ?");
-    query.setParameter(0, software);
-    Set<ForecastActual> forecastActualListOriginal = new HashSet<ForecastActual>(query.list());
+    Query query;
 
     // Get list of items to forecast for
     query = session.createQuery("from ForecastItem");
@@ -40,9 +65,7 @@ public class ForecastActualGenerator {
     ConnectorInterface connector = ConnectFactory.createConnecter(software, forecastItemList);
 
     Map<TestCase, List<ForecastExpected>> testCaseMap = new HashMap<TestCase, List<ForecastExpected>>();
-    query = session.createQuery("from TestPanelExpected where testPanelCase.testPanel = ?");
-    query.setParameter(0, testPanel);
-    List<TestPanelExpected> testPanelExpectedList = query.list();
+
     for (TestPanelExpected testPanelExpected : testPanelExpectedList) {
       TestCase testCase = testPanelExpected.getTestPanelCase().getTestCase();
 
@@ -75,15 +98,15 @@ public class ForecastActualGenerator {
           errorLog = writer.toString();
         }
         for (ForecastExpected forecastExpected : testCaseMap.get(testCase)) {
-          ForecastActual forecastActual = null;
-          for (ForecastActual original : forecastActualListOriginal) {
-            if (original.getTestCase().equals(forecastExpected.getTestCase())
-                && original.getForecastItem().equals(forecastExpected.getForecastItem())) {
-              forecastActual = original;
-              break;
-            }
-          }
-          if (forecastActual == null) {
+          query = session.createQuery("from ForecastActual where testCase = ? and software = ? and forecastItem = ?");
+          query.setParameter(0, forecastExpected.getTestCase());
+          query.setParameter(1, software);
+          query.setParameter(2, forecastExpected.getForecastItem());
+          List<ForecastActual> forecastActualListOriginal = query.list();
+          ForecastActual forecastActual;
+          if (forecastActualListOriginal.size() > 0) {
+            forecastActual = forecastActualListOriginal.get(0);
+          } else {
             forecastActual = new ForecastActual();
             forecastActual.setSoftware(software);
             forecastActual.setTestCase(testCase);
@@ -93,7 +116,7 @@ public class ForecastActualGenerator {
           forecastActual.setRunDate(new Date());
           if (errorLog == null) {
             boolean found = false;
-            
+
             for (ForecastActual result : forecastActualList) {
               if (result.getForecastItem().equals(forecastActual.getForecastItem())) {
                 forecastActual.setDoseNumber(result.getDoseNumber());
@@ -146,7 +169,8 @@ public class ForecastActualGenerator {
     return forecastCompareList;
   }
 
-  public static List<ForecastActualExpectedCompare> createForecastComparison(TestPanel testPanel, Software software, Session session) {
+  public static List<ForecastActualExpectedCompare> createForecastComparison(TestPanel testPanel, Software software,
+      Session session) {
     List<ForecastActualExpectedCompare> forecastCompareList = new ArrayList<ForecastActualExpectedCompare>();
     Query query = session.createQuery("from TestPanelExpected where testPanelCase.testPanel = ?");
     query.setParameter(0, testPanel);

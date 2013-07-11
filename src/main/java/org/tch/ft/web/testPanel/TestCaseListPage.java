@@ -87,6 +87,8 @@ public class TestCaseListPage extends FTBasePage implements SecurePage {
     if (currentTestPanelCaseList.size() > 0) {
       categoryList.add(currentTestPanelCaseList);
     }
+    
+    webSession.setCategoryList(categoryList);
 
     testPanelSection.add(new Label("label", testPanel == null ? "" : testPanel.getLabel()));
     ListView<List<TestPanelCase>> categoryItems = new ListView<List<TestPanelCase>>("categoryItems", categoryList) {

@@ -44,6 +44,7 @@ import org.tch.ft.web.testCase.AddTestCasePage;
 import org.tch.ft.web.testCase.CommentsPage;
 import org.tch.ft.web.testCase.EditTestCasePage;
 import org.tch.ft.web.testCase.ForecastLogPage;
+import org.tch.ft.web.testCase.ForecastNowPage;
 import org.tch.ft.web.testCase.TestCaseDetailPage;
 import org.tch.ft.web.testCase.TestCasePage;
 import org.tch.ft.web.testPanel.SelectTestPanelPage;
@@ -120,6 +121,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
     mountPage("EditTestCasePage", EditTestCasePage.class);
     mountPage("ActualVsExpectedPage", ActualVsExpectedPage.class);
     mountPage("ForecastLogPage", ForecastLogPage.class);
+    mountPage("ForecastNowPage", ForecastNowPage.class);
     mountPage("CommentsPage", CommentsPage.class);
 
     mountPage("CompareSoftwarePage", CompareSoftwarePage.class);

@@ -244,6 +244,24 @@
 		  <li><a href="http://localhost:8086/fv/fv/step" class="submenuLink-darkblue"
 				wicket:id="stepLink" target="_new">Step Through</a></li>
 		</ul>
+		
+		<h2>Test Panel</h2>
+		<div wicket:id="categoryItems">
+				<h3 wicket:id="categoryName"></h3>
+				<table>
+					<tr>
+						<th>Test Case</th>
+						<th>Status</th>
+						<th>Select</th>
+					</tr>
+					<tr wicket:id="testPanelCaseItems">
+					  <td wicket:id="testCaseLabel"></td>
+					  <td wicket:id="status"></td>
+					  <td><a wicket:id="selectTestCase" href="TestCasePage"
+						class="fauxbutton">select</a></td>
+					</tr>
+				</table>
+			</div>
 
 	</div>
 </body>

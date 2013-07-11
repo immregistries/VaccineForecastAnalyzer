@@ -48,6 +48,7 @@ import org.tch.ft.StyleClassLabel;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.manager.SoftwareManager;
 import org.tch.ft.model.ForecastExpected;
+import org.tch.ft.model.Include;
 import org.tch.ft.model.Result;
 import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.TestNote;
@@ -457,11 +458,62 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
     editTestCaseLink.setVisible(canEdit);
     add(editTestCaseLink);
     
-    ExternalLink forecastLink = new ExternalLink("forecastLink","http://tchforecasttester.org/fv/forecast" + TCHConnector.createQueryString(testCase, software));
+    ExternalLink forecastLink = new ExternalLink("forecastLink","http://tchforecasttester.org/fv/forecast" + TCHConnector.createQueryString(testCase, software, "html"));
     add(forecastLink);
-    ExternalLink stepLink = new ExternalLink("stepLink","http://tchforecasttester.org/fv/fv/step" + TCHConnector.createQueryString(testCase, software));
+    ExternalLink stepLink = new ExternalLink("stepLink","http://tchforecasttester.org/fv/fv/step" + TCHConnector.createQueryString(testCase, software, "text"));
     add(stepLink);
+    
+    List<List<TestPanelCase>> categoryList = webSession.getCategoryList();
+    if (categoryList != null) {
+    ListView<List<TestPanelCase>> categoryItems = new ListView<List<TestPanelCase>>("categoryItems", categoryList) {
+      @Override
+      protected void populateItem(ListItem<List<TestPanelCase>> item) {
+        final List<TestPanelCase> testPanelCaseList = item.getModelObject();
 
+        item.add(new Label("categoryName", testPanelCaseList.size() > 0 ? testPanelCaseList.get(0).getCategoryName()
+            : ""));
+        ListView<TestPanelCase> testPanelCaseItems = new ListView<TestPanelCase>("testPanelCaseItems",
+            testPanelCaseList) {
+          @Override
+          protected void populateItem(ListItem<TestPanelCase> item) {
+            final TestPanelCase testPanelCase = item.getModelObject();
+            TestCase testCase = testPanelCase.getTestCase();
+            item.add(new Label("testCaseLabel", testCase.getLabel()));
+
+            String styleClass = "none";
+            if (testPanelCase.getResult() != null
+                && (testPanelCase.getInclude() == null || testPanelCase.getInclude() == Include.INCLUDED)) {
+              if (testPanelCase.getResult() == Result.FAIL || testPanelCase.getResult() == Result.RESEARCH
+                  || testPanelCase.getResult() == Result.FIXED) {
+                styleClass = "fail";
+              } else if (testPanelCase.getResult() == Result.PASS || testPanelCase.getResult() == Result.ACCEPT) {
+                styleClass = "pass";
+              }
+            }
+
+            item.add(new StyleClassLabel("status", testPanelCase.getResult() == null ? "" : testPanelCase.getResult()
+                .getLabel(), styleClass));
+            item.add(new Link("selectTestCase") {
+              @Override
+              public void onClick() {
+                WebSession webSession = ((WebSession) getSession());
+                Transaction trans = webSession.getDataSession().beginTransaction();
+                User user = ((WebSession) getSession()).getUser();
+                user.setSelectedTestCase(testPanelCase.getTestCase());
+                user.setSelectedTestPanelCase(testPanelCase);
+                trans.commit();
+                setResponsePage(new ActualVsExpectedPage(pageParameters));
+              }
+            });
+          }
+
+        };
+        item.add(testPanelCaseItems);
+      }
+    };
+    
+    add(categoryItems);
+    }
   }
 
   protected static boolean determineIfCanEdit(final User user, final Session dataSession, TestPanel testPanel) {
