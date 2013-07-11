@@ -50,7 +50,7 @@ public class RunForecastTestsPage extends FTBasePage implements SecurePage {
         Software software = user.getSelectedSoftware();
         StringWriter stringWriter = new StringWriter();
         PrintWriter logOut = new PrintWriter(stringWriter);
-        logOut.println("Funning all forecasts");
+        logOut.println("Running all forecasts");
         if (testPanel != null && software != null) {
           Session dataSession = webSession.getDataSession();
           try {

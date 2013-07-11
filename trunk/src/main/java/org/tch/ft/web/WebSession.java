@@ -28,6 +28,7 @@ import org.hibernate.SessionFactory;
 import org.tch.ft.CentralControl;
 import org.tch.ft.manager.UserManager;
 import org.tch.ft.model.ForecastCompare;
+import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.User;
 import org.tch.ft.web.softwareCompare.CompareResults;
 import org.tch.ft.web.softwareCompare.CompareSoftwarePage;
@@ -49,7 +50,16 @@ public class WebSession extends AuthenticatedWebSession {
   private ForecastCompare forecastCompare = null;
   
   private List<Integer> forecastCompareIdList = null;
-  
+  private List<List<TestPanelCase>> categoryList = null;
+
+  public List<List<TestPanelCase>> getCategoryList() {
+    return categoryList;
+  }
+
+  public void setCategoryList(List<List<TestPanelCase>> categoryList) {
+    this.categoryList = categoryList;
+  }
+
   public List<Integer> getForecastCompareIdList() {
     return forecastCompareIdList;
   }

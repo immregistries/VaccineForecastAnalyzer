@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+
+		<h1>Forecast Now</h1>
+
+		<form wicket:id="forecastNowForm">
+			<table>
+				<tr>
+					<td>Forecaster</td>
+					<td><span wicket:id="softwares"> </span></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						value="forecast" class="fauxbutton" /></td>
+				</tr>
+			</table>
+		</form>
+
+	</div>
+</body>
+</html>
