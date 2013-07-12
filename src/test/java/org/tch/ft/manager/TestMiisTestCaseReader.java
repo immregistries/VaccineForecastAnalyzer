@@ -62,13 +62,14 @@ public class TestMiisTestCaseReader extends TestCase{
     miisTestCaseReader.read(in);
     assertEquals(840, miisTestCaseReader.getTestCaseList().size());
     
-    TestCaseWithExpectations testCase = miisTestCaseReader.getTestCaseList().get(3);
-    assertNotNull(testCase);
-    assertEquals("1003", testCase.getTestCaseNumber());
-    assertEquals("HepA", testCase.getCategoryName());
-    List<ForecastExpected> forecastExpectedList = testCase.getForecastExpectedList();
+    TestCaseWithExpectations testCaseWithExpectations = miisTestCaseReader.getTestCaseList().get(3);
+    
+    assertNotNull(testCaseWithExpectations);
+    assertEquals("1003", testCaseWithExpectations.getTestCase().getTestCaseNumber());
+    assertEquals("HepA", testCaseWithExpectations.getTestCase().getCategoryName());
+    List<ForecastExpected> forecastExpectedList = testCaseWithExpectations.getForecastExpectedList();
     assertNotNull(forecastExpectedList);
-    List<TestEvent> testEventList = testCase.getTestEventList();
+    List<TestEvent> testEventList = testCaseWithExpectations.getTestCase().getTestEventList();
     assertNotNull(testEventList);
     for (TestEvent testEvent : testEventList)
     {
