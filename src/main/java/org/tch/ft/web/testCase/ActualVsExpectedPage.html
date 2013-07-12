@@ -239,14 +239,15 @@
 		</p>
 		<h2>TCH Tools</h2>
 		<ul>
-		  <li><a href="http://www.tchforecasttester.org/fv/forecast" class="submenuLink-darkblue"
-				wicket:id="forecastLink" target="_new">Forecast</a></li>
-		  <li><a href="http://localhost:8086/fv/fv/step" class="submenuLink-darkblue"
-				wicket:id="stepLink" target="_new">Step Through</a></li>
+			<li><a href="http://www.tchforecasttester.org/fv/forecast"
+				class="submenuLink-darkblue" wicket:id="forecastLink" target="_new">Forecast</a></li>
+			<li><a href="http://localhost:8086/fv/fv/step"
+				class="submenuLink-darkblue" wicket:id="stepLink" target="_new">Step
+					Through</a></li>
 		</ul>
-		
-		<h2>Test Panel</h2>
-		<div wicket:id="categoryItems">
+		<div wicket:id="testPanelSection">
+			<h2>Test Panel</h2>
+			<div wicket:id="categoryItems">
 				<h3 wicket:id="categoryName"></h3>
 				<table>
 					<tr>
@@ -255,14 +256,14 @@
 						<th>Select</th>
 					</tr>
 					<tr wicket:id="testPanelCaseItems">
-					  <td wicket:id="testCaseLabel"></td>
-					  <td wicket:id="status"></td>
-					  <td><a wicket:id="selectTestCase" href="TestCasePage"
-						class="fauxbutton">select</a></td>
+						<td wicket:id="testCaseLabel"></td>
+						<td wicket:id="status"></td>
+						<td><a wicket:id="selectTestCase" href="TestCasePage"
+							class="fauxbutton">select</a></td>
 					</tr>
 				</table>
 			</div>
-
+		</div>
 	</div>
 </body>
 </html>

@@ -1,17 +1,31 @@
 package org.tch.ft.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class TestCaseWithExpectations extends org.tch.fc.model.TestCase {
+import org.tch.fc.model.TestCase;
 
+public class TestCaseWithExpectations implements Serializable {
+
+  private TestCase testCase = new TestCase();
+  
   public TestCaseWithExpectations()
   {
-    // default;
+    this.testCase = new TestCase();
   }
   
-  public TestCaseWithExpectations(TestCaseWithExpectations parentTestCase)
+  public TestCaseWithExpectations(TestCase testCase)
   {
-    super(parentTestCase);
+    this.testCase = new TestCase(testCase);
+    
+  }
+
+  public TestCase getTestCase() {
+    return testCase;
+  }
+
+  public void setTestCase(TestCase testCase) {
+    this.testCase = testCase;
   }
 
   private List<ForecastExpected> forecastExpectedList = null;
@@ -23,6 +37,5 @@ public class TestCaseWithExpectations extends org.tch.fc.model.TestCase {
   public void setForecastExpectedList(List<ForecastExpected> forecastExpectedList) {
     this.forecastExpectedList = forecastExpectedList;
   }
-
 
 }

@@ -47,9 +47,11 @@ import org.tch.ft.manager.readers.TestCaseReader;
 import org.tch.ft.manager.readers.TestCaseReaderFactory;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.Role;
 import org.tch.fc.model.Software;
 import org.tch.ft.model.TaskGroup;
+import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.User;
 import org.tch.ft.web.FTBasePage;
@@ -129,53 +131,65 @@ public class UploadTestCasesPage extends FTBasePage implements SecurePage {
             User user = webSession.getUser();
 
             Transaction transaction = dataSession.beginTransaction();
-            Query query = dataSession.createQuery("from Event");
-            List<Event> eventList = query.list();
-            query = dataSession.createQuery("from ForecastItem");
-            List<ForecastItem> forecastItemList = query.list();
-            Map<Integer, ForecastItem> forecastItemListMap = new HashMap<Integer, ForecastItem>();
-            for (ForecastItem forecastItem : forecastItemList) {
-              forecastItemListMap.put(forecastItem.getForecastItemId(), forecastItem);
+            try {
+              Query query = dataSession.createQuery("from Event");
+              List<Event> eventList = query.list();
+              query = dataSession.createQuery("from ForecastItem");
+              List<ForecastItem> forecastItemList = query.list();
+              Map<Integer, ForecastItem> forecastItemListMap = new HashMap<Integer, ForecastItem>();
+              for (ForecastItem forecastItem : forecastItemList) {
+                forecastItemListMap.put(forecastItem.getForecastItemId(), forecastItem);
+              }
+              TestCaseReader.FormatType formatType = (TestCaseReader.FormatType) fileFormat.getObject();
+              TestCaseReader testCaseReader = TestCaseReaderFactory.createTestCaseReader(formatType);
+              testCaseReader.setLoadExpectationsSoftware((Software) softwareModel.getObject());
+              SoftwareManager.initSoftware(testCaseReader.getLoadExpectationsSoftware(), dataSession);
+
+              testCaseReader.setEventList(eventList);
+              testCaseReader.setUser(user);
+              testCaseReader.setForecastItems(forecastItemListMap);
+              testCaseReader.read(in);
+
+              TestCaseImporter tci = new TestCaseImporter();
+
+              // find testPanelCase
+              TaskGroup taskGroup = user.getSelectedTaskGroup();
+              query = dataSession.createQuery("from TestPanel where taskGroup = ? and label = ?");
+              query.setParameter(0, taskGroup);
+              query.setParameter(1, filename);
+              List<TestPanel> testPanelList = query.list();
+              TestPanel testPanel = null;
+              if (testPanelList.size() > 0) {
+                testPanel = testPanelList.get(0);
+              } else {
+                testPanel = new TestPanel();
+                testPanel.setLabel(filename);
+                testPanel.setTaskGroup(taskGroup);
+                dataSession.save(testPanel);
+              }
+              tci.importTestCases(testCaseReader, testPanel, dataSession);
+
+              if (testCaseReader.getErrorMessage() != null) {
+                UploadTestCasesPage.this.info("Imported " + testCaseReader.getTestCaseList().size()
+                    + " test cases into test panel: " + filename + ", reader encountered problem: "
+                    + testCaseReader.getErrorMessage());
+              } else {
+                UploadTestCasesPage.this.info("Imported " + testCaseReader.getTestCaseList().size()
+                    + " test cases into test panel: " + filename);
+              }
+              
+              for (TestCaseWithExpectations testCaseWithExpectations : testCaseReader.getTestCaseList())
+              {
+                query = dataSession.createQuery("from TestEvent where testCase = ?");
+                query.setParameter(0, testCaseWithExpectations.getTestCase());
+                List<TestEvent> testEventList = query.list();
+                System.out.println("--> TC " + testCaseWithExpectations.getTestCase().getTestCaseId() + " " + testEventList.size());
+              }
+
+            } finally {
+              transaction.commit();
             }
-            TestCaseReader.FormatType formatType = (TestCaseReader.FormatType) fileFormat.getObject();
-            TestCaseReader testCaseReader = TestCaseReaderFactory.createTestCaseReader(formatType);
-            testCaseReader.setLoadExpectationsSoftware((Software) softwareModel.getObject());
-            SoftwareManager.initSoftware(testCaseReader.getLoadExpectationsSoftware(), dataSession);
-
-            testCaseReader.setEventList(eventList);
-            testCaseReader.setUser(user);
-            testCaseReader.setForecastItems(forecastItemListMap);
-            testCaseReader.read(in);
-
-            TestCaseImporter tci = new TestCaseImporter();
-
-            // find testPanelCase
-            TaskGroup taskGroup = user.getSelectedTaskGroup();
-            query = dataSession.createQuery("from TestPanel where taskGroup = ? and label = ?");
-            query.setParameter(0, taskGroup);
-            query.setParameter(1, filename);
-            List<TestPanel> testPanelList = query.list();
-            TestPanel testPanel = null;
-            if (testPanelList.size() > 0) {
-              testPanel = testPanelList.get(0);
-            } else {
-              testPanel = new TestPanel();
-              testPanel.setLabel(filename);
-              testPanel.setTaskGroup(taskGroup);
-              dataSession.save(testPanel);
-            }
-            tci.importTestCases(testCaseReader, testPanel, dataSession);
-
-            transaction.commit();
-
-            if (testCaseReader.getErrorMessage() != null) {
-              UploadTestCasesPage.this.info("Imported " + testCaseReader.getTestCaseList().size()
-                  + " test cases into test panel: " + filename + ", reader encountered problem: "
-                  + testCaseReader.getErrorMessage());
-            } else {
-              UploadTestCasesPage.this.info("Imported " + testCaseReader.getTestCaseList().size()
-                  + " test cases into test panel: " + filename);
-            }
+            
 
           } catch (Exception e) {
             throw new IllegalStateException("Unable to write file", e);

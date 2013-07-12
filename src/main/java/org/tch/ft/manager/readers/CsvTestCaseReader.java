@@ -69,7 +69,7 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
     return "";
   }
 
-  protected Date readDateField(int position, List<String> testCaseFieldList, TestCaseWithExpectations testCase) {
+  protected Date readDateField(int position, List<String> testCaseFieldList, TestCaseWithExpectations testCaseWithExpectations) {
     String dateValue = readField(position, testCaseFieldList);
     if (dateValue.equals("")) {
       return null;
@@ -78,7 +78,7 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
       return sdf.parse(dateValue);
     } catch (ParseException parseException) {
       throw new IllegalArgumentException("Unable to parse date '" + dateValue + "' for test case "
-          + testCase.getTestCaseNumber() + "");
+          + testCaseWithExpectations.getTestCase().getTestCaseNumber() + "");
     }
   }
 

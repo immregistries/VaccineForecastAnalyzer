@@ -11,9 +11,12 @@ import java.util.Map;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastItem;
 import org.tch.fc.model.ForecastResult;
+import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestCaseWithExpectations;
+
+import static org.tch.fc.model.ForecastItem.*;
 
 public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseReader {
 
@@ -47,21 +50,22 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
   private Map<String, ForecastItem> forecastItemMap = new HashMap<String, ForecastItem>();
 
   public void setForecastItems(Map<Integer, ForecastItem> forecastItemListMap) {
-    forecastItemMap.put("DTaP", forecastItemListMap.get(2));
-    forecastItemMap.put("HepA", forecastItemListMap.get(4));
-    forecastItemMap.put("HepB", forecastItemListMap.get(5));
-    forecastItemMap.put("Flu", forecastItemListMap.get(3));
-    forecastItemMap.put("Hib", forecastItemListMap.get(6));
-    forecastItemMap.put("HPV", forecastItemListMap.get(7));
-    forecastItemMap.put("MCV", forecastItemListMap.get(8));
-    forecastItemMap.put("MMR", forecastItemListMap.get(9));
-    forecastItemMap.put("PCV", forecastItemListMap.get(10));
-    forecastItemMap.put("POL", forecastItemListMap.get(11));
-    forecastItemMap.put("Rota", forecastItemListMap.get(12));
-    forecastItemMap.put("Var", forecastItemListMap.get(13));
+    forecastItemMap.put("DTaP", forecastItemListMap.get(ID_DTAP_TDAP_TD));
+    forecastItemMap.put("HepA", forecastItemListMap.get(ID_HEPA));
+    forecastItemMap.put("HepB", forecastItemListMap.get(ID_HEPB));
+    forecastItemMap.put("Flu", forecastItemListMap.get(ID_INFLUENZA));
+    forecastItemMap.put("Hib", forecastItemListMap.get(ID_HIB));
+    forecastItemMap.put("HPV", forecastItemListMap.get(ID_HPV));
+    forecastItemMap.put("MCV", forecastItemListMap.get(ID_MENING));
+    forecastItemMap.put("MMR", forecastItemListMap.get(ID_MMR));
+    forecastItemMap.put("PCV", forecastItemListMap.get(ID_PCV));
+    forecastItemMap.put("POL", forecastItemListMap.get(ID_POLIO));
+    forecastItemMap.put("Rota", forecastItemListMap.get(ID_ROTA));
+    forecastItemMap.put("Var", forecastItemListMap.get(ID_VAR));
+    forecastItemMap.put("Typhoid", forecastItemListMap.get(ID_TYPHOID));
   }
 
-  private String[] ignoredItems = { "Typhoid" };
+  private String[] ignoredItems = { };
 
   public void read(InputStream in) throws IOException {
     readInputStream(in);
@@ -94,17 +98,18 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     
     Date referenceDate = null;
     for (List<String> testCaseFieldList : testCaseFieldListList) {
-      TestCaseWithExpectations testCase = new TestCaseWithExpectations();
-      testCaseList.add(testCase);
+      TestCaseWithExpectations testCaseWithExpectations = new TestCaseWithExpectations();
+      TestCase testCase = testCaseWithExpectations.getTestCase();
+      testCaseList.add(testCaseWithExpectations);
       testCase.setTestCaseNumber(readField(testIdPosition, testCaseFieldList));
       testCase.setCategoryName(readField(vaccineGroupPos, testCaseFieldList));
       testCase.setLabel(testCase.getTestCaseNumber() + " " + testCase.getCategoryName() + " "
           + readField(evaluationTestTypePos, testCaseFieldList));
       testCase.setDescription(readField(testCaseNamePosition, testCaseFieldList));
-      testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCase));
+      testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCaseWithExpectations));
       testCase.setPatientSex(readField(genderPos, testCaseFieldList).toUpperCase().startsWith("M") ? "M" : "F");
       if (referenceDate == null) {
-        referenceDate = readDateField(assessmentDatePos, testCaseFieldList, testCase);
+        referenceDate = readDateField(assessmentDatePos, testCaseFieldList, testCaseWithExpectations);
       }
       testCase.setEvalDate(referenceDate);
       List<TestEvent> testEventList = new ArrayList<TestEvent>();
@@ -115,7 +120,7 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
           cvxCode = "0" + cvxCode;
         }
 
-        Date shotDate = readDateField(shotDatePos[i], testCaseFieldList, testCase);
+        Date shotDate = readDateField(shotDatePos[i], testCaseFieldList, testCaseWithExpectations);
         if (!cvxCode.equals("") && shotDate != null) {
           TestEvent testEvent = new TestEvent();
           Event event = cvxToEventMap.get(cvxCode);
@@ -150,18 +155,18 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         if (!seriesStatus.equals("Not Completed"))
         {
           forecastExpected.setDoseNumber(readField(forecastNumPos, testCaseFieldList));
-          forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCase));
-          forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCase));
-          forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCase));
+          forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCaseWithExpectations));
+          forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCaseWithExpectations));
+          forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCaseWithExpectations));
         }
         else
         {
           forecastExpected.setDoseNumber(ForecastResult.DOSE_NUMBER_COMPLETE);
         }
-        List<ForecastExpected> forecastExpectedList = testCase.getForecastExpectedList();
+        List<ForecastExpected> forecastExpectedList = testCaseWithExpectations.getForecastExpectedList();
         if (forecastExpectedList == null) {
           forecastExpectedList = new ArrayList<ForecastExpected>();
-          testCase.setForecastExpectedList(forecastExpectedList);
+          testCaseWithExpectations.setForecastExpectedList(forecastExpectedList);
         }
         forecastExpectedList.add(forecastExpected);
 

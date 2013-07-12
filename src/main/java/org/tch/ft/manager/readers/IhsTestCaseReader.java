@@ -14,8 +14,8 @@ import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastActual;
 import org.tch.fc.model.ForecastItem;
 import org.tch.fc.model.ForecastResult;
+import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
-import org.tch.ft.manager.SoftwareManager;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.web.testCase.RandomNames;
@@ -41,18 +41,20 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     {
       Date referenceDate = new Date();
       String lastMrn = "";
-      TestCaseWithExpectations testCase = null;
+      TestCaseWithExpectations testCaseWithExpectations = null;
+      TestCase testCase = null;
       List<TestEvent> testEventList = new ArrayList<TestEvent>();
       for (List<String> testCaseFieldList : testCaseFieldListList) {
         String mrn = readField(caseNumberPosition, testCaseFieldList);
         if (!mrn.equals(lastMrn)) {
           lastMrn = mrn;
-          testCase = new TestCaseWithExpectations();
-          testCaseList.add(testCase);
+          testCaseWithExpectations = new TestCaseWithExpectations();
+          testCase = testCaseWithExpectations.getTestCase();
+          testCaseList.add(testCaseWithExpectations);
           testCase.setTestCaseNumber("IHS-" + mrn);
           testCase.setLabel("Test Case " + testCase.getTestCaseNumber());
           testCase.setDescription(testCase.getLabel());
-          testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCase));
+          testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCaseWithExpectations));
           testCase.setCategoryName(createAgeCategoryName(testCase.getPatientDob(), referenceDate));
           testCase.setPatientSex("F");
           testCase.setPatientFirst(RandomNames.getRandomFirstName());
@@ -67,7 +69,7 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         if (cvxCode.length() == 1) {
           cvxCode = "0" + cvxCode;
         }
-        Date shotDate = readDateField(shotDatePos, testCaseFieldList, testCase);
+        Date shotDate = readDateField(shotDatePos, testCaseFieldList, testCaseWithExpectations);
         if (!cvxCode.equals("") && shotDate != null) {
           TestEvent testEvent = new TestEvent();
           Event event = cvxToEventMap.get(cvxCode);
@@ -82,12 +84,12 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         }
       }
     }
-    for (TestCaseWithExpectations testCase : testCaseList) {
+    for (TestCaseWithExpectations testCaseWithExpectations : testCaseList) {
       List<ForecastActual> forecastActualList = null;
       if (loadExpectationsSoftware != null) {
         try {
           ConnectorInterface connector = ConnectFactory.createConnecter(loadExpectationsSoftware, forecastItemList);
-          forecastActualList = connector.queryForForecast(testCase);
+          forecastActualList = connector.queryForForecast(testCaseWithExpectations.getTestCase());
 
         } catch (Exception e) {
           loadExpectationsSoftware = null;
@@ -96,14 +98,14 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         }
 
       }
-      int ageInYears = getAgeInYears(testCase.getPatientDob(), testCase.getEvalDate());
+      int ageInYears = getAgeInYears(testCaseWithExpectations.getTestCase().getPatientDob(), testCaseWithExpectations.getTestCase().getEvalDate());
       for (ForecastItem forecastItem : forecastItemList) {
         if (ageInYears < (forecastItem.getTypicallyGivenYearStart() - 1)
             || ageInYears > (forecastItem.getTypicallyGivenYearEnd() + 1)) {
           continue;
         }
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(testCase.getPatientDob());
+        calendar.setTime(testCaseWithExpectations.getTestCase().getPatientDob());
         calendar.add(Calendar.YEAR, forecastItem.getTypicallyGivenYearStart());
         Date typicalStartDate = calendar.getTime();
 
@@ -126,13 +128,13 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
           forecastExpected = new ForecastExpected();
           forecastExpected.setDoseNumber(ForecastResult.DOSE_NUMBER_COMPLETE);
         }
-        forecastExpected.setTestCase(testCase);
+        forecastExpected.setTestCase(testCaseWithExpectations.getTestCase());
         forecastExpected.setAuthor(user);
         forecastExpected.setForecastItem(forecastItem);
-        List<ForecastExpected> forecastExpectedList = testCase.getForecastExpectedList();
+        List<ForecastExpected> forecastExpectedList = testCaseWithExpectations.getForecastExpectedList();
         if (forecastExpectedList == null) {
           forecastExpectedList = new ArrayList<ForecastExpected>();
-          testCase.setForecastExpectedList(forecastExpectedList);
+          testCaseWithExpectations.setForecastExpectedList(forecastExpectedList);
         }
         forecastExpectedList.add(forecastExpected);
       }

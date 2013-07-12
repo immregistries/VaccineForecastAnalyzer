@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestCaseWithExpectations;
@@ -89,16 +90,17 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
 
     Date referenceDate = null;
     for (List<String> testCaseFieldList : testCaseFieldListList) {
-      TestCaseWithExpectations testCase = new TestCaseWithExpectations();
-      testCaseList.add(testCase);
+      TestCaseWithExpectations testCaseWithExpectations = new TestCaseWithExpectations();
+      TestCase testCase = testCaseWithExpectations.getTestCase();
+      testCaseList.add(testCaseWithExpectations);
       testCase.setTestCaseNumber(readField(caseNumberPosition, testCaseFieldList));
       testCase.setCategoryName(readField(izSeriesPos, testCaseFieldList));
       testCase.setLabel("Test Case " + testCase.getTestCaseNumber());
       testCase.setDescription(readField(vaccineNamesPos, testCaseFieldList));
-      testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCase));
+      testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCaseWithExpectations));
       testCase.setPatientSex(readField(genderPos, testCaseFieldList).toUpperCase().startsWith("M") ? "M" : "F");
       if (referenceDate == null) {
-        referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCase);
+        referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCaseWithExpectations);
       }
       testCase.setEvalDate(referenceDate);
       List<TestEvent> testEventList = new ArrayList<TestEvent>();
@@ -109,7 +111,7 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
           cvxCode = "0" + cvxCode;
         }
 
-        Date shotDate = readDateField(shotDatePos[i], testCaseFieldList, testCase);
+        Date shotDate = readDateField(shotDatePos[i], testCaseFieldList, testCaseWithExpectations);
         if (!cvxCode.equals("") && shotDate != null) {
           TestEvent testEvent = new TestEvent();
           Event event = cvxToEventMap.get(cvxCode);
@@ -141,13 +143,13 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
         forecastExpected.setAuthor(user);
         forecastExpected.setForecastItem(forecastItem);
         forecastExpected.setDoseNumber(readField(forecastNumPos, testCaseFieldList));
-        forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCase));
-        forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCase));
-        forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCase));
-        List<ForecastExpected> forecastExpectedList = testCase.getForecastExpectedList();
+        forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCaseWithExpectations));
+        forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCaseWithExpectations));
+        forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCaseWithExpectations));
+        List<ForecastExpected> forecastExpectedList = testCaseWithExpectations.getForecastExpectedList();
         if (forecastExpectedList == null) {
           forecastExpectedList = new ArrayList<ForecastExpected>();
-          testCase.setForecastExpectedList(forecastExpectedList);
+          testCaseWithExpectations.setForecastExpectedList(forecastExpectedList);
         }
         forecastExpectedList.add(forecastExpected);
 
