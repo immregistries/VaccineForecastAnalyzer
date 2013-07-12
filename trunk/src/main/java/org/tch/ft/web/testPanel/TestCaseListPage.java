@@ -58,37 +58,9 @@ public class TestCaseListPage extends FTBasePage implements SecurePage {
     WebMarkupContainer testPanelSection = new WebMarkupContainer("testPanelSection");
     add(testPanelSection);
 
-    List<TestPanelCase> testPanelCaseList;
     final TestPanel testPanel = user.getSelectedTestPanel();
-    if (testPanel == null) {
-      testPanelSection.setVisible(false);
-      testPanelCaseList = new ArrayList<TestPanelCase>();
-    } else {
-      Query query = dataSession
-          .createQuery("from TestPanelCase where testPanel = ? order by categoryName, testCase.label");
-      query.setParameter(0, testPanel);
-      testPanelCaseList = query.list();
-      Collections.sort(testPanelCaseList, new TestPanelCase.TestPanelCaseComparator());
-    }
-
-    List<List<TestPanelCase>> categoryList = new ArrayList<List<TestPanelCase>>();
-    String lastCategoryName = "";
-    List<TestPanelCase> currentTestPanelCaseList = new ArrayList<TestPanelCase>();
-    for (TestPanelCase testPanelCase : testPanelCaseList) {
-      if (!testPanelCase.getCategoryName().equals(lastCategoryName)) {
-        if (currentTestPanelCaseList.size() > 0) {
-          categoryList.add(currentTestPanelCaseList);
-        }
-        currentTestPanelCaseList = new ArrayList<TestPanelCase>();
-      }
-      currentTestPanelCaseList.add(testPanelCase);
-      lastCategoryName = testPanelCase.getCategoryName();
-    }
-    if (currentTestPanelCaseList.size() > 0) {
-      categoryList.add(currentTestPanelCaseList);
-    }
-    
-    webSession.setCategoryList(categoryList);
+    List<List<TestPanelCase>> categoryList = initTestPanelCategories(dataSession, webSession, testPanelSection,
+        testPanel);
 
     testPanelSection.add(new Label("label", testPanel == null ? "" : testPanel.getLabel()));
     ListView<List<TestPanelCase>> categoryItems = new ListView<List<TestPanelCase>>("categoryItems", categoryList) {
@@ -153,5 +125,40 @@ public class TestCaseListPage extends FTBasePage implements SecurePage {
    
 
 
+  }
+
+  public static List<List<TestPanelCase>> initTestPanelCategories(final Session dataSession, final WebSession webSession,
+      WebMarkupContainer testPanelSection, final TestPanel testPanel) {
+    List<TestPanelCase> testPanelCaseList;
+    if (testPanel == null) {
+      testPanelSection.setVisible(false);
+      testPanelCaseList = new ArrayList<TestPanelCase>();
+    } else {
+      Query query = dataSession
+          .createQuery("from TestPanelCase where testPanel = ? order by categoryName, testCase.label");
+      query.setParameter(0, testPanel);
+      testPanelCaseList = query.list();
+      Collections.sort(testPanelCaseList, new TestPanelCase.TestPanelCaseComparator());
+    }
+
+    List<List<TestPanelCase>> categoryList = new ArrayList<List<TestPanelCase>>();
+    String lastCategoryName = "";
+    List<TestPanelCase> currentTestPanelCaseList = new ArrayList<TestPanelCase>();
+    for (TestPanelCase testPanelCase : testPanelCaseList) {
+      if (!testPanelCase.getCategoryName().equals(lastCategoryName)) {
+        if (currentTestPanelCaseList.size() > 0) {
+          categoryList.add(currentTestPanelCaseList);
+        }
+        currentTestPanelCaseList = new ArrayList<TestPanelCase>();
+      }
+      currentTestPanelCaseList.add(testPanelCase);
+      lastCategoryName = testPanelCase.getCategoryName();
+    }
+    if (currentTestPanelCaseList.size() > 0) {
+      categoryList.add(currentTestPanelCaseList);
+    }
+    
+    webSession.setCategoryList(categoryList);
+    return categoryList;
   }
 }

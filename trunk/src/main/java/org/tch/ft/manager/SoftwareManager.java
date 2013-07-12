@@ -48,9 +48,11 @@ public class SoftwareManager {
   }
 
   public static void initSoftware(Software software, Session session) {
-    Query query = session.createQuery("from SoftwareSetting where software = ?");
-    query.setParameter(0, software);
-    List<SoftwareSetting> softwareSettingList = query.list();
-    software.setSoftwareSettingList(softwareSettingList);
+    if (software != null) {
+      Query query = session.createQuery("from SoftwareSetting where software = ?");
+      query.setParameter(0, software);
+      List<SoftwareSetting> softwareSettingList = query.list();
+      software.setSoftwareSettingList(softwareSettingList);
+    }
   }
 }

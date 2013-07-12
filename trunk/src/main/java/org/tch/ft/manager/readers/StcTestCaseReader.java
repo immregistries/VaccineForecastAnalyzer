@@ -11,6 +11,7 @@ import java.util.Map;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastItem;
 import org.tch.fc.model.ForecastResult;
+import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestCaseWithExpectations;
@@ -154,7 +155,8 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     int cvxPos = findFieldPos(FIELD_CVX);
     int familyCodePos = findFieldPos(FIELD_FAMILY_CODE);
 
-    TestCaseWithExpectations testCase = null;
+    TestCaseWithExpectations testCaseWithExpectations = null;
+    TestCase testCase = null;
     List<TestEvent> testEventList = null;
     int testCaseNumberCount = 0;
     String currentTestCaseId = "";
@@ -167,35 +169,37 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
       }
       if (!testCaseId.equals("")) {
         currentTestCaseId = testCaseId;
-        testCaseNumberCount = 1;
-        testCase = new TestCaseWithExpectations();
+        testCaseNumberCount = 0;
+        testCaseWithExpectations = new TestCaseWithExpectations();
+        testCase = testCaseWithExpectations.getTestCase();
         testCase.setTestCaseNumber(testCaseId + "." + testCaseNumberCount);
         testCase.setLabel("Test Case " + testCase.getTestCaseNumber());
         testCase.setDescription(readField(scheduleDescriptionPosition, testCaseFieldList));
-        testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCase));
+        testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCaseWithExpectations));
         testCase.setPatientSex(readField(genderPos, testCaseFieldList).toUpperCase().startsWith("M") ? "M" : "F");
         testCase.setCategoryName(readCategoryName(testCase.getTestCaseNumber()));
         testEventList = new ArrayList<TestEvent>();
         testCase.setTestEventList(testEventList);
-        Date referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCase);
+        Date referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCaseWithExpectations);
         if (referenceDate == null) {
           referenceDate = new Date();
         }
         testCase.setEvalDate(referenceDate);
-        testCaseList.add(testCase);
+        testCaseList.add(testCaseWithExpectations);
       } else if (!antigen.equals("")) {
         testCaseNumberCount++;
-        testCase = new TestCaseWithExpectations(testCase);
+        testCaseWithExpectations = new TestCaseWithExpectations(testCase);
+        testCase = testCaseWithExpectations.getTestCase();
+        testEventList = testCase.getTestEventList();
+        System.out.println("--> testCase.getTestEventList().size() = " + testCase.getTestEventList().size());
         testCase.setTestCaseNumber(currentTestCaseId + "." + testCaseNumberCount);
         testCase.setLabel("Test Case " + testCase.getTestCaseNumber());
-        testEventList = new ArrayList<TestEvent>(testEventList);
-        testCase.setTestEventList(testEventList);
-        Date referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCase);
+        Date referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCaseWithExpectations);
         if (referenceDate == null) {
           referenceDate = new Date();
         }
         testCase.setEvalDate(referenceDate);
-        testCaseList.add(testCase);
+        testCaseList.add(testCaseWithExpectations);
       }
       if (!antigen.equals("")) {
         String cvxCode = readField(cvxPos, testCaseFieldList);
@@ -210,7 +214,7 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
           cvxCode = "0" + cvxCode;
         }
 
-        Date vaccDate = readDateField(vaccDatePos, testCaseFieldList, testCase);
+        Date vaccDate = readDateField(vaccDatePos, testCaseFieldList, testCaseWithExpectations);
         if (!cvxCode.equals("") && vaccDate != null) {
           TestEvent testEvent = new TestEvent();
           Event event = cvxToEventMap.get(cvxCode);
@@ -248,15 +252,15 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
             forecastExpected.setDoseNumber(ForecastResult.DOSE_NUMBER_COMPLETE);
           } else {
             forecastExpected.setDoseNumber(doseNumber);
-            forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCase));
-            forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCase));
-            forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCase));
-            forecastExpected.setFinishedDate(readDateField(maxDatePos, testCaseFieldList, testCase));
+            forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCaseWithExpectations));
+            forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCaseWithExpectations));
+            forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCaseWithExpectations));
+            forecastExpected.setFinishedDate(readDateField(maxDatePos, testCaseFieldList, testCaseWithExpectations));
           }
-          List<ForecastExpected> forecastExpectedList = testCase.getForecastExpectedList();
+          List<ForecastExpected> forecastExpectedList = testCaseWithExpectations.getForecastExpectedList();
           if (forecastExpectedList == null) {
             forecastExpectedList = new ArrayList<ForecastExpected>();
-            testCase.setForecastExpectedList(forecastExpectedList);
+            testCaseWithExpectations.setForecastExpectedList(forecastExpectedList);
           }
           forecastExpectedList.add(forecastExpected);
         }

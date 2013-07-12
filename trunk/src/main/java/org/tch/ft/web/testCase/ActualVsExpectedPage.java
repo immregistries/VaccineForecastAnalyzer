@@ -59,6 +59,7 @@ import org.tch.ft.model.User;
 import org.tch.ft.web.SecurePage;
 import org.tch.ft.web.WebSession;
 import org.tch.ft.web.taskGroup.ExpertsAssignedPage;
+import org.tch.ft.web.testPanel.TestCaseListPage;
 
 public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
   private static final long serialVersionUID = 1L;
@@ -248,7 +249,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
 
         };
 
-        ExpectedValuesForm editExpectedform = new ExpectedValuesForm("editExpectedform", dataSession, forecastItem, testCase, user, canEdit);
+        ExpectedValuesForm editExpectedform = new ExpectedValuesForm("editExpectedform", dataSession, forecastItem,
+            testCase, user, canEdit);
 
         {
           editExpectedform.setExpectedDoseNumber(expectedDoseNumber);
@@ -260,8 +262,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
           expectedDoseNumberField.setRequired(true);
           editExpectedform.add(expectedDoseNumberField);
 
-          TextField<Date> expectedDueDateField = new TextField<Date>("expectedDueDateField", editExpectedform.getExpectedDueDateModel(),
-              Date.class);
+          TextField<Date> expectedDueDateField = new TextField<Date>("expectedDueDateField",
+              editExpectedform.getExpectedDueDateModel(), Date.class);
           expectedDueDateField.add(new DatePicker());
           editExpectedform.add(expectedDueDateField);
 
@@ -408,7 +410,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
       addExpectedForm.add(addExpectedOverdueDateField);
     }
     add(addExpectedForm);
-    
+
     query = webSession.getDataSession().createQuery("from TestNote where testCase = ?");
     query.setParameter(0, testCase);
     final List<TestNote> testNoteList = query.list();
@@ -453,18 +455,25 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
     }
 
     add(commentForm);
-    
+
     WebMarkupContainer editTestCaseLink = new WebMarkupContainer("editTestCaseLink");
     editTestCaseLink.setVisible(canEdit);
     add(editTestCaseLink);
-    
-    ExternalLink forecastLink = new ExternalLink("forecastLink","http://tchforecasttester.org/fv/forecast" + TCHConnector.createQueryString(testCase, software, "html"));
+
+    ExternalLink forecastLink = new ExternalLink("forecastLink", "http://tchforecasttester.org/fv/forecast"
+        + TCHConnector.createQueryString(testCase, software, "html"));
     add(forecastLink);
-    ExternalLink stepLink = new ExternalLink("stepLink","http://tchforecasttester.org/fv/fv/step" + TCHConnector.createQueryString(testCase, software, "text"));
+    ExternalLink stepLink = new ExternalLink("stepLink", "http://tchforecasttester.org/fv/fv/step"
+        + TCHConnector.createQueryString(testCase, software, "text"));
     add(stepLink);
-    
+
+    WebMarkupContainer testPanelSection = new WebMarkupContainer("testPanelSection");
+    add(testPanelSection);
+
     List<List<TestPanelCase>> categoryList = webSession.getCategoryList();
-    if (categoryList != null) {
+    if (categoryList == null) {
+      categoryList = TestCaseListPage.initTestPanelCategories(dataSession, webSession, testPanelSection, testPanel);
+    }
     ListView<List<TestPanelCase>> categoryItems = new ListView<List<TestPanelCase>>("categoryItems", categoryList) {
       @Override
       protected void populateItem(ListItem<List<TestPanelCase>> item) {
@@ -511,9 +520,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
         item.add(testPanelCaseItems);
       }
     };
-    
-    add(categoryItems);
-    }
+    testPanelSection.add(categoryItems);
   }
 
   protected static boolean determineIfCanEdit(final User user, final Session dataSession, TestPanel testPanel) {
@@ -572,10 +579,10 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
       part2.add(AttributeModifier.replace("class", style));
     }
   }
-  
+
   private class ExpectedValuesForm extends Form<Void> {
-    public ExpectedValuesForm(String id, Session dataSession, ForecastItem forecastItem, TestCase testCase, User user, boolean canEdit)
-    {
+    public ExpectedValuesForm(String id, Session dataSession, ForecastItem forecastItem, TestCase testCase, User user,
+        boolean canEdit) {
       super(id);
       this.dataSession = dataSession;
       this.forecastItem = forecastItem;
@@ -583,13 +590,13 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
       this.user = user;
       this.canEdit = canEdit;
     }
-    
+
     private Session dataSession;
     private ForecastItem forecastItem = null;
     private TestCase testCase = null;
     private User user = null;
     private boolean canEdit;
-    
+
     private static final long serialVersionUID = 2L;
 
     protected Model<String> expectedDoseNumberModel;
@@ -628,7 +635,6 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
     public void setExpectedOverdueDate(Date expectedOverdueDate) {
       this.expectedOverdueDateModel = new Model<Date>(expectedOverdueDate);
     }
-
 
     @Override
     protected void onSubmit() {

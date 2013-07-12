@@ -17,7 +17,8 @@ import org.tch.ft.model.TestPanelExpected;
 
 public class TestCaseImporter {
   public void importTestCases(TestCaseReader testCaseReader, TestPanel testPanel, Session dataSession) {
-    for (TestCaseWithExpectations testCaseImported : testCaseReader.getTestCaseList()) {
+    for (TestCaseWithExpectations testCaseWithExpectations : testCaseReader.getTestCaseList()) {
+      TestCase testCaseImported = testCaseWithExpectations.getTestCase();
       Query query = dataSession.createQuery("from TestPanelCase where testCaseNumber = ? and testPanel = ?");
       query.setParameter(0, testCaseImported.getTestCaseNumber());
       query.setParameter(1, testPanel);
@@ -29,6 +30,7 @@ public class TestCaseImporter {
         testPanelCase.setResult(Result.RESEARCH);
         dataSession.update(testPanelCase);
         TestCase testCase = testPanelCase.getTestCase();
+        System.out.println("--> testCase = " + testCase.getTestCaseId());
         testCase.setLabel(testCaseImported.getLabel());
         testCase.setDescription(testCaseImported.getDescription());
         testCase.setEvalDate(testCaseImported.getEvalDate());
@@ -37,7 +39,7 @@ public class TestCaseImporter {
         testCase.setPatientSex(testCaseImported.getPatientSex());
         testCase.setPatientDob(testCaseImported.getPatientDob());
         dataSession.update(testCase);
-        List<ForecastExpected> forecastExpectedImportedList = testCaseImported.getForecastExpectedList();
+        List<ForecastExpected> forecastExpectedImportedList = testCaseWithExpectations.getForecastExpectedList();
         if (forecastExpectedImportedList != null) {
           for (ForecastExpected forecastExpectedImported : forecastExpectedImportedList) {
             query = dataSession
@@ -72,21 +74,25 @@ public class TestCaseImporter {
         query = dataSession.createQuery("from TestEvent where testCase = ?");
         query.setParameter(0, testCase);
         List<TestEvent> testEventList = query.list();
+        System.out.println("-->   old size = " + testEventList.size());
         for (TestEvent testEventToDelete : testEventList) {
           dataSession.delete(testEventToDelete);
         }
         testEventList = testCaseImported.getTestEventList();
+        System.out.println("-->   new size = " + testEventList.size());
         if (testEventList != null) {
           for (TestEvent testEvent : testEventList) {
             testEvent.setTestCase(testCase);
             dataSession.save(testEvent);
           }
         }
-
+        testCase.setTestEventList(testEventList);
+        testCaseWithExpectations.setTestCase(testCase);
+        
       } else {
         
         // new test panel case, very easy
-        dataSession.save(testCaseImported);
+        dataSession.save(testCaseWithExpectations.getTestCase());
         List<TestEvent> testEventList = testCaseImported.getTestEventList();
         if (testEventList != null) {
           for (TestEvent testEvent : testEventList) {
@@ -102,7 +108,7 @@ public class TestCaseImporter {
         testPanelCase.setResult(Result.RESEARCH);
         testPanelCase.setTestCaseNumber(testCaseImported.getTestCaseNumber());
         dataSession.save(testPanelCase);
-        List<ForecastExpected> forecastExpectedListImported = testCaseImported.getForecastExpectedList();
+        List<ForecastExpected> forecastExpectedListImported = testCaseWithExpectations.getForecastExpectedList();
         if (forecastExpectedListImported != null) {
           for (ForecastExpected forecastExpectedImported : forecastExpectedListImported) {
             forecastExpectedImported.setTestCase(testCaseImported);
@@ -114,7 +120,6 @@ public class TestCaseImporter {
           }
         }
       }
-
     }
   }
 }
