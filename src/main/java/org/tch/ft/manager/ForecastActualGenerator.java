@@ -125,6 +125,7 @@ public class ForecastActualGenerator {
                 forecastActual.setOverdueDate(result.getOverdueDate());
                 forecastActual.setFinishedDate(result.getFinishedDate());
                 forecastActual.setVaccineCvx(result.getVaccineCvx());
+                System.out.println(forecastActual.getLogText());
                 forecastActual.setLogText(result.getLogText());
                 found = true;
                 break;
@@ -142,7 +143,7 @@ public class ForecastActualGenerator {
               forecastActual.setDueDate(null);
               forecastActual.setFinishedDate(null);
               forecastActual.setVaccineCvx(null);
-              forecastActual.setLogText(logText);
+              forecastActual.setLogText("No results found, returning log for first results \n" + logText);
             }
           } else {
             forecastActual.setDoseNumber(ForecastResult.DOSE_NUMBER_ERROR);

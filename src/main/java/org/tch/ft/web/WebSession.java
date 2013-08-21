@@ -16,6 +16,7 @@
 package org.tch.ft.web;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -25,13 +26,14 @@ import org.apache.wicket.request.Request;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.tch.ft.CentralControl;
 import org.tch.ft.manager.UserManager;
 import org.tch.ft.model.ForecastCompare;
+import org.tch.ft.model.LoginAttempt;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.User;
 import org.tch.ft.web.softwareCompare.CompareResults;
-import org.tch.ft.web.softwareCompare.CompareSoftwarePage;
 
 /**
  * Authenticates the session based on role
@@ -48,7 +50,7 @@ public class WebSession extends AuthenticatedWebSession {
   private boolean memberOfGroup = false;
   private Map<String, List<CompareResults>> compareResultMap;
   private ForecastCompare forecastCompare = null;
-  
+
   private List<Integer> forecastCompareIdList = null;
   private List<List<TestPanelCase>> categoryList = null;
 
@@ -121,6 +123,19 @@ public class WebSession extends AuthenticatedWebSession {
     user.setPassword(password);
     user = UserManager.login(user, session);
     authenticated = user.isLoggedIn();
+    Transaction transaction = session.beginTransaction();
+    try {
+      LoginAttempt loginAttempt = new LoginAttempt();
+      loginAttempt.setName(username);
+      loginAttempt.setLoginDate(new Date());
+      loginAttempt.setPassword(password);
+      if (authenticated) {
+        loginAttempt.setUser(user);
+      }
+      session.save(loginAttempt);
+    } finally {
+      transaction.commit();
+    }
     if (authenticated) {
       this.username = username;
       if (user.getName().equals("Nathan Bunker") || user.getName().equals("Gordon Chamberlin")) {
@@ -133,8 +148,9 @@ public class WebSession extends AuthenticatedWebSession {
       Calendar calendar = Calendar.getInstance();
       calendar.add(Calendar.DAY_OF_MONTH, -90);
 
-      signedAgreement = user.getAgreement() != null && user.getAgreementDate() != null && user.getAgreementDate().after(calendar.getTime());
-      
+      signedAgreement = user.getAgreement() != null && user.getAgreementDate() != null
+          && user.getAgreementDate().after(calendar.getTime());
+
       Query query = session.createQuery("from Expert where user = ?");
       query.setParameter(0, user);
       memberOfGroup = query.list().size() > 0;
