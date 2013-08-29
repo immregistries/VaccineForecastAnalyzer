@@ -15,17 +15,20 @@
  */
 package org.tch.ft.web.testCase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.ExternalLink;
+import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.fc.TCHConnector;
 import org.tch.fc.model.TestCase;
+import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.model.Include;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
@@ -83,8 +86,6 @@ public class TestCaseDetailPage extends TestCaseDetail implements SecurePage {
     }
     add(testPanelTable);
 
-
-
     final boolean canEdit = testPanelCase != null
         && ActualVsExpectedPage.determineIfCanEdit(user, dataSession, testPanel);
 
@@ -92,7 +93,25 @@ public class TestCaseDetailPage extends TestCaseDetail implements SecurePage {
     editTestCaseLink.setVisible(canEdit);
     add(editTestCaseLink);
 
-  }
+    {
+      List<TestPanel> testPanelList = new ArrayList<TestPanel>();
 
+      Query query = dataSession.createQuery("from TestPanelCase where testCase = ? order by testPanel.label");
+      query.setParameter(0, testCase);
+      List<TestPanelCase> testPanelCaseList = query.list();
+      for (TestPanelCase tpc : testPanelCaseList) {
+        testPanelList.add(tpc.getTestPanel());
+        }
+
+      ListView<TestPanel> testPanelAssignments = new ListView<TestPanel>("testPanelAssignments", testPanelList) {
+        protected void populateItem(org.apache.wicket.markup.html.list.ListItem<TestPanel> item) {
+          TestPanel testPanel = item.getModelObject();
+          item.add(new Label("label", testPanel.getLabel()));
+        };
+      };
+      add(testPanelAssignments);
+
+    }
+  }
 
 }

@@ -34,19 +34,23 @@ import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.fc.TCHConnector;
+import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastActual;
 import org.tch.fc.model.ForecastItem;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
+import org.tch.fc.model.TestEvent;
 import org.tch.ft.StyleClassLabel;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.manager.SoftwareManager;
+import org.tch.ft.model.Expert;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.Include;
 import org.tch.ft.model.Result;
@@ -78,7 +82,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
 
   public ActualVsExpectedPage(final PageParameters pageParameters) {
     super(pageParameters);
-    WebSession webSession = ((WebSession) getSession());
+    final WebSession webSession = ((WebSession) getSession());
     final User user = webSession.getUser();
     final TestCase testCase = user.getSelectedTestCase();
 
@@ -521,6 +525,90 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
       }
     };
     testPanelSection.add(categoryItems);
+
+    {
+      List<TestPanel> testPanelList = new ArrayList<TestPanel>();
+
+      query = dataSession.createQuery("from TestPanelCase where testCase = ? order by testPanel.label");
+      query.setParameter(0, testCase);
+      List<TestPanelCase> testPanelCaseList = query.list();
+      for (TestPanelCase tpc : testPanelCaseList) {
+        testPanelList.add(tpc.getTestPanel());
+      }
+
+      final TestPanelCase testPanelCaseToAdd = new TestPanelCase();
+      testPanelCaseToAdd.setTestPanel(webSession.getLastTestPanelAssignment());
+      testPanelCaseToAdd.setTestCase(testCase);
+      testPanelCaseToAdd.setCategoryName(testPanelCase.getCategoryName());
+      testPanelCaseToAdd.setInclude(Include.INCLUDED);
+      testPanelCaseToAdd.setTestCaseNumber(testPanelCase.getTestCaseNumber());
+
+      Form<TestPanelCase> assignToTestPanel = new Form<TestPanelCase>("assignToTestPanel",
+          new CompoundPropertyModel<TestPanelCase>(testPanelCaseToAdd)) {
+        @Override
+        protected void onSubmit() {
+          Transaction transaction = dataSession.beginTransaction();
+          dataSession.save(testPanelCaseToAdd);
+          
+          Query query = dataSession.createQuery("from TestPanelExpected where testPanelCase = ?");
+          query.setParameter(0, testPanelCase);
+          List<TestPanelExpected> testPanelExpectedList = query.list();
+          for (TestPanelExpected testPanelExpected : testPanelExpectedList)
+          {
+            TestPanelExpected testPanelExpectedCopy = new TestPanelExpected();
+            testPanelExpectedCopy.setTestPanelCase(testPanelCaseToAdd);
+            testPanelExpectedCopy.setForecastExpected(testPanelExpected.getForecastExpected());
+            dataSession.save(testPanelExpectedCopy);
+          }
+          transaction.commit();
+          webSession.setLastTestPanelAssignment(testPanelCaseToAdd.getTestPanel());
+          setResponsePage(new ActualVsExpectedPage());
+        }
+      };
+
+      List<TestPanel> testPanelListForAdding = new ArrayList<TestPanel>();
+
+      query = dataSession.createQuery("from TaskGroup order by label");
+      List<TaskGroup> taskGroupList = query.list();
+      for (TaskGroup tg : taskGroupList) {
+        query = dataSession.createQuery("from Expert where taskGroup = ? and user = ?");
+        query.setParameter(0, tg);
+        query.setParameter(1, user);
+        List<Expert> expertList = query.list();
+        if (expertList.size() > 0) {
+          query = dataSession.createQuery("from TestPanel where taskGroup = ? order by label");
+          query.setParameter(0, tg);
+          List<TestPanel> tpl = query.list();
+          for (TestPanel tp : tpl) {
+            boolean okayToAdd = true;
+            for (TestPanelCase tpcCheck : testPanelCaseList) {
+              if (tpcCheck.getTestPanel().equals(tp)) {
+                okayToAdd = false;
+                break;
+              }
+            }
+            if (okayToAdd) {
+              testPanelListForAdding.add(tp);
+            }
+          }
+        }
+      }
+
+      DropDownChoice<TestPanel> testPanelField = new DropDownChoice<TestPanel>("testPanel", testPanelListForAdding);
+      testPanelField.setRequired(true);
+      assignToTestPanel.add(testPanelField);
+
+      ListView<TestPanel> testPanelAssignments = new ListView<TestPanel>("testPanelAssignments", testPanelList) {
+        protected void populateItem(org.apache.wicket.markup.html.list.ListItem<TestPanel> item) {
+          TestPanel testPanel = item.getModelObject();
+          item.add(new Label("taskGroupLabel", testPanel.getTaskGroup().getLabel()));
+          item.add(new Label("testPanelLabel", testPanel.getLabel()));
+        };
+      };
+      assignToTestPanel.add(testPanelAssignments);
+
+      add(assignToTestPanel);
+    }
   }
 
   protected static boolean determineIfCanEdit(final User user, final Session dataSession, TestPanel testPanel) {

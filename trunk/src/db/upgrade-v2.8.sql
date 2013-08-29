@@ -1,4 +1,4 @@
-INSERT INTO software (software_id, label, service_url, service_type) VALUES (12, 'ICE Forecaster', 'http://localhost:8086/o/evaluate', 'ice');
+INSERT INTO software (software_id, label, service_url, service_type) VALUES (12, 'ICE Forecaster', 'http://http://tchforecasttester.org/ice/evaluate', 'ice');
 
 INSERT INTO task_group (task_group_id, label, primary_software_id) VALUES (12, 'ICE User Group', 12);
 
