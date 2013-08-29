@@ -42,4 +42,12 @@ public class TestPanel implements Serializable {
     }
     return super.equals(obj);
   }
+  
+  @Override
+  public String toString() {
+    if (taskGroup == null) {
+    return label;
+    }
+    return taskGroup + ": " + label;
+  }
 }

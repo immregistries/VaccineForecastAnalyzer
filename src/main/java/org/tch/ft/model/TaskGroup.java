@@ -45,4 +45,9 @@ public class TaskGroup implements Serializable {
 	  }
 	  return super.equals(obj);
 	}
+	
+	@Override
+	public String toString() {
+	  return label;
+	}
 }

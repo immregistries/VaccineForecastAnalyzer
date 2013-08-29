@@ -31,6 +31,7 @@ import org.tch.ft.CentralControl;
 import org.tch.ft.manager.UserManager;
 import org.tch.ft.model.ForecastCompare;
 import org.tch.ft.model.LoginAttempt;
+import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.User;
 import org.tch.ft.web.softwareCompare.CompareResults;
@@ -53,6 +54,16 @@ public class WebSession extends AuthenticatedWebSession {
 
   private List<Integer> forecastCompareIdList = null;
   private List<List<TestPanelCase>> categoryList = null;
+  
+  private TestPanel lastTestPanelAssignment = null;
+
+  public TestPanel getLastTestPanelAssignment() {
+    return lastTestPanelAssignment;
+  }
+
+  public void setLastTestPanelAssignment(TestPanel lastTestPanelAssignment) {
+    this.lastTestPanelAssignment = lastTestPanelAssignment;
+  }
 
   public List<List<TestPanelCase>> getCategoryList() {
     return categoryList;

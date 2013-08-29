@@ -237,6 +237,22 @@
 				<a href="EditTestCasePage" class="fauxbutton">Edit Test Case</a>
 			</wicket:link>
 		</p>
+		<h2>Assigned to</h2>
+
+
+		<form wicket:id="assignToTestPanel">
+			<table>
+				<tr wicket:id="testPanelAssignments">
+					<td colspan="2"><span wicket:id="taskGroupLabel" />:<span
+						wicket:id="testPanelLabel" /></td>
+				</tr>
+				<tr>
+					<td><select wicket:id="testPanel"></select></td>
+					<td><input type="submit" value="assign" class="fauxbutton" />
+					</td>
+				</tr>
+			</table>
+		</form>
 		<h2>TCH Tools</h2>
 		<ul>
 			<li><a href="http://www.tchforecasttester.org/fv/forecast"
