@@ -125,7 +125,6 @@ public class ForecastActualGenerator {
                 forecastActual.setOverdueDate(result.getOverdueDate());
                 forecastActual.setFinishedDate(result.getFinishedDate());
                 forecastActual.setVaccineCvx(result.getVaccineCvx());
-                System.out.println(forecastActual.getLogText());
                 forecastActual.setLogText(result.getLogText());
                 found = true;
                 break;
