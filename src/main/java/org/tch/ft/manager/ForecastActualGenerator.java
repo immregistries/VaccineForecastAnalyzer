@@ -84,6 +84,9 @@ public class ForecastActualGenerator {
         query = session.createQuery("from TestEvent where testCase = ?");
         query.setParameter(0, testCase);
         testCase.setTestEventList(query.list());
+        query = session.createQuery("from TestCaseSetting where testCase = ?");
+        query.setParameter(0, testCase);
+        testCase.setTestCaseSettingList(query.list());
         List<ForecastActual> forecastActualList = null;
         try {
           errorLog = null;

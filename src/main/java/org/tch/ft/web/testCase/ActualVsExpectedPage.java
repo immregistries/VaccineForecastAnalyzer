@@ -65,7 +65,8 @@ import org.tch.ft.web.WebSession;
 import org.tch.ft.web.taskGroup.ExpertsAssignedPage;
 import org.tch.ft.web.testPanel.TestCaseListPage;
 
-public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
+public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
+{
   private static final long serialVersionUID = 1L;
   private Model<String> noteTextModel = null;
 
@@ -121,6 +122,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
             forecastActual = forecastActualList.get(0);
           }
           forecastCompare.setForecastResultB(forecastActual);
+
         }
 
       }
@@ -290,8 +292,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
 
         String styleClass = forecastCompare.matchExactly() ? "pass" : "fail";
         item.add(new StyleClassLabel("expectedLabel", "Expected by " + taskGroup.getLabel(), styleClass));
-        item.add(new StyleClassLabel("actualLabel", "Actual from "
-            + (forecastActual != null ? forecastActual.getSoftware().getLabel() : ""), styleClass));
+        item.add(new StyleClassLabel("actualLabel", (forecastActual != null ? "Actual from "
+            + forecastActual.getSoftware().getLabel() : "No Results"), styleClass));
 
         styleClass = expectedDoseNumber.equals(actualDoseNumber) ? "pass" : "fail";
         item.add(new StyleClassLabel("expectedDoseNumber", expectedDoseNumber, styleClass));
@@ -320,6 +322,46 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
 
     };
     add(forecastCompareItems);
+
+    WebMarkupContainer allResultsForForecaster = new WebMarkupContainer("allResultsForForecaster");
+    List<ForecastActual> forecastActualListAll = null;
+    if (software == null) {
+      allResultsForForecaster.setVisible(false);
+      forecastActualListAll = new ArrayList<ForecastActual>();
+    } else {
+      allResultsForForecaster.setVisible(true);
+      query = dataSession
+          .createQuery("from ForecastActual where software = ? and testCase = ?");
+      query.setParameter(0, software);
+      query.setParameter(1, testCase);
+      forecastActualListAll = query.list();
+    }
+    allResultsForForecaster.add(new Label("allResultsReturned", "All Results for " + (software == null ? "" : software.getLabel())));
+
+    ListView<ForecastActual> allForecastActualItems = new ListView<ForecastActual>("allForecastActualItems", forecastActualListAll) {
+      @Override
+      protected void populateItem(ListItem<ForecastActual> item) {
+        // TODO Auto-generated method stub
+
+        final ForecastActual forecastActual = item.getModelObject();
+        item.add(new Label("actualLabel", forecastActual.getForecastItem().getLabel()));
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        String actualDoseNumber = forecastActual.getDoseNumber() != null ? forecastActual.getDoseNumber() : "-";
+        String actualValidDate = forecastActual.getValidDate() != null ? sdf.format(forecastActual.getValidDate())
+            : "-";
+        String actualDueDate = forecastActual.getDueDate() != null ? sdf.format(forecastActual.getDueDate()) : "-";
+        String actualOverdueDate = forecastActual.getOverdueDate() != null ? sdf.format(forecastActual
+            .getOverdueDate()) : "-";
+        item.add(new Label("actualDoseNumber", actualDoseNumber));
+        item.add(new Label("actualValidDate", actualValidDate));
+        item.add(new Label("actualDueDate", actualDueDate));
+        item.add(new Label("actualOverdueDate", actualOverdueDate));
+      }
+
+    };
+    allResultsForForecaster.add(allForecastActualItems);
+    
+    add(allResultsForForecaster);
 
     WebMarkupContainer changeTestStatus = new WebMarkupContainer("changeTestStatus");
     Result result = testPanelCase != null ? testPanelCase.getResult() : null;
@@ -549,12 +591,11 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
         protected void onSubmit() {
           Transaction transaction = dataSession.beginTransaction();
           dataSession.save(testPanelCaseToAdd);
-          
+
           Query query = dataSession.createQuery("from TestPanelExpected where testPanelCase = ?");
           query.setParameter(0, testPanelCase);
           List<TestPanelExpected> testPanelExpectedList = query.list();
-          for (TestPanelExpected testPanelExpected : testPanelExpectedList)
-          {
+          for (TestPanelExpected testPanelExpected : testPanelExpectedList) {
             TestPanelExpected testPanelExpectedCopy = new TestPanelExpected();
             testPanelExpectedCopy.setTestPanelCase(testPanelCaseToAdd);
             testPanelExpectedCopy.setForecastExpected(testPanelExpected.getForecastExpected());
@@ -634,7 +675,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
     return null;
   }
 
-  private class ResultLink extends Link<Result> {
+  private class ResultLink extends Link<Result>
+  {
     public ResultLink(String arg0, Result result) {
       super(arg0, new Model<Result>(result));
     }
@@ -668,7 +710,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage {
     }
   }
 
-  private class ExpectedValuesForm extends Form<Void> {
+  private class ExpectedValuesForm extends Form<Void>
+  {
     public ExpectedValuesForm(String id, Session dataSession, ForecastItem forecastItem, TestCase testCase, User user,
         boolean canEdit) {
       super(id);

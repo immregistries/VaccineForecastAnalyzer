@@ -8,13 +8,13 @@
     <property name="hibernate.connection.username">ft_web</property>
     <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
     <property name="connection.password">cArn88rOw</property>
-
     <!--
+    
     <property name="hibernate.connection.url">jdbc:mysql://localhost/tchforec_ft</property>
     <property name="hibernate.connection.username">tchforec_ftweb</property>
     <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
     <property name="connection.password">YellsSolvesGearsDotage</property>
-     -->
+ -->
     
     <property name="show_sql">false</property>
     <property name="hibernate.c3p0.acquire_increment">1</property>
@@ -29,6 +29,7 @@
     <mapping resource="org/tch/ft/model/ExpertRating.hbm.xml"/>
     <mapping resource="org/tch/ft/model/ForecastActual.hbm.xml"/>
     <mapping resource="org/tch/ft/model/ForecastCompare.hbm.xml"/>
+    <mapping resource="org/tch/ft/model/ForecastCvx.hbm.xml"/>
     <mapping resource="org/tch/ft/model/ForecastExpected.hbm.xml"/>
     <mapping resource="org/tch/ft/model/ForecastTarget.hbm.xml"/>
     <mapping resource="org/tch/ft/model/ForecastItem.hbm.xml"/>

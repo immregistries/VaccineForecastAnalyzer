@@ -50,19 +50,29 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
   private Map<String, ForecastItem> forecastItemMap = new HashMap<String, ForecastItem>();
 
   public void setForecastItems(Map<Integer, ForecastItem> forecastItemListMap) {
-    forecastItemMap.put("DTaP", forecastItemListMap.get(ID_DTAP_TDAP_TD));
-    forecastItemMap.put("HepA", forecastItemListMap.get(ID_HEPA));
-    forecastItemMap.put("HepB", forecastItemListMap.get(ID_HEPB));
-    forecastItemMap.put("Flu", forecastItemListMap.get(ID_INFLUENZA));
-    forecastItemMap.put("Hib", forecastItemListMap.get(ID_HIB));
-    forecastItemMap.put("HPV", forecastItemListMap.get(ID_HPV));
-    forecastItemMap.put("MCV", forecastItemListMap.get(ID_MENING));
-    forecastItemMap.put("MMR", forecastItemListMap.get(ID_MMR));
-    forecastItemMap.put("PCV", forecastItemListMap.get(ID_PCV));
-    forecastItemMap.put("POL", forecastItemListMap.get(ID_POLIO));
-    forecastItemMap.put("Rota", forecastItemListMap.get(ID_ROTA));
+    forecastItemMap.put("DTaP".toUpperCase(), forecastItemListMap.get(ID_DTAP_TDAP_TD));
+    forecastItemMap.put("HepA".toUpperCase(), forecastItemListMap.get(ID_HEPA));
+    forecastItemMap.put("HepB".toUpperCase(), forecastItemListMap.get(ID_HEPB));
+    forecastItemMap.put("Hep A".toUpperCase(), forecastItemListMap.get(ID_HEPA));
+    forecastItemMap.put("Hep B".toUpperCase(), forecastItemListMap.get(ID_HEPB));
+    forecastItemMap.put("Flu".toUpperCase(), forecastItemListMap.get(ID_INFLUENZA));
+    forecastItemMap.put("Hib".toUpperCase(), forecastItemListMap.get(ID_HIB));
+    forecastItemMap.put("HPV".toUpperCase(), forecastItemListMap.get(ID_HPV));
+    forecastItemMap.put("MCV".toUpperCase(), forecastItemListMap.get(ID_MENING));
+    forecastItemMap.put("MMR".toUpperCase(), forecastItemListMap.get(ID_MMR));
+    forecastItemMap.put("PCV".toUpperCase(), forecastItemListMap.get(ID_PCV));
+    forecastItemMap.put("POL".toUpperCase(), forecastItemListMap.get(ID_POLIO));
+    forecastItemMap.put("POLIO".toUpperCase(), forecastItemListMap.get(ID_POLIO));
+    forecastItemMap.put("IPV".toUpperCase(), forecastItemListMap.get(ID_POLIO));
+    forecastItemMap.put("Rota".toUpperCase(), forecastItemListMap.get(ID_ROTA));
     forecastItemMap.put("Var", forecastItemListMap.get(ID_VAR));
     forecastItemMap.put("Typhoid", forecastItemListMap.get(ID_TYPHOID));
+    forecastItemMap.put("Td".toUpperCase(), forecastItemListMap.get(ID_TD_ONLY));
+    forecastItemMap.put("Tdap".toUpperCase(), forecastItemListMap.get(ID_TDAP_ONLY));
+    forecastItemMap.put("Zoster".toUpperCase(), forecastItemListMap.get(ID_ZOSTER));
+    forecastItemMap.put("Japanese Encephalitis".toUpperCase(), forecastItemListMap.get(ID_JAPENESE_ENCEPHALITIS));
+    forecastItemMap.put("Rabies".toUpperCase(), forecastItemListMap.get(ID_RABIES));
+    forecastItemMap.put("Yellow Fever".toUpperCase(), forecastItemListMap.get(ID_YELLOW_FEVER));
   }
 
   private String[] ignoredItems = { };
@@ -134,7 +144,7 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
           testEventList.add(testEvent);
         }
       }
-      ForecastItem forecastItem = forecastItemMap.get(testCase.getCategoryName());
+      ForecastItem forecastItem = forecastItemMap.get(testCase.getCategoryName().toUpperCase());
       if (forecastItem == null) {
         boolean found = false;
         for (String ignoredItem : ignoredItems) {

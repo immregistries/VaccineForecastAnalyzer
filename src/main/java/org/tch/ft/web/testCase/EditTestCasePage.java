@@ -18,6 +18,7 @@ package org.tch.ft.web.testCase;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
@@ -37,7 +38,10 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.fc.model.Event;
+import org.tch.fc.model.ServiceOption;
+import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
+import org.tch.fc.model.TestCaseSetting;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.Include;
 import org.tch.ft.model.Result;
@@ -226,7 +230,85 @@ public class EditTestCasePage extends FTBasePage implements SecurePage {
     eventDate.setRequired(true);
     eventDate.add(new DatePicker());
     addTestEventForm.add(eventDate);
+    
+    
+    
+    query = dataSession.createQuery("from TestCaseSetting where testCase = ? order by serviceOption.optionLabel");
+    query.setParameter(0, testCase);
+    List<TestCaseSetting> testCaseSettingList = query.list();
 
+    ListView<TestCaseSetting> testCaseSettingItems = new ListView<TestCaseSetting>("testCaseSettingItems",
+        testCaseSettingList) {
+
+      @Override
+      protected void populateItem(ListItem<TestCaseSetting> item) {
+        final TestCaseSetting testCaseSetting = item.getModelObject();
+
+        Form<TestCaseSetting> editTestCaseSettingForm = new Form<TestCaseSetting>("editTestCaseSettingForm",
+            new CompoundPropertyModel<TestCaseSetting>(testCaseSetting)) {
+          @Override
+          protected void onSubmit() {
+            Transaction transaction = dataSession.beginTransaction();
+            dataSession.update(testCaseSetting);
+            transaction.commit();
+            setResponsePage(new EditTestCasePage());
+          }
+        };
+
+        TextField<String> optionValue = new TextField<String>("optionValue");
+        optionValue.setRequired(true);
+        editTestCaseSettingForm.add(optionValue);
+        editTestCaseSettingForm.add(new Label("optionLabel", testCaseSetting.getServiceOption().getOptionLabel()));
+        editTestCaseSettingForm.add(new Label("description", testCaseSetting.getServiceOption().getDescription()));
+        item.add(editTestCaseSettingForm);
+      }
+    };
+    add(testCaseSettingItems);
+
+    // Add form
+    final TestCaseSetting testCaseSetting = new TestCaseSetting();
+    testCaseSetting.setTestCase(testCase);
+
+    Form<TestCaseSetting> addTestCaseSettingForm = new Form<TestCaseSetting>("addTestCaseSettingForm",
+        new CompoundPropertyModel<TestCaseSetting>(testCaseSetting)) {
+      @Override
+      protected void onSubmit() {
+        Transaction transaction = dataSession.beginTransaction();
+        dataSession.save(testCaseSetting);
+        transaction.commit();
+        setResponsePage(new EditTestCasePage());
+      }
+    };
+
+    TextField<String> optionValue = new TextField<String>("optionValue");
+    optionValue.setRequired(true);
+    addTestCaseSettingForm.add(optionValue);
+
+    List<ServiceOption> serviceOptionList = getServiceOptionList(dataSession, user.getSelectedTaskGroup().getPrimarySoftware(), testCaseSettingList);
+    DropDownChoice<ServiceOption> serviceOption = new DropDownChoice<ServiceOption>("serviceOption", serviceOptionList);
+    serviceOption.setRequired(true);
+    addTestCaseSettingForm.add(serviceOption);
+    
+    add(addTestCaseSettingForm);
+
+  }
+
+  public List<ServiceOption> getServiceOptionList(final Session dataSession, final Software software,
+      List<TestCaseSetting> testCaseSettingList) {
+
+    Query query = dataSession.createQuery("from ServiceOption where serviceType = ?");
+    query.setParameter(0, software.getServiceType());
+    List<ServiceOption> serviceOptionList = query.list();
+    for (Iterator<ServiceOption> it = serviceOptionList.iterator(); it.hasNext();) {
+      ServiceOption serviceOption = it.next();
+      for (TestCaseSetting testCaseSettingCompare : testCaseSettingList) {
+        if (testCaseSettingCompare.getServiceOption().equals(serviceOption)) {
+          it.remove();
+          break;
+        }
+      }
+    }
+    return serviceOptionList;
   }
 
 }
