@@ -86,6 +86,29 @@
 			</form>
 		</div>
 
+		<div wicket:id="allResultsForForecaster">
+			<h2>
+				<span wicket:id="allResultsReturned">All Results Returned</span>
+			</h2>
+			<table>
+				<tr>
+					<th>Forecast Series</th>
+					<th>Dose</th>
+					<th>Valid</th>
+					<th>Due</th>
+					<th>Overdue</th>
+				</tr>
+				<tr wicket:id="allForecastActualItems">
+					<td wicket:id="actualLabel"></td>
+					<td wicket:id="actualDoseNumber"></td>
+					<td wicket:id="actualValidDate"></td>
+					<td wicket:id="actualDueDate"></td>
+					<td wicket:id="actualOverdueDate"></td>
+				</tr>
+
+			</table>
+		</div>
+
 		<div wicket:id="changeTestStatus">
 			<h2>
 				Change Test Status for <span wicket:id="primarySoftware"></span>

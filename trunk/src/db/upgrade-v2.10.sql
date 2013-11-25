@@ -1,0 +1,3 @@
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (14, "base", "ignoreFourDayGrace", "Ignore Four Day Grace", "Forecaster should not use four day grace period when determining if vaccinations given were valid ", "True, False", NULL);
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (15, "tch", "ignoreFourDayGrace", "Ignore Four Day Grace", "Forecaster should not use four day grace period when determining if vaccinations given were valid ", "True, False", 14);
+update service_option set option_name = 'dueUseEarly' where option_name = 'useEarlyDue';

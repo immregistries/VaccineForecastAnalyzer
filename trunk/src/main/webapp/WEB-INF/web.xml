@@ -4,6 +4,16 @@
 	version="2.5">
 
 	<display-name>ForecastTester</display-name>
+	
+	<servlet>
+	  <servlet-name>ExternalTestServlet</servlet-name>
+	  <servlet-class>org.tch.ft.servlet.ExternalTestServlet</servlet-class>
+	</servlet>
+
+  <servlet-mapping>
+    <servlet-name>ExternalTestServlet</servlet-name>
+    <url-pattern>/ExternalTestServlet</url-pattern>
+  </servlet-mapping>
 
 	<!--
 		There are three means to configure Wickets configuration mode and they 

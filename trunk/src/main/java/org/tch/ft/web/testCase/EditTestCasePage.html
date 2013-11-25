@@ -103,6 +103,42 @@
 				</tr>
 			</table>
 		</form>
+		<div wicket:id="testCaseSettingItems">
+			<form wicket:id="editTestCaseSettingForm">
+				<h3 wicket:id="optionLabel">Option</h3>
+				<table>
+					<tr>
+						<td>Description</td>
+						<td wicket:id="description"></td>
+					</tr>
+					<tr>
+						<td>Value</td>
+						<td><input type="text" size="30" wicket:id="optionValue" /></td>
+					</tr>
+					<tr>
+						<td colspan="2" align="right"><input type="submit"
+							value="update" class="fauxbutton" /></td>
+					</tr>
+				</table>
+			</form>
+		</div>
+		<h3>Add New Option</h3>
+		<form wicket:id="addTestCaseSettingForm">
+			<table>
+				<tr>
+					<td>Option</td>
+					<td><select wicket:id="serviceOption"></select></td>
+				</tr>
+				<tr>
+					<td>Value</td>
+					<td><input type="text" size="30" wicket:id="optionValue" /></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit" value="add"
+						class="fauxbutton" /></td>
+				</tr>
+			</table>
+		</form>
 	</div>
 </body>
 </html>
