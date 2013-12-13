@@ -65,8 +65,8 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     forecastItemMap.put("POLIO".toUpperCase(), forecastItemListMap.get(ID_POLIO));
     forecastItemMap.put("IPV".toUpperCase(), forecastItemListMap.get(ID_POLIO));
     forecastItemMap.put("Rota".toUpperCase(), forecastItemListMap.get(ID_ROTA));
-    forecastItemMap.put("Var", forecastItemListMap.get(ID_VAR));
-    forecastItemMap.put("Typhoid", forecastItemListMap.get(ID_TYPHOID));
+    forecastItemMap.put("Var".toUpperCase(), forecastItemListMap.get(ID_VAR));
+    forecastItemMap.put("Typhoid".toUpperCase(), forecastItemListMap.get(ID_TYPHOID));
     forecastItemMap.put("Td".toUpperCase(), forecastItemListMap.get(ID_TD_ONLY));
     forecastItemMap.put("Tdap".toUpperCase(), forecastItemListMap.get(ID_TDAP_ONLY));
     forecastItemMap.put("Zoster".toUpperCase(), forecastItemListMap.get(ID_ZOSTER));
