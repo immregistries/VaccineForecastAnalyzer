@@ -31,7 +31,7 @@ import org.tch.fc.model.TestCase;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestPanel;
-import org.tch.ft.model.TestPanelExpected;
+import org.tch.ft.model.TestPanelForecast;
 import org.tch.ft.model.User;
 import org.tch.ft.web.FTBasePage;
 import org.tch.ft.web.MenuSection;
@@ -58,22 +58,22 @@ public class ForecastLogPage extends FTBasePage  implements SecurePage {
     List<ForecastActualExpectedCompare> forecastCompareList = new ArrayList<ForecastActualExpectedCompare>();
     if (testCase != null && testPanel != null) {
       query = dataSession
-          .createQuery("from TestPanelExpected where testPanelCase.testCase = ? and testPanelCase.testPanel = ?");
+          .createQuery("from TestPanelForecast where testPanelCase.testCase = ? and testPanelCase.testPanel = ?");
       query.setParameter(0, testCase);
       query.setParameter(1, testPanel);
-      List<TestPanelExpected> testPanelExpectedList = query.list();
-      for (TestPanelExpected testPanelExpected : testPanelExpectedList) {
-        forecastExpected = testPanelExpected.getForecastExpected();
+      List<TestPanelForecast> testPanelForecastList = query.list();
+      for (TestPanelForecast testPanelForecast : testPanelForecastList) {
+        forecastExpected = testPanelForecast.getForecastExpected();
         ForecastActualExpectedCompare forecastCompare = new ForecastActualExpectedCompare();
         forecastCompare.setForecastResultA(forecastExpected);
-        forecastCompare.setForecastItem(forecastExpected.getForecastItem());
+        forecastCompare.setVaccineGroup(forecastExpected.getVaccineGroup());
         forecastCompareList.add(forecastCompare);
         if (software != null) {
           query = dataSession
-              .createQuery("from ForecastActual where software = ? and testCase = ? and forecastItem = ?");
+              .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ?");
           query.setParameter(0, software);
           query.setParameter(1, testCase);
-          query.setParameter(2, forecastExpected.getForecastItem());
+          query.setParameter(2, forecastExpected.getVaccineGroup());
           List<ForecastActual> forecastActualList = query.list();
           if (forecastActualList.size() > 0) {
             forecastActual = forecastActualList.get(0);
@@ -93,9 +93,9 @@ public class ForecastLogPage extends FTBasePage  implements SecurePage {
         
         String logText = "";
         if (forecastActual != null) {
-          logText = forecastActual.getLogText();
+          logText = forecastActual.getSoftwareResult().getLogText();
         }
-        item.add(new Label("forecastLineLabel", forecastExpected.getForecastItem().getLabel()));
+        item.add(new Label("forecastLineLabel", forecastExpected.getVaccineGroup().getLabel()));
         item.add(new MultiLineLabel("logText", logText));
       }
     };

@@ -34,7 +34,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
 import org.tch.ft.StyleClassLabel;
@@ -51,7 +51,8 @@ import org.tch.ft.web.SecurePage;
 import org.tch.ft.web.WebSession;
 import org.tch.ft.web.testCase.TestCaseDetail;
 
-public class CompareForecastPage extends TestCaseDetail implements SecurePage {
+public class CompareForecastPage extends TestCaseDetail implements SecurePage
+{
   private static final long serialVersionUID = 1L;
 
   private ForecastCompare forecastCompare;
@@ -80,17 +81,17 @@ public class CompareForecastPage extends TestCaseDetail implements SecurePage {
     final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 
     ForecastActual forecastActual = forecastCompare.getForecastActual();
-    final ForecastItem forecastItem = forecastActual.getForecastItem();
+    final VaccineGroup vaccineGroup = forecastActual.getVaccineGroup();
     final String actualDoseNumber = forecastActual.getDoseNumber() != null ? forecastActual.getDoseNumber() : "-";
     final String actualValidDateString = forecastActual.getValidDate() != null ? sdf.format(forecastActual
         .getValidDate()) : "-";
     final String actualDueDateString = forecastActual.getDueDate() != null ? sdf.format(forecastActual.getDueDate())
         : "-";
 
-    add(new Label("forecastLineLabel", forecastItem.getLabel()));
+    add(new Label("forecastLineLabel", vaccineGroup.getLabel()));
     add(new Label("compareLabel", forecastCompare.getCompareLabel()));
 
-    add(new Label("actualLabel", forecastActual.getSoftware().getLabel()));
+    add(new Label("actualLabel", forecastActual.getSoftwareResult().getSoftware().getLabel()));
     add(new Label("actualDoseNumber", actualDoseNumber));
     add(new Label("actualValidDate", actualValidDateString));
     add(new Label("actualDueDate", actualDueDateString));
@@ -117,7 +118,7 @@ public class CompareForecastPage extends TestCaseDetail implements SecurePage {
 
         String styleClass = forecastActualExpectedCompare.matchExactlyExlcudeOverdue() ? "pass" : "fail";
         item.add(new StyleClassLabel("actualLabel", (compareForecastActual != null ? compareForecastActual
-            .getSoftware().getLabel() : ""), styleClass));
+            .getSoftwareResult().getSoftware().getLabel() : ""), styleClass));
 
         styleClass = compareDoseNumber.equals(actualDoseNumber) ? "pass" : "fail";
         item.add(new StyleClassLabel("actualDoseNumber", compareDoseNumber, styleClass));
@@ -204,7 +205,8 @@ public class CompareForecastPage extends TestCaseDetail implements SecurePage {
     return null;
   }
 
-  private class ResultLink extends Link<Result> {
+  private class ResultLink extends Link<Result>
+  {
     public ResultLink(String arg0, Result result) {
       super(arg0, new Model<Result>(result));
     }
@@ -232,7 +234,7 @@ public class CompareForecastPage extends TestCaseDetail implements SecurePage {
       if (nextForecastCompareId > 0) {
         forecastCompare = (ForecastCompare) dataSession.get(ForecastCompare.class, nextForecastCompareId);
         User user = ((WebSession) getSession()).getUser();
-        user.setSelectedTestCase((TestCase)  forecastCompare.getForecastActual().getTestCase());
+        user.setSelectedTestCase((TestCase) forecastCompare.getForecastActual().getTestCase());
         webSession.setForecastCompare(forecastCompare);
       }
 

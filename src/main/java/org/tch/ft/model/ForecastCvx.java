@@ -2,12 +2,12 @@ package org.tch.ft.model;
 
 import java.io.Serializable;
 
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 
 public class ForecastCvx implements Serializable
 {
   private int forecastCvxId = 0;
-  private ForecastItem forecastItem = null;
+  private VaccineGroup vaccineGroup = null;
   private String vaccineCvx = "";
 
   public int getForecastCvxId() {
@@ -18,12 +18,12 @@ public class ForecastCvx implements Serializable
     this.forecastCvxId = forecastCvxId;
   }
 
-  public ForecastItem getForecastItem() {
-    return forecastItem;
+  public VaccineGroup getVaccineGroup() {
+    return vaccineGroup;
   }
 
-  public void setForecastItem(ForecastItem forecastItem) {
-    this.forecastItem = forecastItem;
+  public void setVaccineGroup(VaccineGroup vaccineGroup) {
+    this.vaccineGroup = vaccineGroup;
   }
 
   public String getVaccineCvx() {

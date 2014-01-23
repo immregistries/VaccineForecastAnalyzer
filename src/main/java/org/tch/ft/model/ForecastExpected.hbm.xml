@@ -7,12 +7,15 @@
     </id>
     <many-to-one name="testCase" column="test_case_id" class="org.tch.fc.model.TestCase"/>
     <many-to-one name="author" column="author_user_id" class="User"/>
-    <many-to-one name="forecastItem" column="forecast_item_id" class="org.tch.fc.model.ForecastItem"/>
+    <property name="updatedDate" column="updated_date" type="timestamp"/>
+    <many-to-one name="vaccineGroup" column="vaccine_group_id" class="org.tch.fc.model.VaccineGroup"/>
+    <property name="adminStatus" column="admin_status" type="string"/>
     <property name="doseNumber" column="dose_number" type="string"/>
     <property name="validDate" column="valid_date" type="date"/>
     <property name="dueDate" column="due_date" type="date"/>
     <property name="overdueDate" column="overdue_date" type="date"/>
     <property name="finishedDate" column="finished_date" type="date"/>
     <property name="vaccineCvx" column="vaccine_cvx" type="string"/>
+    <property name="forecastReason" column="forecast_reason" type="string"/>
   </class>
 </hibernate-mapping>

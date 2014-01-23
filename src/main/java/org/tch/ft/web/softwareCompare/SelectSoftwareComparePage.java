@@ -169,7 +169,7 @@ public class SelectSoftwareComparePage extends FTBasePage implements SecurePage 
           for (TestPanelCase testPanelCase : testPanelCaseList) {
 
             query = dataSession
-                .createQuery("from ForecastActual where software = ? and testCase = ? order by runDate desc");
+                .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? order by runDate desc");
             query.setParameter(0, software);
             query.setParameter(1, testPanelCase.getTestCase());
             List<ForecastActual> forecastActualList = query.list();
@@ -185,10 +185,10 @@ public class SelectSoftwareComparePage extends FTBasePage implements SecurePage 
                 String compareLabel = "";
                 for (Software compareSoftware : compareSoftwareSelect) {
                   query = dataSession
-                      .createQuery("from ForecastActual where software = ? and testCase = ? and forecastItem = ? order by runDate desc");
+                      .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ? order by runDate desc");
                   query.setParameter(0, compareSoftware);
                   query.setParameter(1, testPanelCase.getTestCase());
-                  query.setParameter(2, forecastActual.getForecastItem());
+                  query.setParameter(2, forecastActual.getVaccineGroup());
                   List<ForecastActual> forecastActualCompareList = query.list();
                   if (forecastActualCompareList.size() == 0) {
                     allFound = false;
@@ -202,7 +202,7 @@ public class SelectSoftwareComparePage extends FTBasePage implements SecurePage 
                     forecastActualExcpectedCompare.setTestCase(testPanelCase.getTestCase());
                     forecastActualExcpectedCompare.setForecastResultA(forecastActual);
                     forecastActualExcpectedCompare.setForecastResultB(forecastActualCompareList.get(0));
-                    forecastActualExcpectedCompare.setForecastItem(forecastActual.getForecastItem());
+                    forecastActualExcpectedCompare.setVaccineGroup(forecastActual.getVaccineGroup());
                     forecastActualExpectedCompareList.add(forecastActualExcpectedCompare);
                   }
                 }

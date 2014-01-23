@@ -46,7 +46,7 @@ import org.tch.ft.manager.readers.MiisTestCaseReader;
 import org.tch.ft.manager.readers.TestCaseReader;
 import org.tch.ft.manager.readers.TestCaseReaderFactory;
 import org.tch.fc.model.Event;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.Role;
 import org.tch.fc.model.Software;
@@ -134,11 +134,11 @@ public class UploadTestCasesPage extends FTBasePage implements SecurePage {
             try {
               Query query = dataSession.createQuery("from Event");
               List<Event> eventList = query.list();
-              query = dataSession.createQuery("from ForecastItem");
-              List<ForecastItem> forecastItemList = query.list();
-              Map<Integer, ForecastItem> forecastItemListMap = new HashMap<Integer, ForecastItem>();
-              for (ForecastItem forecastItem : forecastItemList) {
-                forecastItemListMap.put(forecastItem.getForecastItemId(), forecastItem);
+              query = dataSession.createQuery("from VaccineGroup");
+              List<VaccineGroup> vaccineGroupList = query.list();
+              Map<Integer, VaccineGroup> vaccineGroupListMap = new HashMap<Integer, VaccineGroup>();
+              for (VaccineGroup vaccineGroup : vaccineGroupList) {
+                vaccineGroupListMap.put(vaccineGroup.getVaccineGroupId(), vaccineGroup);
               }
               TestCaseReader.FormatType formatType = (TestCaseReader.FormatType) fileFormat.getObject();
               TestCaseReader testCaseReader = TestCaseReaderFactory.createTestCaseReader(formatType);
@@ -147,7 +147,7 @@ public class UploadTestCasesPage extends FTBasePage implements SecurePage {
 
               testCaseReader.setEventList(eventList);
               testCaseReader.setUser(user);
-              testCaseReader.setForecastItems(forecastItemListMap);
+              testCaseReader.setVaccineGroupss(vaccineGroupListMap);
               testCaseReader.read(in);
 
               TestCaseImporter tci = new TestCaseImporter();

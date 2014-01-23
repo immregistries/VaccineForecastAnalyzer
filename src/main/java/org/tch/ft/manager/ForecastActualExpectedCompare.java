@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Date;
 
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.TestCase;
 
@@ -72,14 +72,14 @@ public class ForecastActualExpectedCompare implements Serializable {
   private ForecastResult forecastResultA = null;
   private ForecastResult forecastResultB = null;
   private TestCase testCase = null;
-  private ForecastItem forecastItem = null;
+  private VaccineGroup vaccineGroup = null;
 
-  public ForecastItem getForecastItem() {
-    return forecastItem;
+  public VaccineGroup getVaccineGroup() {
+    return vaccineGroup;
   }
 
-  public void setForecastItem(ForecastItem forecastItem) {
-    this.forecastItem = forecastItem;
+  public void setVaccineGroup(VaccineGroup vaccineGroup) {
+    this.vaccineGroup = vaccineGroup;
   }
 
   public TestCase getTestCase() {

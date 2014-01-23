@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.tch.fc.model.Event;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestCaseWithExpectations;
 
-import static org.tch.fc.model.ForecastItem.*;
+import static org.tch.fc.model.VaccineGroup.*;
 
 public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseReader {
 
@@ -47,32 +47,32 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
 //  private static final String FIELD_DATE_UPDATED = "Date_updated";
 //  private static final String FIELD_FORECAST_TEST_TYPE = "Forecast_Test_Type";
 
-  private Map<String, ForecastItem> forecastItemMap = new HashMap<String, ForecastItem>();
+  private Map<String, VaccineGroup> vaccineGroupMap = new HashMap<String, VaccineGroup>();
 
-  public void setForecastItems(Map<Integer, ForecastItem> forecastItemListMap) {
-    forecastItemMap.put("DTaP".toUpperCase(), forecastItemListMap.get(ID_DTAP_TDAP_TD));
-    forecastItemMap.put("HepA".toUpperCase(), forecastItemListMap.get(ID_HEPA));
-    forecastItemMap.put("HepB".toUpperCase(), forecastItemListMap.get(ID_HEPB));
-    forecastItemMap.put("Hep A".toUpperCase(), forecastItemListMap.get(ID_HEPA));
-    forecastItemMap.put("Hep B".toUpperCase(), forecastItemListMap.get(ID_HEPB));
-    forecastItemMap.put("Flu".toUpperCase(), forecastItemListMap.get(ID_INFLUENZA));
-    forecastItemMap.put("Hib".toUpperCase(), forecastItemListMap.get(ID_HIB));
-    forecastItemMap.put("HPV".toUpperCase(), forecastItemListMap.get(ID_HPV));
-    forecastItemMap.put("MCV".toUpperCase(), forecastItemListMap.get(ID_MENING));
-    forecastItemMap.put("MMR".toUpperCase(), forecastItemListMap.get(ID_MMR));
-    forecastItemMap.put("PCV".toUpperCase(), forecastItemListMap.get(ID_PCV));
-    forecastItemMap.put("POL".toUpperCase(), forecastItemListMap.get(ID_POLIO));
-    forecastItemMap.put("POLIO".toUpperCase(), forecastItemListMap.get(ID_POLIO));
-    forecastItemMap.put("IPV".toUpperCase(), forecastItemListMap.get(ID_POLIO));
-    forecastItemMap.put("Rota".toUpperCase(), forecastItemListMap.get(ID_ROTA));
-    forecastItemMap.put("Var".toUpperCase(), forecastItemListMap.get(ID_VAR));
-    forecastItemMap.put("Typhoid".toUpperCase(), forecastItemListMap.get(ID_TYPHOID));
-    forecastItemMap.put("Td".toUpperCase(), forecastItemListMap.get(ID_TD_ONLY));
-    forecastItemMap.put("Tdap".toUpperCase(), forecastItemListMap.get(ID_TDAP_ONLY));
-    forecastItemMap.put("Zoster".toUpperCase(), forecastItemListMap.get(ID_ZOSTER));
-    forecastItemMap.put("Japanese Encephalitis".toUpperCase(), forecastItemListMap.get(ID_JAPENESE_ENCEPHALITIS));
-    forecastItemMap.put("Rabies".toUpperCase(), forecastItemListMap.get(ID_RABIES));
-    forecastItemMap.put("Yellow Fever".toUpperCase(), forecastItemListMap.get(ID_YELLOW_FEVER));
+  public void setVaccineGroupss(Map<Integer, VaccineGroup> vaccineGroupListMap) {
+    vaccineGroupMap.put("DTaP".toUpperCase(), vaccineGroupListMap.get(ID_DTAP_TDAP_TD));
+    vaccineGroupMap.put("HepA".toUpperCase(), vaccineGroupListMap.get(ID_HEPA));
+    vaccineGroupMap.put("HepB".toUpperCase(), vaccineGroupListMap.get(ID_HEPB));
+    vaccineGroupMap.put("Hep A".toUpperCase(), vaccineGroupListMap.get(ID_HEPA));
+    vaccineGroupMap.put("Hep B".toUpperCase(), vaccineGroupListMap.get(ID_HEPB));
+    vaccineGroupMap.put("Flu".toUpperCase(), vaccineGroupListMap.get(ID_INFLUENZA));
+    vaccineGroupMap.put("Hib".toUpperCase(), vaccineGroupListMap.get(ID_HIB));
+    vaccineGroupMap.put("HPV".toUpperCase(), vaccineGroupListMap.get(ID_HPV));
+    vaccineGroupMap.put("MCV".toUpperCase(), vaccineGroupListMap.get(ID_MENING));
+    vaccineGroupMap.put("MMR".toUpperCase(), vaccineGroupListMap.get(ID_MMR));
+    vaccineGroupMap.put("PCV".toUpperCase(), vaccineGroupListMap.get(ID_PCV));
+    vaccineGroupMap.put("POL".toUpperCase(), vaccineGroupListMap.get(ID_POLIO));
+    vaccineGroupMap.put("POLIO".toUpperCase(), vaccineGroupListMap.get(ID_POLIO));
+    vaccineGroupMap.put("IPV".toUpperCase(), vaccineGroupListMap.get(ID_POLIO));
+    vaccineGroupMap.put("Rota".toUpperCase(), vaccineGroupListMap.get(ID_ROTA));
+    vaccineGroupMap.put("Var".toUpperCase(), vaccineGroupListMap.get(ID_VAR));
+    vaccineGroupMap.put("Typhoid".toUpperCase(), vaccineGroupListMap.get(ID_TYPHOID));
+    vaccineGroupMap.put("Td".toUpperCase(), vaccineGroupListMap.get(ID_TD_ONLY));
+    vaccineGroupMap.put("Tdap".toUpperCase(), vaccineGroupListMap.get(ID_TDAP_ONLY));
+    vaccineGroupMap.put("Zoster".toUpperCase(), vaccineGroupListMap.get(ID_ZOSTER));
+    vaccineGroupMap.put("Japanese Encephalitis".toUpperCase(), vaccineGroupListMap.get(ID_JAPENESE_ENCEPHALITIS));
+    vaccineGroupMap.put("Rabies".toUpperCase(), vaccineGroupListMap.get(ID_RABIES));
+    vaccineGroupMap.put("Yellow Fever".toUpperCase(), vaccineGroupListMap.get(ID_YELLOW_FEVER));
   }
 
   private String[] ignoredItems = { };
@@ -144,8 +144,8 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
           testEventList.add(testEvent);
         }
       }
-      ForecastItem forecastItem = forecastItemMap.get(testCase.getCategoryName().toUpperCase());
-      if (forecastItem == null) {
+      VaccineGroup vaccineGroup = vaccineGroupMap.get(testCase.getCategoryName().toUpperCase());
+      if (vaccineGroup == null) {
         boolean found = false;
         for (String ignoredItem : ignoredItems) {
           if (testCase.getCategoryName().equals(ignoredItem)) {
@@ -160,7 +160,7 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         ForecastExpected forecastExpected = new ForecastExpected();
         forecastExpected.setTestCase(testCase);
         forecastExpected.setAuthor(user);
-        forecastExpected.setForecastItem(forecastItem);
+        forecastExpected.setVaccineGroup(vaccineGroup);
         String seriesStatus = readField(seriesStatusPos, testCaseFieldList);
         if (!seriesStatus.equals("Not Completed"))
         {

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.tch.ft.model">
+  <class name="EvaluationActualRating" table="evaluation_actual_rating">
+    <id name="evaluationActualRatingId" column="evaluation_actual_rating_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="evaluationActual" column="evaluation_actual_id" class="org.tch.fc.model.EvaluationActual"/>
+    <many-to-one name="expertRating" column="expert_rating_id" class="ExpertRating"/>
+  </class>
+</hibernate-mapping>

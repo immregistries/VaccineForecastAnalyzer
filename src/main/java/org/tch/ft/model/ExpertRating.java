@@ -6,7 +6,6 @@ public class ExpertRating implements Serializable {
   private static final long serialVersionUID = 1L;
 
 	private int expertRatingId = 0;
-	private ForecastExpected forecastExpected = null;
 	private Expert expert = null;
 	private TestNote testNote = null;
 	private Rating rating = null;
@@ -17,14 +16,6 @@ public class ExpertRating implements Serializable {
 
 	public void setExpertRatingId(int expertRatingId) {
 		this.expertRatingId = expertRatingId;
-	}
-
-	public ForecastExpected getForecastExpected() {
-		return forecastExpected;
-	}
-
-	public void setForecastExpected(ForecastExpected forecastExpected) {
-		this.forecastExpected = forecastExpected;
 	}
 
 	public Expert getExpert() {

@@ -86,7 +86,7 @@ public class TestResultsPage extends FTBasePage implements SecurePage {
         if (forecastCompare.getForecastResultB() != null) {
           ForecastActual forcastActual = (ForecastActual) forecastCompare.getForecastResultB();
           SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy");
-          runDate = simpleDateFormat.format(forcastActual.getRunDate());
+          runDate = simpleDateFormat.format(forcastActual.getSoftwareResult().getRunDate());
         }
         String styleClass = forecastCompare.matchExactly() ? "pass" : "fail";
         item.add(new Label("runDate", runDate));

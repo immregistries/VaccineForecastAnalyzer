@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.tch.fc.model.Event;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.Software;
 import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.model.User;
@@ -15,7 +15,7 @@ public interface TestCaseReader {
   
   public static enum FormatType {MIIS, IHS, CDC, STC}
 
-  public void setForecastItems(Map<Integer, ForecastItem> forecastItemListMap);
+  public void setVaccineGroupss(Map<Integer, VaccineGroup> vaccineGroupListMap);
   
   public User getUser() ;
 

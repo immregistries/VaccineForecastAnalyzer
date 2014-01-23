@@ -5,7 +5,6 @@
     <id name="ExpertRatingId" column="expert_rating_id">
       <generator class="native"/>
     </id>
-    <many-to-one name="forecastExpected" column="forecast_expected_id" class="ForecastExpected"/>
     <many-to-one name="expert" column="expert_id" class="ExpertRating"/>
     <many-to-one name="testNote" column="test_note_id" class="TestNote"/>
     <property name="ratingStatus" column="rating_status" type="string"/>

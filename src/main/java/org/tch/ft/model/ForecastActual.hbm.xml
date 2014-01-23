@@ -5,17 +5,16 @@
     <id name="forecastActualId" column="forecast_actual_id">
       <generator class="native"/>
     </id>
-    <many-to-one name="software" column="software_id" class="org.tch.fc.model.Software"/>
+    <many-to-one name="softwareResult" column="software_result_id" class="org.tch.fc.model.SoftwareResult"/>
     <property name="scheduleName" column="schedule_name" type="string"/>
-    <property name="runDate" column="run_date" type="timestamp"/>
-    <property name="logText" column="log_text" type="string"/>
-    <many-to-one name="testCase" column="test_case_id" class="org.tch.fc.model.TestCase"/>
-    <many-to-one name="forecastItem" column="forecast_item_id" class="org.tch.fc.model.ForecastItem"/>
+    <many-to-one name="vaccineGroup" column="vaccine_group_id" class="org.tch.fc.model.VaccineGroup"/>
+    <property name="adminStatus" column="admin_status" type="string"/>
     <property name="doseNumber" column="dose_number" type="string"/>
     <property name="validDate" column="valid_date" type="date"/>
     <property name="dueDate" column="due_date" type="date"/>
     <property name="overdueDate" column="overdue_date" type="date"/>
     <property name="finishedDate" column="finished_date" type="date"/>
     <property name="vaccineCvx" column="vaccine_cvx" type="string"/>
+    <property name="forecastReason" column="forecast_reason" type="string"/>
   </class>
 </hibernate-mapping>

@@ -43,7 +43,7 @@ import org.hibernate.Transaction;
 import org.tch.fc.TCHConnector;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
@@ -58,7 +58,7 @@ import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.TestNote;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
-import org.tch.ft.model.TestPanelExpected;
+import org.tch.ft.model.TestPanelForecast;
 import org.tch.ft.model.User;
 import org.tch.ft.web.SecurePage;
 import org.tch.ft.web.WebSession;
@@ -70,7 +70,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
   private static final long serialVersionUID = 1L;
   private Model<String> noteTextModel = null;
 
-  private Model<ForecastItem> addExpectedForeastItemModel;
+  private Model<VaccineGroup> addExpectedForeastItemModel;
   private Model<String> addExpectedDoseNumberModel;
   private Model<Date> addExpectedValidDateModel;
   private Model<Date> addExpectedDueDateModel;
@@ -101,22 +101,22 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
     List<ForecastActualExpectedCompare> forecastCompareList = new ArrayList<ForecastActualExpectedCompare>();
     if (testCase != null && testPanel != null) {
       query = dataSession
-          .createQuery("from TestPanelExpected where testPanelCase.testCase = ? and testPanelCase.testPanel = ?");
+          .createQuery("from TestPanelForecast where testPanelCase.testCase = ? and testPanelCase.testPanel = ?");
       query.setParameter(0, testCase);
       query.setParameter(1, testPanel);
-      List<TestPanelExpected> testPanelExpectedList = query.list();
-      for (TestPanelExpected testPanelExpected : testPanelExpectedList) {
-        forecastExpected = testPanelExpected.getForecastExpected();
+      List<TestPanelForecast> testPanelForecastList = query.list();
+      for (TestPanelForecast testPanelForecast : testPanelForecastList) {
+        forecastExpected = testPanelForecast.getForecastExpected();
         ForecastActualExpectedCompare forecastCompare = new ForecastActualExpectedCompare();
         forecastCompare.setForecastResultA(forecastExpected);
-        forecastCompare.setForecastItem(forecastExpected.getForecastItem());
+        forecastCompare.setVaccineGroup(forecastExpected.getVaccineGroup());
         forecastCompareList.add(forecastCompare);
         if (software != null) {
           query = dataSession
-              .createQuery("from ForecastActual where software = ? and testCase = ? and forecastItem = ?");
+              .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ?");
           query.setParameter(0, software);
           query.setParameter(1, testCase);
-          query.setParameter(2, forecastExpected.getForecastItem());
+          query.setParameter(2, forecastExpected.getVaccineGroup());
           List<ForecastActual> forecastActualList = query.list();
           if (forecastActualList.size() > 0) {
             forecastActual = forecastActualList.get(0);
@@ -136,7 +136,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
       protected void populateItem(ListItem<ForecastActualExpectedCompare> item) {
 
         final ForecastActualExpectedCompare forecastCompare = item.getModelObject();
-        final ForecastItem forecastItem = forecastCompare.getForecastItem();
+        final VaccineGroup vaccineGroup = forecastCompare.getVaccineGroup();
         ForecastActual forecastActual = (ForecastActual) forecastCompare.getForecastResultB();
         final ForecastExpected forecastExpected = (ForecastExpected) forecastCompare.getForecastResultA();
         String expectedDoseNumber = "-";
@@ -179,9 +179,9 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
 
         WebSession webSession = ((WebSession) getSession());
         Query query = webSession.getDataSession().createQuery(
-            "from ForecastExpected where testCase = ? and forecastItem = ?");
+            "from ForecastExpected where testCase = ? and vaccineGroup = ?");
         query.setParameter(0, testCase);
-        query.setParameter(1, forecastExpected.getForecastItem());
+        query.setParameter(1, forecastExpected.getVaccineGroup());
         otherExpectedList = query.list();
         if (forecastExpected != null) {
           for (Iterator<ForecastExpected> it = otherExpectedList.iterator(); it.hasNext();) {
@@ -191,13 +191,13 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
             }
           }
         }
-        query = webSession.getDataSession().createQuery("from ForecastActual where testCase = ? and forecastItem = ?");
+        query = webSession.getDataSession().createQuery("from ForecastActual where softwareResult.testCase = ? and vaccineGroup = ?");
         query.setParameter(0, testCase);
-        query.setParameter(1, forecastExpected.getForecastItem());
+        query.setParameter(1, forecastExpected.getVaccineGroup());
         otherActualList = query.list();
         for (Iterator<ForecastActual> it = otherActualList.iterator(); it.hasNext();) {
           ForecastActual fa = it.next();
-          if (SoftwareManager.isSoftwareAccessRestricted(fa.getSoftware(), user, webSession.getDataSession())) {
+          if (SoftwareManager.isSoftwareAccessRestricted(fa.getSoftwareResult().getSoftware(), user, webSession.getDataSession())) {
             it.remove();
           } else if (forecastActual != null) {
             if (fa.getForecastActualId() == forecastActual.getForecastActualId()) {
@@ -239,7 +239,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
             // TODO Auto-generated method stub
 
             final ForecastActual forecastActual = item.getModelObject();
-            item.add(new Label("actualLabel", "Actual from " + forecastActual.getSoftware().getLabel()));
+            item.add(new Label("actualLabel", "Actual from " + forecastActual.getSoftwareResult().getSoftware().getLabel()));
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
             String actualDoseNumber = forecastActual.getDoseNumber() != null ? forecastActual.getDoseNumber() : "-";
             String actualValidDate = forecastActual.getValidDate() != null ? sdf.format(forecastActual.getValidDate())
@@ -255,7 +255,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
 
         };
 
-        ExpectedValuesForm editExpectedform = new ExpectedValuesForm("editExpectedform", dataSession, forecastItem,
+        ExpectedValuesForm editExpectedform = new ExpectedValuesForm("editExpectedform", dataSession, vaccineGroup,
             testCase, user, canEdit);
 
         {
@@ -285,7 +285,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         }
 
         item.add(new Label("forecastLineLabel",
-            forecastExpected != null && forecastExpected.getForecastItem() != null ? forecastExpected.getForecastItem()
+            forecastExpected != null && forecastExpected.getVaccineGroup() != null ? forecastExpected.getVaccineGroup()
                 .getLabel() : ""));
 
         item.add(otherExpectedItems);
@@ -293,7 +293,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         String styleClass = forecastCompare.matchExactly() ? "pass" : "fail";
         item.add(new StyleClassLabel("expectedLabel", "Expected by " + taskGroup.getLabel(), styleClass));
         item.add(new StyleClassLabel("actualLabel", (forecastActual != null ? "Actual from "
-            + forecastActual.getSoftware().getLabel() : "No Results"), styleClass));
+            + forecastActual.getSoftwareResult().getSoftware().getLabel() : "No Results"), styleClass));
 
         styleClass = expectedDoseNumber.equals(actualDoseNumber) ? "pass" : "fail";
         item.add(new StyleClassLabel("expectedDoseNumber", expectedDoseNumber, styleClass));
@@ -331,7 +331,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
     } else {
       allResultsForForecaster.setVisible(true);
       query = dataSession
-          .createQuery("from ForecastActual where software = ? and testCase = ?");
+          .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ?");
       query.setParameter(0, software);
       query.setParameter(1, testCase);
       forecastActualListAll = query.list();
@@ -344,7 +344,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         // TODO Auto-generated method stub
 
         final ForecastActual forecastActual = item.getModelObject();
-        item.add(new Label("actualLabel", forecastActual.getForecastItem().getLabel()));
+        item.add(new Label("actualLabel", forecastActual.getVaccineGroup().getLabel()));
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
         String actualDoseNumber = forecastActual.getDoseNumber() != null ? forecastActual.getDoseNumber() : "-";
         String actualValidDate = forecastActual.getValidDate() != null ? sdf.format(forecastActual.getValidDate())
@@ -389,30 +389,30 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
           forecastExpectedByUser = new ForecastExpected();
           forecastExpectedByUser.setTestCase(testCase);
           forecastExpectedByUser.setAuthor(user);
-          forecastExpectedByUser.setForecastItem(addExpectedForeastItemModel.getObject());
+          forecastExpectedByUser.setVaccineGroup(addExpectedForeastItemModel.getObject());
 
           forecastExpectedByUser.setDoseNumber(addExpectedDoseNumberModel.getObject());
-          ForecastItem forecastItem = addExpectedForeastItemModel.getObject();
-          forecastExpectedByUser.setForecastItem(forecastItem);
+          VaccineGroup vaccineGroup = addExpectedForeastItemModel.getObject();
+          forecastExpectedByUser.setVaccineGroup(vaccineGroup);
           forecastExpectedByUser.setValidDate(addExpectedValidDateModel.getObject());
           forecastExpectedByUser.setDueDate(addExpectedDueDateModel.getObject());
           forecastExpectedByUser.setOverdueDate(addExpectedOverdueDateModel.getObject());
           dataSession.saveOrUpdate(forecastExpectedByUser);
           if (canEdit) {
-            TestPanelExpected testPanelExpected = null;
+            TestPanelForecast testPanelForecast = null;
             Query query = dataSession
-                .createQuery("from TestPanelExpected where testPanelCase = ? and forecastExpected.forecastItem = ?");
+                .createQuery("from TestPanelForecast where testPanelCase = ? and forecastExpected.vaccineGroup = ?");
             query.setParameter(0, testPanelCase);
-            query.setParameter(1, forecastItem);
-            List<TestPanelExpected> testPanelExpectedList = query.list();
-            if (testPanelExpectedList != null && testPanelExpectedList.size() > 0) {
-              testPanelExpected = testPanelExpectedList.get(0);
+            query.setParameter(1, vaccineGroup);
+            List<TestPanelForecast> testPanelForecastList = query.list();
+            if (testPanelForecastList != null && testPanelForecastList.size() > 0) {
+              testPanelForecast = testPanelForecastList.get(0);
             } else {
-              testPanelExpected = new TestPanelExpected();
+              testPanelForecast = new TestPanelForecast();
             }
-            testPanelExpected.setTestPanelCase(testPanelCase);
-            testPanelExpected.setForecastExpected(forecastExpectedByUser);
-            dataSession.saveOrUpdate(testPanelExpected);
+            testPanelForecast.setTestPanelCase(testPanelCase);
+            testPanelForecast.setForecastExpected(forecastExpectedByUser);
+            dataSession.saveOrUpdate(testPanelForecast);
           }
           setResponsePage(new ActualVsExpectedPage());
         } finally {
@@ -423,13 +423,13 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
     };
 
     {
-      query = dataSession.createQuery("from ForecastItem order by label");
-      List<ForecastItem> forecastItemList = query.list();
-      addExpectedForeastItemModel = new Model<ForecastItem>();
-      DropDownChoice<ForecastItem> forecastItemDropDown = new DropDownChoice<ForecastItem>("forecastItem",
-          addExpectedForeastItemModel, forecastItemList);
-      forecastItemDropDown.setRequired(true);
-      addExpectedForm.add(forecastItemDropDown);
+      query = dataSession.createQuery("from VaccineGroup order by label");
+      List<VaccineGroup> vaccineGroupList = query.list();
+      addExpectedForeastItemModel = new Model<VaccineGroup>();
+      DropDownChoice<VaccineGroup> vaccineGroupDropDown = new DropDownChoice<VaccineGroup>("vaccineGroup",
+          addExpectedForeastItemModel, vaccineGroupList);
+      vaccineGroupDropDown.setRequired(true);
+      addExpectedForm.add(vaccineGroupDropDown);
 
       addExpectedDoseNumberModel = new Model<String>();
       TextField<String> addExpectedDoseNumberField = new TextField<String>("expectedDoseNumberField",
@@ -581,9 +581,9 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
       final TestPanelCase testPanelCaseToAdd = new TestPanelCase();
       testPanelCaseToAdd.setTestPanel(webSession.getLastTestPanelAssignment());
       testPanelCaseToAdd.setTestCase(testCase);
-      testPanelCaseToAdd.setCategoryName(testPanelCase.getCategoryName());
+      testPanelCaseToAdd.setCategoryName(testPanelCase == null ? "" : testPanelCase.getCategoryName());
       testPanelCaseToAdd.setInclude(Include.INCLUDED);
-      testPanelCaseToAdd.setTestCaseNumber(testPanelCase.getTestCaseNumber());
+      testPanelCaseToAdd.setTestCaseNumber(testPanelCase == null ? "" :testPanelCase.getTestCaseNumber());
 
       Form<TestPanelCase> assignToTestPanel = new Form<TestPanelCase>("assignToTestPanel",
           new CompoundPropertyModel<TestPanelCase>(testPanelCaseToAdd)) {
@@ -592,14 +592,14 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
           Transaction transaction = dataSession.beginTransaction();
           dataSession.save(testPanelCaseToAdd);
 
-          Query query = dataSession.createQuery("from TestPanelExpected where testPanelCase = ?");
+          Query query = dataSession.createQuery("from TestPanelForecast where testPanelCase = ?");
           query.setParameter(0, testPanelCase);
-          List<TestPanelExpected> testPanelExpectedList = query.list();
-          for (TestPanelExpected testPanelExpected : testPanelExpectedList) {
-            TestPanelExpected testPanelExpectedCopy = new TestPanelExpected();
-            testPanelExpectedCopy.setTestPanelCase(testPanelCaseToAdd);
-            testPanelExpectedCopy.setForecastExpected(testPanelExpected.getForecastExpected());
-            dataSession.save(testPanelExpectedCopy);
+          List<TestPanelForecast> testPanelForecastList = query.list();
+          for (TestPanelForecast testPanelForecast : testPanelForecastList) {
+            TestPanelForecast testPanelForecastCopy = new TestPanelForecast();
+            testPanelForecastCopy.setTestPanelCase(testPanelCaseToAdd);
+            testPanelForecastCopy.setForecastExpected(testPanelForecast.getForecastExpected());
+            dataSession.save(testPanelForecastCopy);
           }
           transaction.commit();
           webSession.setLastTestPanelAssignment(testPanelCaseToAdd.getTestPanel());
@@ -712,18 +712,18 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
 
   private class ExpectedValuesForm extends Form<Void>
   {
-    public ExpectedValuesForm(String id, Session dataSession, ForecastItem forecastItem, TestCase testCase, User user,
+    public ExpectedValuesForm(String id, Session dataSession, VaccineGroup vaccineGroup, TestCase testCase, User user,
         boolean canEdit) {
       super(id);
       this.dataSession = dataSession;
-      this.forecastItem = forecastItem;
+      this.vaccineGroup = vaccineGroup;
       this.testCase = testCase;
       this.user = user;
       this.canEdit = canEdit;
     }
 
     private Session dataSession;
-    private ForecastItem forecastItem = null;
+    private VaccineGroup vaccineGroup = null;
     private TestCase testCase = null;
     private User user = null;
     private boolean canEdit;
@@ -773,9 +773,9 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
       Transaction trans = dataSession.beginTransaction();
       try {
         Query query = dataSession
-            .createQuery("from ForecastExpected where testCase = ? and forecastItem = ? and author = ?");
+            .createQuery("from ForecastExpected where testCase = ? and vaccineGroup = ? and author = ?");
         query.setParameter(0, testCase);
-        query.setParameter(1, forecastItem);
+        query.setParameter(1, vaccineGroup);
         query.setParameter(2, user);
         List<ForecastExpected> forecastExpectedByUserList = query.list();
         if (forecastExpectedByUserList.size() > 0) {
@@ -783,7 +783,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         } else {
           forecastExpectedByUser = new ForecastExpected();
           forecastExpectedByUser.setTestCase(testCase);
-          forecastExpectedByUser.setForecastItem(forecastItem);
+          forecastExpectedByUser.setVaccineGroup(vaccineGroup);
           forecastExpectedByUser.setAuthor(user);
         }
         forecastExpectedByUser.setDoseNumber(expectedDoseNumberModel.getObject());
@@ -792,20 +792,20 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         forecastExpectedByUser.setOverdueDate(expectedOverdueDateModel.getObject());
         dataSession.saveOrUpdate(forecastExpectedByUser);
         if (canEdit) {
-          TestPanelExpected testPanelExpected = null;
+          TestPanelForecast testPanelForecast = null;
           query = dataSession
-              .createQuery("from TestPanelExpected where testPanelCase = ? and forecastExpected.forecastItem = ?");
+              .createQuery("from TestPanelForecast where testPanelCase = ? and forecastExpected.vaccineGroup = ?");
           query.setParameter(0, testPanelCase);
-          query.setParameter(1, forecastItem);
-          List<TestPanelExpected> testPanelExpectedList = query.list();
-          if (testPanelExpectedList != null && testPanelExpectedList.size() > 0) {
-            testPanelExpected = testPanelExpectedList.get(0);
+          query.setParameter(1, vaccineGroup);
+          List<TestPanelForecast> testPanelForecastList = query.list();
+          if (testPanelForecastList != null && testPanelForecastList.size() > 0) {
+            testPanelForecast = testPanelForecastList.get(0);
           } else {
-            testPanelExpected = new TestPanelExpected();
+            testPanelForecast = new TestPanelForecast();
           }
-          testPanelExpected.setTestPanelCase(testPanelCase);
-          testPanelExpected.setForecastExpected(forecastExpectedByUser);
-          dataSession.saveOrUpdate(testPanelExpected);
+          testPanelForecast.setTestPanelCase(testPanelCase);
+          testPanelForecast.setForecastExpected(forecastExpectedByUser);
+          dataSession.saveOrUpdate(testPanelForecast);
         }
         setResponsePage(new ActualVsExpectedPage());
       } finally {

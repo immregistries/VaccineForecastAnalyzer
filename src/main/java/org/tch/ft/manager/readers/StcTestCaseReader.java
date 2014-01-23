@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.tch.fc.model.Event;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
@@ -44,27 +44,27 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
   private static final String FIELD_SOAP_REQUEST = "SOAP Request";
   private static final String FIELD_SOAP_RESPONSE = "SOAP Response";
 
-  private Map<String, ForecastItem> forecastItemMap = new HashMap<String, ForecastItem>();
+  private Map<String, VaccineGroup> vaccineGroupMap = new HashMap<String, VaccineGroup>();
 
-  public void setForecastItems(Map<Integer, ForecastItem> forecastItemListMap) {
-    forecastItemMap.put("1", forecastItemListMap.get(ForecastItem.ID_DTAP));
-    forecastItemMap.put("2", forecastItemListMap.get(ForecastItem.ID_HIB));
-    forecastItemMap.put("3", forecastItemListMap.get(ForecastItem.ID_POLIO));
-    forecastItemMap.put("4", forecastItemListMap.get(ForecastItem.ID_HEPB));
-    forecastItemMap.put("12", forecastItemListMap.get(ForecastItem.ID_HEPB));
-    forecastItemMap.put("5", forecastItemListMap.get(ForecastItem.ID_MMR));
-    forecastItemMap.put("6", forecastItemListMap.get(ForecastItem.ID_VAR));
-    forecastItemMap.put("7", forecastItemListMap.get(ForecastItem.ID_MENING));
-    forecastItemMap.put("9", forecastItemListMap.get(ForecastItem.ID_HEPA));
-    forecastItemMap.put("10", forecastItemListMap.get(ForecastItem.ID_INFLUENZA));
-    forecastItemMap.put("11", forecastItemListMap.get(ForecastItem.ID_PNEUMO));
-    forecastItemMap.put("18", forecastItemListMap.get(ForecastItem.ID_PPSV));
-    forecastItemMap.put("20", forecastItemListMap.get(ForecastItem.ID_ROTA));
-    forecastItemMap.put("21", forecastItemListMap.get(ForecastItem.ID_HPV));
-    forecastItemMap.put("22", forecastItemListMap.get(ForecastItem.ID_ZOSTER));
+  public void setVaccineGroupss(Map<Integer, VaccineGroup> vaccineGroupListMap) {
+    vaccineGroupMap.put("1", vaccineGroupListMap.get(VaccineGroup.ID_DTAP));
+    vaccineGroupMap.put("2", vaccineGroupListMap.get(VaccineGroup.ID_HIB));
+    vaccineGroupMap.put("3", vaccineGroupListMap.get(VaccineGroup.ID_POLIO));
+    vaccineGroupMap.put("4", vaccineGroupListMap.get(VaccineGroup.ID_HEPB));
+    vaccineGroupMap.put("12", vaccineGroupListMap.get(VaccineGroup.ID_HEPB));
+    vaccineGroupMap.put("5", vaccineGroupListMap.get(VaccineGroup.ID_MMR));
+    vaccineGroupMap.put("6", vaccineGroupListMap.get(VaccineGroup.ID_VAR));
+    vaccineGroupMap.put("7", vaccineGroupListMap.get(VaccineGroup.ID_MENING));
+    vaccineGroupMap.put("9", vaccineGroupListMap.get(VaccineGroup.ID_HEPA));
+    vaccineGroupMap.put("10", vaccineGroupListMap.get(VaccineGroup.ID_INFLUENZA));
+    vaccineGroupMap.put("11", vaccineGroupListMap.get(VaccineGroup.ID_PNEUMO));
+    vaccineGroupMap.put("18", vaccineGroupListMap.get(VaccineGroup.ID_PPSV));
+    vaccineGroupMap.put("20", vaccineGroupListMap.get(VaccineGroup.ID_ROTA));
+    vaccineGroupMap.put("21", vaccineGroupListMap.get(VaccineGroup.ID_HPV));
+    vaccineGroupMap.put("22", vaccineGroupListMap.get(VaccineGroup.ID_ZOSTER));
 
-    // forecastItemMap.put("Td/Tdap", forecastItemListMap.get(15));
-    // forecastItemMap.put("MPSV", forecastItemListMap.get(8));
+    // vaccineGroupMap.put("Td/Tdap", vaccineGroupListMap.get(15));
+    // vaccineGroupMap.put("MPSV", vaccineGroupListMap.get(8));
   }
 
   private String[] ignoredItems = { "15"/* Measles */, "16" /* Mumps */, "17" /* Rubella */};
@@ -229,8 +229,8 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         }
       }
       if (!familyCode.equals("")) {
-        ForecastItem forecastItem = forecastItemMap.get(familyCode);
-        if (forecastItem == null) {
+        VaccineGroup vaccineGroup = vaccineGroupMap.get(familyCode);
+        if (vaccineGroup == null) {
           boolean found = false;
           for (String ignoredItem : ignoredItems) {
             if (familyCode.equals(ignoredItem)) {
@@ -247,7 +247,7 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
           ForecastExpected forecastExpected = new ForecastExpected();
           forecastExpected.setTestCase(testCase);
           forecastExpected.setAuthor(user);
-          forecastExpected.setForecastItem(forecastItem);
+          forecastExpected.setVaccineGroup(vaccineGroup);
           if (doseNumber.equals("-") || validDateString.equals("-")) {
             forecastExpected.setDoseNumber(ForecastResult.DOSE_NUMBER_COMPLETE);
           } else {

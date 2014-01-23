@@ -19,7 +19,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.classic.Session;
 import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
@@ -28,7 +28,7 @@ import org.tch.ft.model.ForecastCvx;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
-import org.tch.ft.model.TestPanelExpected;
+import org.tch.ft.model.TestPanelForecast;
 
 public class ExternalTestServlet extends HttpServlet
 
@@ -85,11 +85,11 @@ public class ExternalTestServlet extends HttpServlet
           out.println("testEvent.eventDate=" + sdf.format(testEvent.getEventDate()));
         }
 
-        query = dataSession.createQuery("from TestPanelExpected where testPanelCase = ?");
+        query = dataSession.createQuery("from TestPanelForecast where testPanelCase = ?");
         query.setParameter(0, testPanelCase);
-        List<TestPanelExpected> testPanelExpectedList = query.list();
-        for (TestPanelExpected testPanelExpected : testPanelExpectedList) {
-          ForecastExpected forecastExpected = testPanelExpected.getForecastExpected();
+        List<TestPanelForecast> testPanelForecastList = query.list();
+        for (TestPanelForecast testPanelForecast : testPanelForecastList) {
+          ForecastExpected forecastExpected = testPanelForecast.getForecastExpected();
           out.println("forecastExpected.forecastExpectedId=" + forecastExpected.getForecastExpectedId());
           out.println("forecastExpected.doseNumber=" + forecastExpected.getDoseNumber());
           if (forecastExpected.getValidDate() != null) {
@@ -107,7 +107,7 @@ public class ExternalTestServlet extends HttpServlet
           if (forecastExpected.getVaccineCvx() != null && !forecastExpected.getVaccineCvx().equals("")) {
             out.println("forecastExpected.vaccineCvx=" + forecastExpected.getVaccineCvx());
           } else {
-            out.println("forecastExpected.vaccineCvx=" + forecastExpected.getForecastItem().getVaccineCvx());
+            out.println("forecastExpected.vaccineCvx=" + forecastExpected.getVaccineGroup().getVaccineCvx());
           }
         }
       }
@@ -144,10 +144,10 @@ public class ExternalTestServlet extends HttpServlet
       for (ForecastCvx forecastCvx : forecastCvxList) {
 
 
-        query = dataSession.createQuery("from ForecastActual where testCase = ? and software = ? and forecastItem = ?");
+        query = dataSession.createQuery("from ForecastActual where softwareResult.testCase = ? and softwareResult.software = ? and vaccineGroup = ?");
         query.setParameter(0, testCase);
         query.setParameter(1, software);
-        query.setParameter(2, forecastCvx.getForecastItem());
+        query.setParameter(2, forecastCvx.getVaccineGroup());
         List<ForecastActual> forecastActualList = query.list();
         ForecastActual forecastActual = null;
         if (forecastActualList.size() > 0) {
@@ -155,8 +155,8 @@ public class ExternalTestServlet extends HttpServlet
         } else {
           forecastActual = new ForecastActual();
           forecastActual.setTestCase(testCase);
-          forecastActual.setForecastItem(forecastCvx.getForecastItem());
-          forecastActual.setSoftware(software);
+          forecastActual.setVaccineGroup(forecastCvx.getVaccineGroup());
+          forecastActual.getSoftwareResult().setSoftware(software);
         }
         forecastActual.setVaccineCvx(forecastCvxString);
         if (req.getParameter(POST_SCHEDULE_NAME) != null) {
@@ -164,8 +164,8 @@ public class ExternalTestServlet extends HttpServlet
         } else {
           forecastActual.setScheduleName("");
         }
-        forecastActual.setRunDate(new Date());
-        forecastActual.setLogText(req.getParameter(POST_LOG));
+        forecastActual.getSoftwareResult().setRunDate(new Date());
+        forecastActual.getSoftwareResult().setLogText(req.getParameter(POST_LOG));
         if (req.getParameter(POST_DOSE_NUMBER) != null) {
           forecastActual.setDoseNumber(req.getParameter(POST_DOSE_NUMBER));
         } else {

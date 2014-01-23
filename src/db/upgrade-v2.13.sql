@@ -1,0 +1,12 @@
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (154, 'Hepatitis A immune globulin', 'V', '154', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (151, 'Influenza nasal, unspecified formulation', 'V', '151', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (153, 'Influenza, injectable, MDCK, preservative free', 'V', '153', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (158, 'Influenza, injectable, quadrivalent', 'V', '158', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (150, 'Influenza, injectable, quadrivalent, preservative free', 'V', '150', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (149, 'influenza, live, intranasal, quadrivalent', 'V', '149', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (155, 'Influenza, recombinant, injectable, preservative free', 'V', '155', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (148, 'Meningococcal C/Y-HIB PRP ', 'V', '148', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (152, 'Pneumococcal Conjugate, unspecified formulation', 'V', '152', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (157, 'Rho(D) -IG IM', 'V', '157', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (159, 'Rho(D) Unspecified formulation', 'V', '159', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (156, 'Rho(D)-IG', 'V', '156', '');

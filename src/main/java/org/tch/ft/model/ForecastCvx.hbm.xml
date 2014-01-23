@@ -5,7 +5,7 @@
     <id name="forecastCvxId" column="forecast_cvx_id">
       <generator class="native"/>
     </id>
-    <many-to-one name="forecastItem" column="forecast_item_id" class="org.tch.fc.model.ForecastItem"/>
+    <many-to-one name="vaccineGroup" column="vaccine_group_id" class="org.tch.fc.model.VaccineGroup"/>
     <property name="vaccineCvx" column="vaccine_cvx" type="string"/>
   </class>
 </hibernate-mapping>

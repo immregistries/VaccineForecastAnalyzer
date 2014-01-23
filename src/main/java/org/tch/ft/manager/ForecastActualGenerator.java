@@ -17,64 +17,64 @@ import org.hibernate.Transaction;
 import org.tch.fc.ConnectFactory;
 import org.tch.fc.ConnectorInterface;
 import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
-import org.tch.ft.model.TestPanelExpected;
+import org.tch.ft.model.TestPanelForecast;
 
 public class ForecastActualGenerator {
   public static List<ForecastActualExpectedCompare> runForecastActual(TestPanel testPanel, Software software,
       Session session) throws Exception {
 
-    List<TestPanelExpected> testPanelExpectedList = null;
+    List<TestPanelForecast> testPanelForecastList = null;
     {
-      Query query = session.createQuery("from TestPanelExpected where testPanelCase.testPanel = ?");
+      Query query = session.createQuery("from TestPanelForecast where testPanelCase.testPanel = ?");
       query.setParameter(0, testPanel);
-      testPanelExpectedList = query.list();
+      testPanelForecastList = query.list();
     }
 
-    return runForecastActual(software, session, testPanelExpectedList);
+    return runForecastActual(software, session, testPanelForecastList);
   }
 
   public static List<ForecastActualExpectedCompare> runForecastActual(TestPanelCase testPanelCase, Software software,
       Session session) throws Exception {
 
-    List<TestPanelExpected> testPanelExpectedList = null;
+    List<TestPanelForecast> testPanelForecastList = null;
     {
-      Query query = session.createQuery("from TestPanelExpected where testPanelCase = ?");
+      Query query = session.createQuery("from TestPanelForecast where testPanelCase = ?");
       query.setParameter(0, testPanelCase);
-      testPanelExpectedList = query.list();
+      testPanelForecastList = query.list();
     }
 
-    return runForecastActual(software, session, testPanelExpectedList);
+    return runForecastActual(software, session, testPanelForecastList);
   }
 
   public static List<ForecastActualExpectedCompare> runForecastActual(Software software, Session session,
-      List<TestPanelExpected> testPanelExpectedList) throws Exception {
+      List<TestPanelForecast> testPanelForecastList) throws Exception {
     // Get list of previously run forecast results
     Query query;
 
     // Get list of items to forecast for
-    query = session.createQuery("from ForecastItem");
-    List<ForecastItem> forecastItemList = query.list();
+    query = session.createQuery("from VaccineGroup");
+    List<VaccineGroup> vaccineGroupList = query.list();
     SoftwareManager.initSoftware(software, session);
-    ConnectorInterface connector = ConnectFactory.createConnecter(software, forecastItemList);
+    ConnectorInterface connector = ConnectFactory.createConnecter(software, vaccineGroupList);
 
     Map<TestCase, List<ForecastExpected>> testCaseMap = new HashMap<TestCase, List<ForecastExpected>>();
 
-    for (TestPanelExpected testPanelExpected : testPanelExpectedList) {
-      TestCase testCase = testPanelExpected.getTestPanelCase().getTestCase();
+    for (TestPanelForecast testPanelForecast : testPanelForecastList) {
+      TestCase testCase = testPanelForecast.getTestPanelCase().getTestCase();
 
       List<ForecastExpected> forecastExpectedList = testCaseMap.get(testCase);
       if (forecastExpectedList == null) {
         forecastExpectedList = new ArrayList<ForecastExpected>();
         testCaseMap.put(testCase, forecastExpectedList);
       }
-      forecastExpectedList.add(testPanelExpected.getForecastExpected());
+      forecastExpectedList.add(testPanelForecast.getForecastExpected());
     }
     Transaction trans = session.beginTransaction();
     List<ForecastActualExpectedCompare> forecastCompareList = new ArrayList<ForecastActualExpectedCompare>();
@@ -101,34 +101,34 @@ public class ForecastActualGenerator {
           errorLog = writer.toString();
         }
         for (ForecastExpected forecastExpected : testCaseMap.get(testCase)) {
-          query = session.createQuery("from ForecastActual where testCase = ? and software = ? and forecastItem = ?");
+          query = session.createQuery("from ForecastActual where softwareResult.testCase = ? and softwareResult.software = ? and vaccineGroup = ?");
           query.setParameter(0, forecastExpected.getTestCase());
           query.setParameter(1, software);
-          query.setParameter(2, forecastExpected.getForecastItem());
+          query.setParameter(2, forecastExpected.getVaccineGroup());
           List<ForecastActual> forecastActualListOriginal = query.list();
           ForecastActual forecastActual;
           if (forecastActualListOriginal.size() > 0) {
             forecastActual = forecastActualListOriginal.get(0);
           } else {
             forecastActual = new ForecastActual();
-            forecastActual.setSoftware(software);
+            forecastActual.getSoftwareResult().setSoftware(software);
             forecastActual.setTestCase(testCase);
-            forecastActual.setForecastItem(forecastExpected.getForecastItem());
+            forecastActual.setVaccineGroup(forecastExpected.getVaccineGroup());
           }
           forecastActual.setScheduleName(software.getScheduleName());
-          forecastActual.setRunDate(new Date());
+          forecastActual.getSoftwareResult().setRunDate(new Date());
           if (errorLog == null) {
             boolean found = false;
 
             for (ForecastActual result : forecastActualList) {
-              if (result.getForecastItem().equals(forecastActual.getForecastItem())) {
+              if (result.getVaccineGroup().equals(forecastActual.getVaccineGroup())) {
                 forecastActual.setDoseNumber(result.getDoseNumber());
                 forecastActual.setValidDate(result.getValidDate());
                 forecastActual.setDueDate(result.getDueDate());
                 forecastActual.setOverdueDate(result.getOverdueDate());
                 forecastActual.setFinishedDate(result.getFinishedDate());
                 forecastActual.setVaccineCvx(result.getVaccineCvx());
-                forecastActual.setLogText(result.getLogText());
+                forecastActual.getSoftwareResult().setLogText(result.getSoftwareResult().getLogText());
                 found = true;
                 break;
               }
@@ -137,7 +137,7 @@ public class ForecastActualGenerator {
             if (!found) {
               String logText = "";
               if (forecastActualList.size() > 0) {
-                logText = forecastActualList.get(0).getLogText();
+                logText = forecastActualList.get(0).getSoftwareResult().getLogText();
               }
               forecastActual.setDoseNumber(ForecastResult.DOSE_NUMBER_COMPLETE);
               forecastActual.setValidDate(null);
@@ -145,7 +145,7 @@ public class ForecastActualGenerator {
               forecastActual.setDueDate(null);
               forecastActual.setFinishedDate(null);
               forecastActual.setVaccineCvx(null);
-              forecastActual.setLogText("No results found, returning log for first results \n" + logText);
+              forecastActual.getSoftwareResult().setLogText("No results found, returning log for first results \n" + logText);
             }
           } else {
             forecastActual.setDoseNumber(ForecastResult.DOSE_NUMBER_ERROR);
@@ -154,7 +154,7 @@ public class ForecastActualGenerator {
             forecastActual.setDueDate(null);
             forecastActual.setFinishedDate(null);
             forecastActual.setVaccineCvx(null);
-            forecastActual.setLogText(errorLog);
+            forecastActual.getSoftwareResult().setLogText(errorLog);
           }
 
           session.saveOrUpdate(forecastActual);
@@ -177,18 +177,18 @@ public class ForecastActualGenerator {
     List<ForecastActualExpectedCompare> forecastCompareList = new ArrayList<ForecastActualExpectedCompare>();
     Query query = session.createQuery("from TestPanelExpected where testPanelCase.testPanel = ?");
     query.setParameter(0, testPanel);
-    List<TestPanelExpected> testPanelExpectedList = query.list();
-    for (TestPanelExpected testPanelExpected : testPanelExpectedList) {
-      ForecastExpected forecastExpected = testPanelExpected.getForecastExpected();
+    List<TestPanelForecast> testPanelForecastList = query.list();
+    for (TestPanelForecast testPanelForecast : testPanelForecastList) {
+      ForecastExpected forecastExpected = testPanelForecast.getForecastExpected();
       TestCase testCase = forecastExpected.getTestCase();
       ForecastActualExpectedCompare forecastCompare = new ForecastActualExpectedCompare();
       forecastCompare.setForecastResultA(forecastExpected);
       forecastCompare.setTestCase(testCase);
       // Get forecast results that were run for this software
-      query = session.createQuery("from ForecastActual where software = ? and testCase = ? and forecastItem = ?");
+      query = session.createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ?");
       query.setParameter(0, software);
       query.setParameter(1, testCase);
-      query.setParameter(2, forecastExpected.getForecastItem());
+      query.setParameter(2, forecastExpected.getVaccineGroup());
       List<ForecastActual> forecastActualList = query.list();
       if (forecastActualList.size() > 0) {
         forecastCompare.setForecastResultB(forecastActualList.get(0));

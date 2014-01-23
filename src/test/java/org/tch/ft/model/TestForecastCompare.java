@@ -40,21 +40,21 @@ public class TestForecastCompare extends TestCase{
     Software software = (Software) dataSession.get(Software.class, 2);
     TaskGroup taskGroup = (TaskGroup) dataSession.get(TaskGroup.class, 2);
     TestPanel testPanel = (TestPanel) dataSession.get(TestPanel.class, 2);
-    TestPanelExpected testPanelExpected = null;
+    TestPanelForecast testPanelForecast = null;
     ForecastActual forecastActual = null;
     ForecastExpected forecastExpected = null;
     assertNotNull(testCase);
     assertNotNull(testPanel);
-      Query query = dataSession.createQuery("from TestPanelExpected where testPanelCase.testCase = ? and testPanelCase.testPanel = ?");
+      Query query = dataSession.createQuery("from TestPanelForecast where testPanelCase.testCase = ? and testPanelCase.testPanel = ?");
       query.setParameter(0, testCase);
       query.setParameter(1, testPanel);
-      List<TestPanelExpected> testPanelExpectedList = query.list();
-      if (testPanelExpectedList.size() > 0) {
-        testPanelExpected = testPanelExpectedList.get(0);
-        forecastExpected = testPanelExpected.getForecastExpected();
+      List<TestPanelForecast> testPanelForecastList = query.list();
+      if (testPanelForecastList.size() > 0) {
+        testPanelForecast = testPanelForecastList.get(0);
+        forecastExpected = testPanelForecast.getForecastExpected();
       }
       if (software != null) {
-        query = dataSession.createQuery("from ForecastActual where software = ? and testCase = ?");
+        query = dataSession.createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ?");
         query.setParameter(0, software);
         query.setParameter(1, testCase);
         List<ForecastActual> forecastActualList = query.list();

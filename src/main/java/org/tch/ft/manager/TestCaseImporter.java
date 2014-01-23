@@ -13,7 +13,7 @@ import org.tch.fc.model.TestCase;
 import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
-import org.tch.ft.model.TestPanelExpected;
+import org.tch.ft.model.TestPanelForecast;
 
 public class TestCaseImporter {
   public void importTestCases(TestCaseReader testCaseReader, TestPanel testPanel, Session dataSession) {
@@ -43,15 +43,15 @@ public class TestCaseImporter {
         if (forecastExpectedImportedList != null) {
           for (ForecastExpected forecastExpectedImported : forecastExpectedImportedList) {
             query = dataSession
-                .createQuery("from ForecastExpected where author = ? and testCase = ? and forecastItem = ?");
+                .createQuery("from ForecastExpected where author = ? and testCase = ? and vaccineGroup = ?");
             query.setParameter(0, testCaseReader.getUser());
             query.setParameter(1, testCase);
-            query.setParameter(2, forecastExpectedImported.getForecastItem());
+            query.setParameter(2, forecastExpectedImported.getVaccineGroup());
             List<ForecastExpected> forecastExpectedList = query.list();
             ForecastExpected forecastExpected = null;
             if (forecastExpectedList.size() > 0) {
               forecastExpected = forecastExpectedList.get(0);
-              forecastExpected.setForecastItem(forecastExpectedImported.getForecastItem());
+              forecastExpected.setVaccineGroup(forecastExpectedImported.getVaccineGroup());
               forecastExpected.setDoseNumber(forecastExpectedImported.getDoseNumber());
               forecastExpected.setValidDate(forecastExpectedImported.getValidDate());
               forecastExpected.setDueDate(forecastExpectedImported.getDueDate());
@@ -64,10 +64,10 @@ public class TestCaseImporter {
               forecastExpected.setTestCase(testCase);
               dataSession.save(forecastExpected);
               // now link the new expectation to the test panel
-              TestPanelExpected testPanelExpected = new TestPanelExpected();
-              testPanelExpected.setTestPanelCase(testPanelCase);
-              testPanelExpected.setForecastExpected(forecastExpected);
-              dataSession.save(testPanelExpected);
+              TestPanelForecast testPanelForecast = new TestPanelForecast();
+              testPanelForecast.setTestPanelCase(testPanelCase);
+              testPanelForecast.setForecastExpected(forecastExpected);
+              dataSession.save(testPanelForecast);
             }
           }
         }
@@ -113,10 +113,10 @@ public class TestCaseImporter {
           for (ForecastExpected forecastExpectedImported : forecastExpectedListImported) {
             forecastExpectedImported.setTestCase(testCaseImported);
             dataSession.save(forecastExpectedImported);
-            TestPanelExpected testPanelExpected = new TestPanelExpected();
-            testPanelExpected.setTestPanelCase(testPanelCase);
-            testPanelExpected.setForecastExpected(forecastExpectedImported);
-            dataSession.save(testPanelExpected);
+            TestPanelForecast testPanelForecast = new TestPanelForecast();
+            testPanelForecast.setTestPanelCase(testPanelCase);
+            testPanelForecast.setForecastExpected(forecastExpectedImported);
+            dataSession.save(testPanelForecast);
           }
         }
       }

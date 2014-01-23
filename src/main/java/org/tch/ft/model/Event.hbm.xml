@@ -9,5 +9,6 @@
     <property name="eventTypeCode" column="event_type_code" type="string"/>
     <property name="vaccineCvx" column="vaccine_cvx" type="string"/>
     <property name="vaccineMvx" column="vaccine_mvx" type="string"/>
+    <property name="tradeLabel" column="trade_label" type="string"/>
   </class>
 </hibernate-mapping>
