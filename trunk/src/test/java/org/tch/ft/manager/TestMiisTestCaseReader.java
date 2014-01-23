@@ -27,7 +27,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.tch.fc.model.Event;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.CentralControl;
 import org.tch.ft.manager.readers.MiisTestCaseReader;
@@ -48,17 +48,17 @@ public class TestMiisTestCaseReader extends TestCase{
     User user = (User) dataSession.get(User.class, 1);
     Query query = dataSession.createQuery("from Event");
     List<Event> eventList = query.list();
-    query = dataSession.createQuery("from ForecastItem");
-    List<ForecastItem> forecastItemList = query.list();
-    Map<Integer, ForecastItem> forecastItemListMap = new HashMap<Integer, ForecastItem>();
-    for (ForecastItem forecastItem : forecastItemList)
+    query = dataSession.createQuery("from VaccineGroup");
+    List<VaccineGroup> vaccineGroupList = query.list();
+    Map<Integer, VaccineGroup> vaccineGroupListMap = new HashMap<Integer, VaccineGroup>();
+    for (VaccineGroup vaccineGroup : vaccineGroupList)
     {
-      forecastItemListMap.put(forecastItem.getForecastItemId(), forecastItem);
+      vaccineGroupListMap.put(vaccineGroup.getVaccineGroupId(), vaccineGroup);
     }
     MiisTestCaseReader miisTestCaseReader = new MiisTestCaseReader();
     miisTestCaseReader.setEventList(eventList);
     miisTestCaseReader.setUser(user);
-    miisTestCaseReader.setForecastItems(forecastItemListMap);
+    miisTestCaseReader.setVaccineGroupss(vaccineGroupListMap);
     miisTestCaseReader.read(in);
     assertEquals(840, miisTestCaseReader.getTestCaseList().size());
     
@@ -94,17 +94,17 @@ public class TestMiisTestCaseReader extends TestCase{
     User user = (User) dataSession.get(User.class, 1);
     Query query = dataSession.createQuery("from Event");
     List<Event> eventList = query.list();
-    query = dataSession.createQuery("from ForecastItem");
-    List<ForecastItem> forecastItemList = query.list();
-    Map<Integer, ForecastItem> forecastItemListMap = new HashMap<Integer, ForecastItem>();
-    for (ForecastItem forecastItem : forecastItemList)
+    query = dataSession.createQuery("from VaccineGroup");
+    List<VaccineGroup> vaccineGroupList = query.list();
+    Map<Integer, VaccineGroup> vaccineGroupListMap = new HashMap<Integer, VaccineGroup>();
+    for (VaccineGroup vaccineGroupItem : vaccineGroupList)
     {
-      forecastItemListMap.put(forecastItem.getForecastItemId(), forecastItem);
+      vaccineGroupListMap.put(vaccineGroupItem.getVaccineGroupId(), vaccineGroupItem);
     }
     MiisTestCaseReader miisTestCaseReader = new MiisTestCaseReader();
     miisTestCaseReader.setEventList(eventList);
     miisTestCaseReader.setUser(user);
-    miisTestCaseReader.setForecastItems(forecastItemListMap);
+    miisTestCaseReader.setVaccineGroupss(vaccineGroupListMap);
     miisTestCaseReader.read(in);
     TestCaseImporter tci = new TestCaseImporter();
     

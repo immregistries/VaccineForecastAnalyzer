@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.tch.fc.model">
+  <class name="SoftwareResult" table="software_result">
+    <id name="softwareResultId" column="software_result_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="software" column="software_id" class="org.tch.fc.model.Software"/>
+    <property name="runDate" column="run_date" type="timestamp"/>
+    <property name="logText" column="log_text" type="string"/>
+    <many-to-one name="testCase" column="test_case_id" class="org.tch.fc.model.TestCase"/>
+  </class>
+</hibernate-mapping>

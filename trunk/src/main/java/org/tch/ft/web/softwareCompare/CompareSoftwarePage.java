@@ -34,7 +34,7 @@ import org.apache.wicket.model.Model;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
@@ -109,15 +109,15 @@ public class CompareSoftwarePage extends FTBasePage implements SecurePage {
               testCase.setPatientDob(new Date());
               testCase.setTestEventList(new ArrayList<TestEvent>());
             }
-            ForecastItem forecastItem = null;
+            VaccineGroup vaccineGroup = null;
             if (forecastCompare != null && forecastCompare.getForecastResultA() != null) {
-              forecastItem = forecastCompare.getForecastResultA().getForecastItem();
+              vaccineGroup = forecastCompare.getForecastResultA().getVaccineGroup();
             } else {
-              forecastItem = new ForecastItem();
+              vaccineGroup = new VaccineGroup();
             }
             label = testCase.getLabel();
-            String sectionId = "detailSection" + testCase.getTestCaseId() + "-" + forecastItem.getForecastItemId();
-            item.add(new Label("testCaseLabel", label + " - " + forecastItem.getLabel()));
+            String sectionId = "detailSection" + testCase.getTestCaseId() + "-" + vaccineGroup.getVaccineGroupId();
+            item.add(new Label("testCaseLabel", label + " - " + vaccineGroup.getLabel()));
             ShowHideSection showHideSection = new ShowHideSection("sectionOpenLink", sectionId);
             item.add(showHideSection);
             WebMarkupContainer detailSection = new WebMarkupContainer("detailSection");
@@ -151,8 +151,8 @@ public class CompareSoftwarePage extends FTBasePage implements SecurePage {
             } else {
               forecastActual = new ForecastActual();
             }
-            detailSection.add(new Label("item", forecastActual.getForecastItem() == null ? "" : forecastActual
-                .getForecastItem().getLabel()));
+            detailSection.add(new Label("item", forecastActual.getVaccineGroup() == null ? "" : forecastActual
+                .getVaccineGroup().getLabel()));
             detailSection.add(new Label("doseNumber", forecastActual.getDoseNumber()));
             detailSection.add(new Label("validDate", (forecastActual.getValidDate() == null ? "" : sdf
                 .format(forecastActual.getValidDate()))));
@@ -169,8 +169,8 @@ public class CompareSoftwarePage extends FTBasePage implements SecurePage {
               @Override
               protected void populateItem(ListItem<ForecastActual> item) {
                 ForecastActual fac = item.getModelObject();
-                item.add(new Label("softwareLabel", fac.getSoftware().getLabel()));
-                item.add(new Label("item", fac.getForecastItem().getLabel()));
+                item.add(new Label("softwareLabel", fac.getSoftwareResult().getSoftware().getLabel()));
+                item.add(new Label("item", fac.getVaccineGroup().getLabel()));
                 String styleClass = ForecastActualExpectedCompare.same(forecastActual.getDoseNumber(),
                     fac.getDoseNumber()) ? "pass" : "fail";
                 item.add(new StyleClassLabel("doseNumber", fac.getDoseNumber(), styleClass));
@@ -212,7 +212,7 @@ public class CompareSoftwarePage extends FTBasePage implements SecurePage {
         for (TestPanelCase testPanelCase : testPanelCaseList) {
 
           query = dataSession
-              .createQuery("from ForecastActual where software = ? and testCase = ? order by runDate desc");
+              .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? order by runDate desc");
           query.setParameter(0, software);
           query.setParameter(1, testPanelCase.getTestCase());
           List<ForecastActual> forecastActualList = query.list();
@@ -223,10 +223,10 @@ public class CompareSoftwarePage extends FTBasePage implements SecurePage {
               List<ForecastActual> compareWithList = new ArrayList<ForecastActual>();
               for (Software compareSoftware : compareSoftwareSelect) {
                 query = dataSession
-                    .createQuery("from ForecastActual where software = ? and testCase = ? and forecastItem = ? order by runDate desc");
+                    .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ? order by runDate desc");
                 query.setParameter(0, compareSoftware);
                 query.setParameter(1, testPanelCase.getTestCase());
-                query.setParameter(2, forecastActual.getForecastItem());
+                query.setParameter(2, forecastActual.getVaccineGroup());
                 List<ForecastActual> forecastActualCompareList = query.list();
                 if (forecastActualCompareList.size() == 0) {
                   cr.setStatus("X: Forecast not run on " + compareSoftware);
@@ -237,7 +237,7 @@ public class CompareSoftwarePage extends FTBasePage implements SecurePage {
                   forecastCompare.setTestCase(testPanelCase.getTestCase());
                   forecastCompare.setForecastResultA(forecastActual);
                   forecastCompare.setForecastResultB(forecastActualCompareList.get(0));
-                  forecastCompare.setForecastItem(forecastActual.getForecastItem());
+                  forecastCompare.setVaccineGroup(forecastActual.getVaccineGroup());
                   cr.getForecastCompareList().add(forecastCompare);
                 }
               }

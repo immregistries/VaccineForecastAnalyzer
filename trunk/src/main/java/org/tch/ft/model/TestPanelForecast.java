@@ -2,20 +2,20 @@ package org.tch.ft.model;
 
 import java.io.Serializable;
 
-public class TestPanelExpected  implements Serializable{
+public class TestPanelForecast  implements Serializable{
 
   private static final long serialVersionUID = 1L;
 
-  private int testPanelExpectedId = 0;
+  private int testPanelForecastId = 0;
   private TestPanelCase testPanelCase = null;
   private ForecastExpected forecastExpected = null;
 
-  public int getTestPanelExpectedId() {
-    return testPanelExpectedId;
+  public int getTestPanelForecastId() {
+    return testPanelForecastId;
   }
 
-  public void setTestPanelExpectedId(int testPanelExpectedId) {
-    this.testPanelExpectedId = testPanelExpectedId;
+  public void setTestPanelForecastId(int testPanelForecastId) {
+    this.testPanelForecastId = testPanelForecastId;
   }
 
   public TestPanelCase getTestPanelCase() {

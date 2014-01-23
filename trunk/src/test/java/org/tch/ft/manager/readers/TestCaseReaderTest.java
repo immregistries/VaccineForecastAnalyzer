@@ -7,7 +7,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 
 public class TestCaseReaderTest extends TestCase {
 
@@ -20,7 +20,7 @@ public class TestCaseReaderTest extends TestCase {
   
   private class TCR extends CsvTestCaseReader
   {
-    public void setForecastItems(Map<Integer, ForecastItem> forecastItemListMap) {
+    public void setVaccineGroupss(Map<Integer, VaccineGroup> vaccineGroupListMap) {
       // do nothing
     }
 

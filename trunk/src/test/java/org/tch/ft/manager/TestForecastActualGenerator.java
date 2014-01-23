@@ -51,8 +51,8 @@ public class TestForecastActualGenerator extends TestCase {
       }
       System.out.println("Test " + forecastCompare.getTestCase().getLabel());
       ForecastActual forecastActual = (ForecastActual) forecastCompare.getForecastResultB();
-      assertNotNull(forecastActual.getLogText());
-      assertTrue(forecastActual.getLogText().length() > 0);
+      assertNotNull(forecastActual.getSoftwareResult().getLogText());
+      assertTrue(forecastActual.getSoftwareResult().getLogText().length() > 0);
     }
     System.out.println("Queries made: " + totalCount);
     assertEquals(0, errorCount);

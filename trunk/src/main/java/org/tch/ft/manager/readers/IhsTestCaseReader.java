@@ -12,7 +12,7 @@ import org.tch.fc.ConnectFactory;
 import org.tch.fc.ConnectorInterface;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
@@ -36,7 +36,7 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     int shotDatePos = 3;
     int shotCvxPos = 4;
 
-    List<ForecastItem> forecastItemList = new ArrayList<ForecastItem>(forecastItemListMap.values());
+    List<VaccineGroup> vaccineGroupList = new ArrayList<VaccineGroup>(vaccineGroupListMap.values());
 
     {
       Date referenceDate = new Date();
@@ -88,7 +88,7 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
       List<ForecastActual> forecastActualList = null;
       if (loadExpectationsSoftware != null) {
         try {
-          ConnectorInterface connector = ConnectFactory.createConnecter(loadExpectationsSoftware, forecastItemList);
+          ConnectorInterface connector = ConnectFactory.createConnecter(loadExpectationsSoftware, vaccineGroupList);
           forecastActualList = connector.queryForForecast(testCaseWithExpectations.getTestCase());
 
         } catch (Exception e) {
@@ -99,20 +99,20 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
 
       }
       int ageInYears = getAgeInYears(testCaseWithExpectations.getTestCase().getPatientDob(), testCaseWithExpectations.getTestCase().getEvalDate());
-      for (ForecastItem forecastItem : forecastItemList) {
-        if (ageInYears < (forecastItem.getTypicallyGivenYearStart() - 1)
-            || ageInYears > (forecastItem.getTypicallyGivenYearEnd() + 1)) {
+      for (VaccineGroup vaccineGroupItem : vaccineGroupList) {
+        if (ageInYears < (vaccineGroupItem.getTypicallyGivenYearStart() - 1)
+            || ageInYears > (vaccineGroupItem.getTypicallyGivenYearEnd() + 1)) {
           continue;
         }
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(testCaseWithExpectations.getTestCase().getPatientDob());
-        calendar.add(Calendar.YEAR, forecastItem.getTypicallyGivenYearStart());
+        calendar.add(Calendar.YEAR, vaccineGroupItem.getTypicallyGivenYearStart());
         Date typicalStartDate = calendar.getTime();
 
         ForecastExpected forecastExpected = null;
         if (forecastActualList != null) {
           for (ForecastActual forecastActual : forecastActualList) {
-            if (forecastActual.getForecastItem().equals(forecastItem)) {
+            if (forecastActual.getVaccineGroup().equals(vaccineGroupItem)) {
               forecastExpected = new ForecastExpected();
               forecastExpected.setDoseNumber(forecastActual.getDoseNumber());
               forecastExpected.setValidDate(forecastActual.getValidDate());
@@ -130,7 +130,7 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         }
         forecastExpected.setTestCase(testCaseWithExpectations.getTestCase());
         forecastExpected.setAuthor(user);
-        forecastExpected.setForecastItem(forecastItem);
+        forecastExpected.setVaccineGroup(vaccineGroupItem);
         List<ForecastExpected> forecastExpectedList = testCaseWithExpectations.getForecastExpectedList();
         if (forecastExpectedList == null) {
           forecastExpectedList = new ArrayList<ForecastExpected>();
@@ -184,10 +184,10 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     return beforeCutoff;
   }
 
-  private Map<Integer, ForecastItem> forecastItemListMap = null;
+  private Map<Integer, VaccineGroup> vaccineGroupListMap = null;
 
-  public void setForecastItems(Map<Integer, ForecastItem> forecastItemListMap) {
-    this.forecastItemListMap = forecastItemListMap;
+  public void setVaccineGroupss(Map<Integer, VaccineGroup> vaccineGroupListMap) {
+    this.vaccineGroupListMap = vaccineGroupListMap;
   }
 
 }

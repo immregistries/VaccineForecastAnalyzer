@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.tch.fc.model.Event;
-import org.tch.fc.model.ForecastItem;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.ForecastExpected;
@@ -31,34 +31,34 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
   private static final String FIELD_OVERDUE_DATE = "Overdue Date";
   private static final String FIELD_REFERENCE_DATE = "Reference Date";
 
-  private Map<String, ForecastItem> forecastItemMap = new HashMap<String, ForecastItem>();
+  private Map<String, VaccineGroup> vaccineGroupMap = new HashMap<String, VaccineGroup>();
 
-  public void setForecastItems(Map<Integer, ForecastItem> forecastItemListMap) {
-    forecastItemMap.put("DTP", forecastItemListMap.get(2));
-    forecastItemMap.put("DTaP", forecastItemListMap.get(2));
-    forecastItemMap.put("H1N1", forecastItemListMap.get(3));
-    forecastItemMap.put("HepA", forecastItemListMap.get(4));
-    forecastItemMap.put("HepB", forecastItemListMap.get(5));
-    forecastItemMap.put("HerpesZoster", forecastItemListMap.get(14));
-    forecastItemMap.put("Hib", forecastItemListMap.get(6));
-    forecastItemMap.put("HPV", forecastItemListMap.get(7));
-    forecastItemMap.put("Influenza", forecastItemListMap.get(3));
-    forecastItemMap.put("Flu", forecastItemListMap.get(3));
-    forecastItemMap.put("MCV4", forecastItemListMap.get(8));
-    forecastItemMap.put("MCV", forecastItemListMap.get(8));
-    forecastItemMap.put("MMR", forecastItemListMap.get(9));
-    forecastItemMap.put("MPSV", forecastItemListMap.get(8));
-    forecastItemMap.put("Pneumo-Poly", forecastItemListMap.get(10));
-    forecastItemMap.put("Pneumonia", forecastItemListMap.get(10));
-    forecastItemMap.put("PCV", forecastItemListMap.get(10));
-    forecastItemMap.put("Polio", forecastItemListMap.get(11));
-    forecastItemMap.put("POL", forecastItemListMap.get(11));
-    forecastItemMap.put("Rotavirus", forecastItemListMap.get(12));
-    forecastItemMap.put("Rota", forecastItemListMap.get(12));
-    forecastItemMap.put("Td/Tdap", forecastItemListMap.get(15));
-    forecastItemMap.put("Varicella", forecastItemListMap.get(13));
-    forecastItemMap.put("Var", forecastItemListMap.get(13));
-    forecastItemMap.put("Typhoid", forecastItemListMap.get(0));
+  public void setVaccineGroupss(Map<Integer, VaccineGroup> vaccineGroupListMap) {
+    vaccineGroupMap.put("DTP", vaccineGroupListMap.get(2));
+    vaccineGroupMap.put("DTaP", vaccineGroupListMap.get(2));
+    vaccineGroupMap.put("H1N1", vaccineGroupListMap.get(3));
+    vaccineGroupMap.put("HepA", vaccineGroupListMap.get(4));
+    vaccineGroupMap.put("HepB", vaccineGroupListMap.get(5));
+    vaccineGroupMap.put("HerpesZoster", vaccineGroupListMap.get(14));
+    vaccineGroupMap.put("Hib", vaccineGroupListMap.get(6));
+    vaccineGroupMap.put("HPV", vaccineGroupListMap.get(7));
+    vaccineGroupMap.put("Influenza", vaccineGroupListMap.get(3));
+    vaccineGroupMap.put("Flu", vaccineGroupListMap.get(3));
+    vaccineGroupMap.put("MCV4", vaccineGroupListMap.get(8));
+    vaccineGroupMap.put("MCV", vaccineGroupListMap.get(8));
+    vaccineGroupMap.put("MMR", vaccineGroupListMap.get(9));
+    vaccineGroupMap.put("MPSV", vaccineGroupListMap.get(8));
+    vaccineGroupMap.put("Pneumo-Poly", vaccineGroupListMap.get(10));
+    vaccineGroupMap.put("Pneumonia", vaccineGroupListMap.get(10));
+    vaccineGroupMap.put("PCV", vaccineGroupListMap.get(10));
+    vaccineGroupMap.put("Polio", vaccineGroupListMap.get(11));
+    vaccineGroupMap.put("POL", vaccineGroupListMap.get(11));
+    vaccineGroupMap.put("Rotavirus", vaccineGroupListMap.get(12));
+    vaccineGroupMap.put("Rota", vaccineGroupListMap.get(12));
+    vaccineGroupMap.put("Td/Tdap", vaccineGroupListMap.get(15));
+    vaccineGroupMap.put("Varicella", vaccineGroupListMap.get(13));
+    vaccineGroupMap.put("Var", vaccineGroupListMap.get(13));
+    vaccineGroupMap.put("Typhoid", vaccineGroupListMap.get(0));
   }
 
   private String[] ignoredItems = { "Typhoid" };
@@ -125,8 +125,8 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
           testEventList.add(testEvent);
         }
       }
-      ForecastItem forecastItem = forecastItemMap.get(testCase.getCategoryName());
-      if (forecastItem == null) {
+      VaccineGroup vaccineGroupItem = vaccineGroupMap.get(testCase.getCategoryName());
+      if (vaccineGroupItem == null) {
         boolean found = false;
         for (String ignoredItem : ignoredItems) {
           if (testCase.getCategoryName().equals(ignoredItem)) {
@@ -141,7 +141,7 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
         ForecastExpected forecastExpected = new ForecastExpected();
         forecastExpected.setTestCase(testCase);
         forecastExpected.setAuthor(user);
-        forecastExpected.setForecastItem(forecastItem);
+        forecastExpected.setVaccineGroup(vaccineGroupItem);
         forecastExpected.setDoseNumber(readField(forecastNumPos, testCaseFieldList));
         forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCaseWithExpectations));
         forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCaseWithExpectations));

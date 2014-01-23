@@ -3,7 +3,7 @@ package org.tch.ft.model;
 import java.io.Serializable;
 
 public enum Rating implements Serializable {
-  BEST("B", "Best"), OK("O", "Okay"), PROBLEM("P", "Problem"), ;
+  LIKE("L", "Like"), COMMENT("C", "Comment"), PROBLEM("P", "Problem"), ;
 
   private static final long serialVersionUID = 1L;
 

@@ -38,7 +38,7 @@ import org.tch.ft.manager.ForecastActualGenerator;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
-import org.tch.ft.model.TestPanelExpected;
+import org.tch.ft.model.TestPanelForecast;
 import org.tch.ft.model.User;
 import org.tch.ft.web.FTBasePage;
 import org.tch.ft.web.MenuSection;
