@@ -42,7 +42,7 @@ import org.tch.ft.web.taskGroup.TestPanelsAssociatedPage;
 import org.tch.ft.web.testCase.ActualVsExpectedPage;
 import org.tch.ft.web.testCase.AddTestCasePage;
 import org.tch.ft.web.testCase.CommentsPage;
-import org.tch.ft.web.testCase.EditTestCasePage;
+import org.tch.ft.web.testCase.CalendarPage;
 import org.tch.ft.web.testCase.ForecastLogPage;
 import org.tch.ft.web.testCase.ForecastNowPage;
 import org.tch.ft.web.testCase.TestCaseDetailPage;
@@ -118,7 +118,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
 
     mountPage("TestCasePage", TestCasePage.class);
     mountPage("TestCaseDetailPage", TestCaseDetailPage.class);
-    mountPage("EditTestCasePage", EditTestCasePage.class);
+    mountPage("EditTestCasePage", CalendarPage.class);
     mountPage("ActualVsExpectedPage", ActualVsExpectedPage.class);
     mountPage("ForecastLogPage", ForecastLogPage.class);
     mountPage("ForecastNowPage", ForecastNowPage.class);

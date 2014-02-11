@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+
+		<div wicket:id="forecastCompareItems">
+			<h1>
+				<span wicket:id="forecastLineLabel"></span> Test Results
+			</h1>
+			<table>
+				<tr>
+					<th>Entity</th>
+					<th>Dose</th>
+					<th>Valid</th>
+					<th>Due</th>
+					<th>Overdue</th>
+				</tr>
+				<tr wicket:id="forecastExpectedItems">
+					<td wicket:id="expectedLabel"></td>
+					<td wicket:id="expectedDoseNumber"></td>
+					<td wicket:id="expectedValidDate"></td>
+					<td wicket:id="expectedDueDate"></td>
+					<td wicket:id="expectedOverdueDate"></td>
+				</tr>
+				<tr>
+					<td wicket:id="expectedLabel"></td>
+					<td wicket:id="expectedDoseNumber"></td>
+					<td wicket:id="expectedValidDate"></td>
+					<td wicket:id="expectedDueDate"></td>
+					<td wicket:id="expectedOverdueDate"></td>
+				</tr>
+				<tr>
+					<td wicket:id="actualLabel"></td>
+					<td wicket:id="actualDoseNumber"></td>
+					<td wicket:id="actualValidDate"></td>
+					<td wicket:id="actualDueDate"></td>
+					<td wicket:id="actualOverdueDate"></td>
+				</tr>
+				<tr wicket:id="forecastActualItems">
+					<td wicket:id="actualLabel"></td>
+					<td wicket:id="actualDoseNumber"></td>
+					<td wicket:id="actualValidDate"></td>
+					<td wicket:id="actualDueDate"></td>
+					<td wicket:id="actualOverdueDate"></td>
+				</tr>
+			</table>
+			<h2>
+				<span wicket:id="setExpectedValuesLabel">Set Expected Values</span>
+			</h2>
+			<form wicket:id="editExpectedform">
+				<table>
+					<tr>
+						<td>Dose</td>
+						<td><input type="text" wicket:id="expectedDoseNumberField"
+							size="4" /></td>
+					</tr>
+					<tr>
+						<td>Valid</td>
+						<td><input type="text" wicket:id="expectedValidDateField"
+							size="10" /></td>
+					</tr>
+					<tr>
+						<td>Due</td>
+						<td><input type="text" wicket:id="expectedDueDateField"
+							size="10" /></td>
+					</tr>
+					<tr>
+						<td>Overdue</td>
+						<td><input type="text" wicket:id="expectedOverdueDateField"
+							size="10" /></td>
+					</tr>
+					<tr>
+						<td colspan="2" align="right"><input type="submit"
+							value="save" class="fauxbutton" /></td>
+					</tr>
+				</table>
+			</form>
+		</div>
+
+		<div wicket:id="allResultsForForecaster">
+			<h2>
+				<span wicket:id="allResultsReturned">All Results Returned</span>
+			</h2>
+			<table>
+				<tr>
+					<th>Forecast Series</th>
+					<th>Dose</th>
+					<th>Valid</th>
+					<th>Due</th>
+					<th>Overdue</th>
+				</tr>
+				<tr wicket:id="allForecastActualItems">
+					<td wicket:id="actualLabel"></td>
+					<td wicket:id="actualDoseNumber"></td>
+					<td wicket:id="actualValidDate"></td>
+					<td wicket:id="actualDueDate"></td>
+					<td wicket:id="actualOverdueDate"></td>
+				</tr>
+
+			</table>
+		</div>
+
+		<div wicket:id="changeTestStatus">
+			<h2>
+				Change Test Status for <span wicket:id="primarySoftware"></span>
+			</h2>
+			<table>
+				<tr>
+					<td wicket:id="pass1"><a wicket:id="pass" class="fauxbutton">Pass</a></td>
+					<td wicket:id="pass2">The target software meets all
+						expectations of this test.</td>
+				</tr>
+				<tr>
+					<td wicket:id="accept1"><a wicket:id="accept"
+						class="fauxbutton">Accept</a></td>
+					<td wicket:id="accept2">The target software does not meet all
+						expectations of this test, but it is accepted for now as good
+						enough.</td>
+				</tr>
+				<tr>
+					<td wicket:id="fixed1"><a wicket:id="fixed" class="fauxbutton">Fixed</a></td>
+					<td wicket:id="fixed2">The target software has been changed
+						and this test needs to be run again and reviewed.</td>
+				</tr>
+				<tr>
+					<td wicket:id="research1"><a wicket:id="research"
+						class="fauxbutton">Research</a></td>
+					<td wicket:id="research2">More information needs to be
+						gathered before the correct expected values can be determined.</td>
+				</tr>
+				<tr>
+					<td wicket:id="fail1"><a wicket:id="fail" class="fauxbutton">Fail</a></td>
+					<td wicket:id="fail2">The target software does not meet
+						expectations and needs to fixed.</td>
+				</tr>
+			</table>
+		</div>
+
+		<h2>Add Expected Values</h2>
+		<form wicket:id="addExpectedForm">
+			<table>
+				<tr>
+					<td>Forecast Series</td>
+					<td><select wicket:id="vaccineGroup"></select></td>
+				</tr>
+				<tr>
+					<td>Dose</td>
+					<td><input type="text" wicket:id="expectedDoseNumberField"
+						size="4" /></td>
+				</tr>
+				<tr>
+					<td>Valid</td>
+					<td><input type="text" wicket:id="expectedValidDateField"
+						size="10" /></td>
+				</tr>
+				<tr>
+					<td>Due</td>
+					<td><input type="text" wicket:id="expectedDueDateField"
+						size="10" /></td>
+				</tr>
+				<tr>
+					<td>Overdue</td>
+					<td><input type="text" wicket:id="expectedOverdueDateField"
+						size="10" /></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						value="save" class="fauxbutton" /></td>
+				</tr>
+			</table>
+		</form>
+
+		<h3>Comments</h3>
+		<form wicket:id="commentform">
+			<table width="100%">
+				<tr>
+					<td>Comment</td>
+					<td><textarea wicket:id="noteTextField" rows="3" cols="40"></textarea></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit" value="add"
+						class="fauxbutton" /></td>
+				</tr>
+			</table>
+		</form>
+		<table width="100%">
+			<tr>
+				<th>Expert</th>
+				<th>Organization</th>
+				<th>Date</th>
+				<th>Note</th>
+			</tr>
+			<tr wicket:id="testNoteItems">
+				<td wicket:id="userName">Laura King</td>
+				<td wicket:id="userOrganization">TCH</td>
+				<td wicket:id="noteDate">05/07/2012</td>
+				<td wicket:id="noteText"></td>
+			</tr>
+		</table>
+
+	</div>
+	<div class="extra">
+
+		<h1>Test Case</h1>
+		<table>
+			<tr>
+				<td>Label</td>
+				<td wicket:id="label">TCH Test 1</td>
+			</tr>
+			<tr>
+				<td>Description</td>
+				<td wicket:id="description">Varicella given two months after
+					measles is valid</td>
+			</tr>
+			<tr>
+				<td>Patient</td>
+				<td><span wicket:id="patientFirst">Harold</span> <span
+					wicket:id="patientLast">Snoot</span> (<span wicket:id="patientSex">M</span>)
+				</td>
+			</tr>
+			<tr>
+				<td>Birth Date</td>
+				<td wicket:id="patientDob">10/01/2001</td>
+			</tr>
+			<tr>
+				<td>Evaluation Date</td>
+				<td wicket:id="evalDate">10/11/2011</td>
+			</tr>
+		</table>
+		<h2>Events</h2>
+		<table>
+			<tr>
+				<th>Type</th>
+				<th>Item</th>
+				<th>CVX</th>
+				<th>MVX</th>
+				<th>Date</th>
+				<th>Age</th>
+			</tr>
+			<tr wicket:id="testEventItems">
+				<td wicket:id="eventType">Vaccination</td>
+				<td wicket:id="label">MMR</td>
+				<td wicket:id="vacineCvx">78</td>
+				<td wicket:id="vacineMvx"></td>
+				<td wicket:id="eventDate">10/09/2002</td>
+				<td wicket:id="eventAge">10 Months</td>
+			</tr>
+		</table>
+		<p wicket:id="editTestCaseLink">
+			<wicket:link>
+				<a href="EditTestCasePage" class="fauxbutton">Edit Test Case</a>
+			</wicket:link>
+		</p>
+		<h2>Assigned to</h2>
+
+
+		<form wicket:id="assignToTestPanel">
+			<table>
+				<tr wicket:id="testPanelAssignments">
+					<td colspan="2"><span wicket:id="taskGroupLabel" />:<span
+						wicket:id="testPanelLabel" /></td>
+				</tr>
+				<tr>
+					<td><select wicket:id="testPanel"></select></td>
+					<td><input type="submit" value="assign" class="fauxbutton" />
+					</td>
+				</tr>
+			</table>
+		</form>
+		<h2>TCH Tools</h2>
+		<ul>
+			<li><a href="http://www.tchforecasttester.org/fv/forecast"
+				class="submenuLink-darkblue" wicket:id="forecastLink" target="_new">Forecast</a></li>
+			<li><a href="http://localhost:8086/fv/fv/step"
+				class="submenuLink-darkblue" wicket:id="stepLink" target="_new">Step
+					Through</a></li>
+		</ul>
+		<div wicket:id="testPanelSection">
+			<h2>Test Panel</h2>
+			<div wicket:id="categoryItems">
+				<h3 wicket:id="categoryName"></h3>
+				<table>
+					<tr>
+						<th>Test Case</th>
+						<th>Status</th>
+						<th>Select</th>
+					</tr>
+					<tr wicket:id="testPanelCaseItems">
+						<td wicket:id="testCaseLabel"></td>
+						<td wicket:id="status"></td>
+						<td><a wicket:id="selectTestCase" href="TestCasePage"
+							class="fauxbutton">select</a></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -17,6 +17,7 @@ import org.hibernate.Transaction;
 import org.tch.fc.ConnectFactory;
 import org.tch.fc.ConnectorInterface;
 import org.tch.fc.model.ForecastActual;
+import org.tch.fc.model.SoftwareResult;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.Software;
@@ -111,8 +112,10 @@ public class ForecastActualGenerator {
             forecastActual = forecastActualListOriginal.get(0);
           } else {
             forecastActual = new ForecastActual();
+            forecastActual.setSoftwareResult(new SoftwareResult());
             forecastActual.getSoftwareResult().setSoftware(software);
             forecastActual.setTestCase(testCase);
+            forecastActual.getSoftwareResult().setTestCase(testCase);
             forecastActual.setVaccineGroup(forecastExpected.getVaccineGroup());
           }
           forecastActual.setScheduleName(software.getScheduleName());
@@ -156,7 +159,7 @@ public class ForecastActualGenerator {
             forecastActual.setVaccineCvx(null);
             forecastActual.getSoftwareResult().setLogText(errorLog);
           }
-
+          session.saveOrUpdate(forecastActual.getSoftwareResult());
           session.saveOrUpdate(forecastActual);
           ForecastActualExpectedCompare forecastCompare = new ForecastActualExpectedCompare();
           forecastCompare.setTestCase(testCase);
@@ -175,7 +178,7 @@ public class ForecastActualGenerator {
   public static List<ForecastActualExpectedCompare> createForecastComparison(TestPanel testPanel, Software software,
       Session session) {
     List<ForecastActualExpectedCompare> forecastCompareList = new ArrayList<ForecastActualExpectedCompare>();
-    Query query = session.createQuery("from TestPanelExpected where testPanelCase.testPanel = ?");
+    Query query = session.createQuery("from TestPanelForecast where testPanelCase.testPanel = ?");
     query.setParameter(0, testPanel);
     List<TestPanelForecast> testPanelForecastList = query.list();
     for (TestPanelForecast testPanelForecast : testPanelForecastList) {

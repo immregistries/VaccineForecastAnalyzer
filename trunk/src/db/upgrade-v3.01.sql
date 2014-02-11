@@ -71,9 +71,11 @@ INSERT INTO admin(admin_status, label) VALUES ('O', 'overdue' );
 INSERT INTO admin(admin_status, label) VALUES ('L', 'due later' );
 INSERT INTO admin(admin_status, label) VALUES ('X', 'contraindicated' );
 INSERT INTO admin(admin_status, label) VALUES ('C', 'complete' );
+INSERT INTO admin(admin_status, label) VALUES ('S', 'complete for season' );
 INSERT INTO admin(admin_status, label) VALUES ('F', 'finished' );
 INSERT INTO admin(admin_status, label) VALUES ('N', 'not complete');
 INSERT INTO admin(admin_status, label) VALUES ('I', 'immune' );
+INSERT INTO admin(admin_status, label) VALUES ('U', 'unknown' );
 
 CREATE TABLE evaluation_actual (
   evaluation_actual_id   INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -180,3 +182,6 @@ CREATE TABLE evaluation_target (
   evaluation_compare_id     INTEGER NOT NULL,
   evaluation_actual_id      INTEGER NOT NULL
 );
+
+INSERT INTO vaccine_group (vaccine_group_id, label) VALUES (33, 'Influenza LAIV');
+INSERT INTO vaccine_group (vaccine_group_id, label) VALUES (34, 'Influenza IIV');
