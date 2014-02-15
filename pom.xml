@@ -82,12 +82,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.wicket</groupId>
-			<artifactId>wicket-core</artifactId>
-			<version>${wicket.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.tch.fc</groupId>
 			<artifactId>ForecastConnector</artifactId>
 			<version>3.01</version>

@@ -212,7 +212,7 @@ public class SelectSoftwareComparePage extends FTBasePage implements SecurePage 
                   boolean matchAll = true;
                   int matchCount = 0;
                   for (ForecastActualExpectedCompare forecastActualExcpectedCompare : forecastActualExpectedCompareList) {
-                    if (forecastActualExcpectedCompare.matchExactlyExlcudeOverdue()) {
+                    if (forecastActualExcpectedCompare.matchExactlyExcludeOverdue()) {
                       matchCount++;
                     } else {
                       matchAll = false;
@@ -230,7 +230,7 @@ public class SelectSoftwareComparePage extends FTBasePage implements SecurePage 
                         ForecastActualExpectedCompare forecastActualExcpectedCompare = new ForecastActualExpectedCompare();
                         forecastActualExcpectedCompare.setForecastResultA(compareWithList.get(j));
                         forecastActualExcpectedCompare.setForecastResultB(compareWithList.get(i));
-                        if (forecastActualExcpectedCompare.matchExactlyExlcudeOverdue()) {
+                        if (forecastActualExcpectedCompare.matchExactlyExcludeOverdue()) {
                           completelyDisagree = false;
                         } else {
                           completelyAgree = false;

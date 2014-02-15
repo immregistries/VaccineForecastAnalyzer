@@ -14,7 +14,7 @@ public class ForecastExpected extends ForecastResult implements Serializable {
 	private User author = null;
 	private Date updatedDate = null;
 
-	public Date getUpdatedDate() {
+  public Date getUpdatedDate() {
     return updatedDate;
   }
 
