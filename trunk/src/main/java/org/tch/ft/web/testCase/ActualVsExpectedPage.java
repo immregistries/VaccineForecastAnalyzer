@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.axis.utils.ArrayUtil;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -41,6 +42,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.fc.TCHConnector;
+import org.tch.fc.model.Admin;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastActual;
 import org.tch.fc.model.VaccineGroup;
@@ -75,6 +77,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
   private Model<Date> addExpectedValidDateModel;
   private Model<Date> addExpectedDueDateModel;
   private Model<Date> addExpectedOverdueDateModel;
+  private Model<Admin> addExpectedAdminStatusModel;
   private TestPanelCase testPanelCase;
 
   public ActualVsExpectedPage() {
@@ -150,6 +153,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         Date expectedValidDate = null;
         Date expectedDueDate = null;
         Date expectedOverdueDate = null;
+        Admin expectedAdmin = null;
+        Admin actualAdmin = null;
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 
@@ -164,6 +169,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
           expectedValidDate = forecastExpected.getValidDate();
           expectedDueDate = forecastExpected.getDueDate();
           expectedOverdueDate = forecastExpected.getOverdueDate();
+          expectedAdmin = forecastExpected.getAdmin();
         }
 
         if (forecastActual != null) {
@@ -173,6 +179,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
           actualDueDateString = forecastActual.getDueDate() != null ? sdf.format(forecastActual.getDueDate()) : "-";
           actualOverdueDateString = forecastActual.getOverdueDate() != null ? sdf.format(forecastActual
               .getOverdueDate()) : "-";
+          actualAdmin = forecastActual.getAdmin();
         }
         List<ForecastExpected> otherExpectedList;
         List<ForecastActual> otherActualList;
@@ -191,13 +198,15 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
             }
           }
         }
-        query = webSession.getDataSession().createQuery("from ForecastActual where softwareResult.testCase = ? and vaccineGroup = ?");
+        query = webSession.getDataSession().createQuery(
+            "from ForecastActual where softwareResult.testCase = ? and vaccineGroup = ?");
         query.setParameter(0, testCase);
         query.setParameter(1, forecastExpected.getVaccineGroup());
         otherActualList = query.list();
         for (Iterator<ForecastActual> it = otherActualList.iterator(); it.hasNext();) {
           ForecastActual fa = it.next();
-          if (SoftwareManager.isSoftwareAccessRestricted(fa.getSoftwareResult().getSoftware(), user, webSession.getDataSession())) {
+          if (SoftwareManager.isSoftwareAccessRestricted(fa.getSoftwareResult().getSoftware(), user,
+              webSession.getDataSession())) {
             it.remove();
           } else if (forecastActual != null) {
             if (fa.getForecastActualId() == forecastActual.getForecastActualId()) {
@@ -217,6 +226,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
             final ForecastExpected forecastExpected = item.getModelObject();
             item.add(new Label("expectedLabel", "Expected by " + forecastExpected.getAuthor().getName() + " at "
                 + forecastExpected.getAuthor().getOrganization()));
+            item.add(new Label("expectedAdmin", (forecastExpected.getAdmin() == null ? Admin.UNKNOWN : forecastExpected
+                .getAdmin()).getLabel()));
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
             String expectedDoseNumber = forecastExpected.getDoseNumber() != null ? forecastExpected.getDoseNumber()
                 : "-";
@@ -239,7 +250,10 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
             // TODO Auto-generated method stub
 
             final ForecastActual forecastActual = item.getModelObject();
-            item.add(new Label("actualLabel", "Actual from " + forecastActual.getSoftwareResult().getSoftware().getLabel()));
+            item.add(new Label("actualLabel", "Actual from "
+                + forecastActual.getSoftwareResult().getSoftware().getLabel()));
+            item.add(new Label("actualAdmin", (forecastActual.getAdmin() == null ? Admin.UNKNOWN : forecastExpected
+                .getAdmin()).getLabel()));
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
             String actualDoseNumber = forecastActual.getDoseNumber() != null ? forecastActual.getDoseNumber() : "-";
             String actualValidDate = forecastActual.getValidDate() != null ? sdf.format(forecastActual.getValidDate())
@@ -259,10 +273,18 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
             testCase, user, canEdit);
 
         {
+          editExpectedform.setExpectedAdmin(expectedAdmin);
           editExpectedform.setExpectedDoseNumber(expectedDoseNumber);
           editExpectedform.setExpectedValidDate(expectedValidDate);
           editExpectedform.setExpectedDueDate(expectedDueDate);
           editExpectedform.setExpectedOverdueDate(expectedOverdueDate);
+
+          List<Admin> expectedAdminList = createAdminList();
+          DropDownChoice<Admin> expectedAdminDropDown = new DropDownChoice<Admin>("expectedAdmin",
+              editExpectedform.getExpectedAdminModel(), expectedAdminList);
+          expectedAdminDropDown.setRequired(true);
+          editExpectedform.add(expectedAdminDropDown);
+
           TextField<String> expectedDoseNumberField = new TextField<String>("expectedDoseNumberField",
               editExpectedform.getExpectedDoseNumberModel());
           expectedDoseNumberField.setRequired(true);
@@ -294,6 +316,13 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         item.add(new StyleClassLabel("expectedLabel", "Expected by " + taskGroup.getLabel(), styleClass));
         item.add(new StyleClassLabel("actualLabel", (forecastActual != null ? "Actual from "
             + forecastActual.getSoftwareResult().getSoftware().getLabel() : "No Results"), styleClass));
+
+        styleClass = (expectedAdmin != null && actualAdmin != null && expectedAdmin.equals(actualAdmin)) ? "pass"
+            : "fail";
+        item.add(new StyleClassLabel("expectedAdmin", (expectedAdmin == null ? Admin.UNKNOWN : expectedAdmin)
+            .getLabel(), styleClass));
+        item.add(new StyleClassLabel("actualAdmin", (actualAdmin == null ? Admin.UNKNOWN : actualAdmin).getLabel(),
+            styleClass));
 
         styleClass = expectedDoseNumber.equals(actualDoseNumber) ? "pass" : "fail";
         item.add(new StyleClassLabel("expectedDoseNumber", expectedDoseNumber, styleClass));
@@ -336,9 +365,11 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
       query.setParameter(1, testCase);
       forecastActualListAll = query.list();
     }
-    allResultsForForecaster.add(new Label("allResultsReturned", "All Results for " + (software == null ? "" : software.getLabel())));
+    allResultsForForecaster.add(new Label("allResultsReturned", "All Results for "
+        + (software == null ? "" : software.getLabel())));
 
-    ListView<ForecastActual> allForecastActualItems = new ListView<ForecastActual>("allForecastActualItems", forecastActualListAll) {
+    ListView<ForecastActual> allForecastActualItems = new ListView<ForecastActual>("allForecastActualItems",
+        forecastActualListAll) {
       @Override
       protected void populateItem(ListItem<ForecastActual> item) {
         // TODO Auto-generated method stub
@@ -350,8 +381,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         String actualValidDate = forecastActual.getValidDate() != null ? sdf.format(forecastActual.getValidDate())
             : "-";
         String actualDueDate = forecastActual.getDueDate() != null ? sdf.format(forecastActual.getDueDate()) : "-";
-        String actualOverdueDate = forecastActual.getOverdueDate() != null ? sdf.format(forecastActual
-            .getOverdueDate()) : "-";
+        String actualOverdueDate = forecastActual.getOverdueDate() != null ? sdf
+            .format(forecastActual.getOverdueDate()) : "-";
         item.add(new Label("actualDoseNumber", actualDoseNumber));
         item.add(new Label("actualValidDate", actualValidDate));
         item.add(new Label("actualDueDate", actualDueDate));
@@ -360,7 +391,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
 
     };
     allResultsForForecaster.add(allForecastActualItems);
-    
+
     add(allResultsForForecaster);
 
     WebMarkupContainer changeTestStatus = new WebMarkupContainer("changeTestStatus");
@@ -394,9 +425,11 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
           forecastExpectedByUser.setDoseNumber(addExpectedDoseNumberModel.getObject());
           VaccineGroup vaccineGroup = addExpectedForeastItemModel.getObject();
           forecastExpectedByUser.setVaccineGroup(vaccineGroup);
+          forecastExpectedByUser.setAdmin(addExpectedAdminStatusModel.getObject());
           forecastExpectedByUser.setValidDate(addExpectedValidDateModel.getObject());
           forecastExpectedByUser.setDueDate(addExpectedDueDateModel.getObject());
           forecastExpectedByUser.setOverdueDate(addExpectedOverdueDateModel.getObject());
+          forecastExpectedByUser.setAdmin(addExpectedAdminStatusModel.getObject());
           dataSession.saveOrUpdate(forecastExpectedByUser);
           if (canEdit) {
             TestPanelForecast testPanelForecast = null;
@@ -430,6 +463,12 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
           addExpectedForeastItemModel, vaccineGroupList);
       vaccineGroupDropDown.setRequired(true);
       addExpectedForm.add(vaccineGroupDropDown);
+
+      List<Admin> adminList = createAdminList();
+      addExpectedAdminStatusModel = new Model<Admin>();
+      DropDownChoice<Admin> adminDropDown = new DropDownChoice<Admin>("admin", addExpectedAdminStatusModel, adminList);
+      adminDropDown.setRequired(true);
+      addExpectedForm.add(adminDropDown);
 
       addExpectedDoseNumberModel = new Model<String>();
       TextField<String> addExpectedDoseNumberField = new TextField<String>("expectedDoseNumberField",
@@ -583,7 +622,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
       testPanelCaseToAdd.setTestCase(testCase);
       testPanelCaseToAdd.setCategoryName(testPanelCase == null ? "" : testPanelCase.getCategoryName());
       testPanelCaseToAdd.setInclude(Include.INCLUDED);
-      testPanelCaseToAdd.setTestCaseNumber(testPanelCase == null ? "" :testPanelCase.getTestCaseNumber());
+      testPanelCaseToAdd.setTestCaseNumber(testPanelCase == null ? "" : testPanelCase.getTestCaseNumber());
 
       Form<TestPanelCase> assignToTestPanel = new Form<TestPanelCase>("assignToTestPanel",
           new CompoundPropertyModel<TestPanelCase>(testPanelCaseToAdd)) {
@@ -650,6 +689,14 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
 
       add(assignToTestPanel);
     }
+  }
+
+  public List<Admin> createAdminList() {
+    List<Admin> adminList = new ArrayList<Admin>();
+    for (Admin admin : Admin.values()) {
+      adminList.add(admin);
+    }
+    return adminList;
   }
 
   protected static boolean determineIfCanEdit(final User user, final Session dataSession, TestPanel testPanel) {
@@ -734,6 +781,15 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
     protected Model<Date> expectedValidDateModel;
     protected Model<Date> expectedDueDateModel;
     protected Model<Date> expectedOverdueDateModel;
+    protected Model<Admin> expectedAdminModel;
+
+    public Model<Admin> getExpectedAdminModel() {
+      return expectedAdminModel;
+    }
+
+    public void setExpectedAdminModel(Model<Admin> expectedAdminModel) {
+      this.expectedAdminModel = expectedAdminModel;
+    }
 
     public Model<String> getExpectedDoseNumberModel() {
       return expectedDoseNumberModel;
@@ -767,6 +823,10 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
       this.expectedOverdueDateModel = new Model<Date>(expectedOverdueDate);
     }
 
+    public void setExpectedAdmin(Admin admin) {
+      this.expectedAdminModel = new Model<Admin>(admin);
+    }
+
     @Override
     protected void onSubmit() {
       ForecastExpected forecastExpectedByUser = null;
@@ -786,6 +846,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
           forecastExpectedByUser.setVaccineGroup(vaccineGroup);
           forecastExpectedByUser.setAuthor(user);
         }
+        forecastExpectedByUser.setUpdatedDate(new Date());
+        forecastExpectedByUser.setAdmin(expectedAdminModel.getObject());
         forecastExpectedByUser.setDoseNumber(expectedDoseNumberModel.getObject());
         forecastExpectedByUser.setValidDate(expectedValidDateModel.getObject());
         forecastExpectedByUser.setDueDate(expectedDueDateModel.getObject());

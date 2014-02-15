@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum Result implements Serializable {
-  PASS("P", "Pass"), ACCEPT("A", "Accept"), FAIL("F", "Fail"), RESEARCH("R", "Research"), FIXED("F", "Fixed");
+  PASS("P", "Pass"), ACCEPT("A", "Accept"), FAIL("F", "Fail"), RESEARCH("R", "Research"), FIXED("I", "Fixed");
   
   private static final long serialVersionUID = 1L;
   

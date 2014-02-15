@@ -19,6 +19,7 @@
 			<table>
 				<tr>
 					<th>Entity</th>
+					<th>Status</th>
 					<th>Dose</th>
 					<th>Valid</th>
 					<th>Due</th>
@@ -26,6 +27,7 @@
 				</tr>
 				<tr wicket:id="forecastExpectedItems">
 					<td wicket:id="expectedLabel"></td>
+					<td wicket:id="expectedAdmin"></td>
 					<td wicket:id="expectedDoseNumber"></td>
 					<td wicket:id="expectedValidDate"></td>
 					<td wicket:id="expectedDueDate"></td>
@@ -33,6 +35,7 @@
 				</tr>
 				<tr>
 					<td wicket:id="expectedLabel"></td>
+					<td wicket:id="expectedAdmin"></td>
 					<td wicket:id="expectedDoseNumber"></td>
 					<td wicket:id="expectedValidDate"></td>
 					<td wicket:id="expectedDueDate"></td>
@@ -40,6 +43,7 @@
 				</tr>
 				<tr>
 					<td wicket:id="actualLabel"></td>
+					<td wicket:id="actualAdmin"></td>
 					<td wicket:id="actualDoseNumber"></td>
 					<td wicket:id="actualValidDate"></td>
 					<td wicket:id="actualDueDate"></td>
@@ -47,6 +51,7 @@
 				</tr>
 				<tr wicket:id="forecastActualItems">
 					<td wicket:id="actualLabel"></td>
+					<td wicket:id="actualAdmin"></td>
 					<td wicket:id="actualDoseNumber"></td>
 					<td wicket:id="actualValidDate"></td>
 					<td wicket:id="actualDueDate"></td>
@@ -58,6 +63,10 @@
 			</h2>
 			<form wicket:id="editExpectedform">
 				<table>
+					<tr>
+						<td>Status</td>
+						<td><select wicket:id="expectedAdmin"></select></td>
+					</tr>
 					<tr>
 						<td>Dose</td>
 						<td><input type="text" wicket:id="expectedDoseNumberField"
@@ -153,6 +162,10 @@
 					<td><select wicket:id="vaccineGroup"></select></td>
 				</tr>
 				<tr>
+					<td>Status</td>
+					<td><select wicket:id="admin"></select></td>
+				</tr>
+				<tr>
 					<td>Dose</td>
 					<td><input type="text" wicket:id="expectedDoseNumberField"
 						size="4" /></td>
@@ -234,6 +247,10 @@
 			<tr>
 				<td>Evaluation Date</td>
 				<td wicket:id="evalDate">10/11/2011</td>
+			</tr>
+			<tr>
+				<td>Test Case Id</td>
+				<td wicket:id="testCaseId">2190</td>
 			</tr>
 		</table>
 		<h2>Events</h2>

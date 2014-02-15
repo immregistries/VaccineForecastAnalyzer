@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.tch.fc.ConnectFactory;
 import org.tch.fc.ConnectorInterface;
+import org.tch.fc.model.Admin;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastActual;
 import org.tch.fc.model.VaccineGroup;
@@ -126,7 +127,7 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         }
         if (forecastExpected == null) {
           forecastExpected = new ForecastExpected();
-          forecastExpected.setDoseNumber(ForecastResult.DOSE_NUMBER_COMPLETE);
+          forecastExpected.setAdmin(Admin.COMPLETE);
         }
         forecastExpected.setTestCase(testCaseWithExpectations.getTestCase());
         forecastExpected.setAuthor(user);

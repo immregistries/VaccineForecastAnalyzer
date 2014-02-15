@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.tch.fc.model.Admin;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
@@ -249,7 +250,7 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
           forecastExpected.setAuthor(user);
           forecastExpected.setVaccineGroup(vaccineGroup);
           if (doseNumber.equals("-") || validDateString.equals("-")) {
-            forecastExpected.setDoseNumber(ForecastResult.DOSE_NUMBER_COMPLETE);
+            forecastExpected.setAdmin(Admin.COMPLETE);
           } else {
             forecastExpected.setDoseNumber(doseNumber);
             forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCaseWithExpectations));

@@ -66,7 +66,7 @@ CREATE TABLE admin (
   admin_status    VARCHAR(1) NOT NULL PRIMARY KEY,
   label           VARCHAR(120)
 );
-INSERT INTO admin(admin_status, label) VALUES ('D', 'overdue' );
+INSERT INTO admin(admin_status, label) VALUES ('D', 'due' );
 INSERT INTO admin(admin_status, label) VALUES ('O', 'overdue' );
 INSERT INTO admin(admin_status, label) VALUES ('L', 'due later' );
 INSERT INTO admin(admin_status, label) VALUES ('X', 'contraindicated' );
@@ -76,6 +76,8 @@ INSERT INTO admin(admin_status, label) VALUES ('F', 'finished' );
 INSERT INTO admin(admin_status, label) VALUES ('N', 'not complete');
 INSERT INTO admin(admin_status, label) VALUES ('I', 'immune' );
 INSERT INTO admin(admin_status, label) VALUES ('U', 'unknown' );
+INSERT INTO admin(admin_status, label) VALUES ('E', 'error' );
+INSERT INTO admin(admin_status, label) VALUES ('R', 'no results' );
 
 CREATE TABLE evaluation_actual (
   evaluation_actual_id   INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -185,3 +187,26 @@ CREATE TABLE evaluation_target (
 
 INSERT INTO vaccine_group (vaccine_group_id, label) VALUES (33, 'Influenza LAIV');
 INSERT INTO vaccine_group (vaccine_group_id, label) VALUES (34, 'Influenza IIV');
+
+UPDATE forecast_actual SET admin_status = 'C', dose_number = null WHERE dose_number = 'COMP';
+
+UPDATE forecast_expected SET admin_status = 'C', dose_number = null WHERE dose_number = 'COMP';
+
+UPDATE forecast_expected SET admin_status = 'S' WHERE admin_status = 'C' AND vaccine_group_id = 3;
+
+
+UPDATE forecast_expected fe JOIN test_case tc on (fe.test_case_id = tc.test_case_id) 
+SET fe.admin_status = 'D' 
+WHERE (fe.admin_status IS NULL || fe.admin_status = '') 
+  AND fe.due_date <= tc.eval_date 
+  AND fe.overdue_date > tc.eval_date;
+  
+UPDATE forecast_expected fe JOIN test_case tc on (fe.test_case_id = tc.test_case_id) 
+SET fe.admin_status = 'O' 
+WHERE (fe.admin_status IS NULL || fe.admin_status = '') 
+  AND fe.overdue_date <= tc.eval_date;
+  
+UPDATE forecast_expected fe JOIN test_case tc on (fe.test_case_id = tc.test_case_id) 
+SET fe.admin_status = 'L' 
+WHERE (fe.admin_status IS NULL || fe.admin_status = '') 
+  AND fe.due_date > tc.eval_date;

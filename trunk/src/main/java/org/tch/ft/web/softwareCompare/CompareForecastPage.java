@@ -116,7 +116,7 @@ public class CompareForecastPage extends TestCaseDetail implements SecurePage
         final String compareDueDateString = compareForecastActual.getDueDate() != null ? sdf
             .format(compareForecastActual.getDueDate()) : "-";
 
-        String styleClass = forecastActualExpectedCompare.matchExactlyExlcudeOverdue() ? "pass" : "fail";
+        String styleClass = forecastActualExpectedCompare.matchExactlyExcludeOverdue() ? "pass" : "fail";
         item.add(new StyleClassLabel("actualLabel", (compareForecastActual != null ? compareForecastActual
             .getSoftwareResult().getSoftware().getLabel() : ""), styleClass));
 

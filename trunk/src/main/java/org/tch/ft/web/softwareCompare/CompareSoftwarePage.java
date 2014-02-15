@@ -245,7 +245,7 @@ public class CompareSoftwarePage extends FTBasePage implements SecurePage {
                 boolean matchAll = true;
                 int matchCount = 0;
                 for (ForecastActualExpectedCompare forecastCompare : cr.getForecastCompareList()) {
-                  if (forecastCompare.matchExactlyExlcudeOverdue()) {
+                  if (forecastCompare.matchExactlyExcludeOverdue()) {
                     matchCount++;
                   } else {
                     matchAll = false;
@@ -263,7 +263,7 @@ public class CompareSoftwarePage extends FTBasePage implements SecurePage {
                       ForecastActualExpectedCompare forecastCompare = new ForecastActualExpectedCompare();
                       forecastCompare.setForecastResultA(compareWithList.get(j));
                       forecastCompare.setForecastResultB(compareWithList.get(i));
-                      if (forecastCompare.matchExactlyExlcudeOverdue()) {
+                      if (forecastCompare.matchExactlyExcludeOverdue()) {
                         completelyDisagree = false;
                       } else {
                         completelyAgree = false;

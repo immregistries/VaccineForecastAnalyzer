@@ -59,6 +59,7 @@ public class TestCaseDetail extends FTBasePage implements SecurePage {
     add(new Label("patientSex", testCase.getPatientSex()));
     add(new Label("patientDob", sdf.format(testCase.getPatientDob())));
     add(new Label("evalDate", sdf.format(testCase.getEvalDate())));
+    add(new Label("testCaseId", String.valueOf(testCase.getTestCaseId())));
 
     {
       Query query = webSession.getDataSession().createQuery("from TestEvent where testCase = ?");

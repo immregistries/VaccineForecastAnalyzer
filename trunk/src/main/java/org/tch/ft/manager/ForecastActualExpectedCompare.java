@@ -4,13 +4,17 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Date;
 
+import org.tch.fc.model.Admin;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.TestCase;
+import org.tch.ft.model.TestPanelCase;
 
-public class ForecastActualExpectedCompare implements Serializable {
+public class ForecastActualExpectedCompare implements Serializable
+{
 
-  public static class ForecastCompareComparator implements Comparator<ForecastActualExpectedCompare> {
+  public static class ForecastCompareComparator implements Comparator<ForecastActualExpectedCompare>
+  {
 
     public int compare(ForecastActualExpectedCompare c1, ForecastActualExpectedCompare c2) {
       String labelA = c1.getForecastResultA().getTestCase().getLabel().trim().toUpperCase();
@@ -73,6 +77,15 @@ public class ForecastActualExpectedCompare implements Serializable {
   private ForecastResult forecastResultB = null;
   private TestCase testCase = null;
   private VaccineGroup vaccineGroup = null;
+  private TestPanelCase testPanelCase = null;
+
+  public TestPanelCase getTestPanelCase() {
+    return testPanelCase;
+  }
+
+  public void setTestPanelCase(TestPanelCase testPanelCase) {
+    this.testPanelCase = testPanelCase;
+  }
 
   public VaccineGroup getVaccineGroup() {
     return vaccineGroup;
@@ -110,7 +123,7 @@ public class ForecastActualExpectedCompare implements Serializable {
     if (forecastResultA == null || forecastResultB == null) {
       return 0;
     }
-    if (forecastResultA.isComplete() && forecastResultB.isComplete()) {
+    if (same(forecastResultA.getAdmin(), forecastResultB.getAdmin())) {
       return 100;
     }
     int score = 0;
@@ -147,10 +160,8 @@ public class ForecastActualExpectedCompare implements Serializable {
     if (forecastResultA == null || forecastResultB == null) {
       return false;
     }
-    if (forecastResultA.isComplete() && forecastResultB.isComplete()) {
-      return true;
-    }
-    if (same(forecastResultA.getDoseNumber(), forecastResultB.getDoseNumber())
+    if (same(forecastResultA.getAdmin(), forecastResultB.getAdmin())
+        && same(forecastResultA.getDoseNumber(), forecastResultB.getDoseNumber())
         && same(forecastResultA.getValidDate(), forecastResultB.getValidDate())
         && same(forecastResultA.getDueDate(), forecastResultB.getDueDate())
         && same(forecastResultA.getOverdueDate(), forecastResultB.getOverdueDate())) {
@@ -159,14 +170,12 @@ public class ForecastActualExpectedCompare implements Serializable {
     return false;
   }
 
-  public boolean matchExactlyExlcudeOverdue() {
+  public boolean matchExactlyExcludeOverdue() {
     if (forecastResultA == null || forecastResultB == null) {
       return false;
     }
-    if (forecastResultA.isComplete() && forecastResultB.isComplete()) {
-      return true;
-    }
-    if (same(forecastResultA.getDoseNumber(), forecastResultB.getDoseNumber())
+    if (same(forecastResultA.getAdmin(), forecastResultB.getAdmin())
+        && same(forecastResultA.getDoseNumber(), forecastResultB.getDoseNumber())
         && same(forecastResultA.getValidDate(), forecastResultB.getValidDate())
         && same(forecastResultA.getDueDate(), forecastResultB.getDueDate())) {
       return true;
@@ -174,9 +183,24 @@ public class ForecastActualExpectedCompare implements Serializable {
     return false;
   }
 
+  public static boolean same(Admin a, Admin b) {
+    return a != null && b != null && a == b;
+  }
+
   public static boolean same(String a, String b) {
-    return (a == null && b == null)
-        || (a != null && b != null && a.equals(b) || (a != null && b != null && (a.equals("*") || b.equals("*"))));
+    if (a != null && (a.equals("-") || a.equals(""))) {
+      a = null;
+    }
+    if (b != null && (b.equals("-") || b.equals(""))) {
+      b = null;
+    }
+    if (a == null && b == null) {
+      return true;
+    }
+    if (a == null || b == null) {
+      return false;
+    }
+    return a.equals(b) || a.equals("*") || b.equals("*");
   }
 
   public static boolean same(Date a, Date b) {
