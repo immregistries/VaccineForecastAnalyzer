@@ -152,6 +152,7 @@ public class ForecastActualGenerator
                 logText = forecastActualList.get(0).getSoftwareResult().getLogText();
               }
               forecastActual.setAdmin(Admin.NO_RESULTS);
+              forecastActual.setDoseNumber(null);
               forecastActual.setValidDate(null);
               forecastActual.setOverdueDate(null);
               forecastActual.setDueDate(null);
