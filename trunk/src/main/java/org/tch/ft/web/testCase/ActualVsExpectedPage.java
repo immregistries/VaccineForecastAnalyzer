@@ -18,10 +18,11 @@ package org.tch.ft.web.testCase;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.axis.utils.ArrayUtil;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -35,6 +36,7 @@ import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -43,12 +45,11 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.fc.TCHConnector;
 import org.tch.fc.model.Admin;
-import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.Software;
+import org.tch.fc.model.SoftwareResult;
 import org.tch.fc.model.TestCase;
-import org.tch.fc.model.TestEvent;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.ft.StyleClassLabel;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.manager.SoftwareManager;
@@ -90,6 +91,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
     final User user = webSession.getUser();
     final TestCase testCase = user.getSelectedTestCase();
 
+    add(new FeedbackPanel("feedback"));
+
     Query query;
 
     final Session dataSession = webSession.getDataSession();
@@ -116,7 +119,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         forecastCompareList.add(forecastCompare);
         if (software != null) {
           query = dataSession
-              .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ?");
+              .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ? order by softwareResult.runDate desc");
           query.setParameter(0, software);
           query.setParameter(1, testCase);
           query.setParameter(2, forecastExpected.getVaccineGroup());
@@ -198,19 +201,29 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
             }
           }
         }
-        query = webSession.getDataSession().createQuery(
-            "from ForecastActual where softwareResult.testCase = ? and vaccineGroup = ?");
+        query = webSession
+            .getDataSession()
+            .createQuery(
+                "from ForecastActual where softwareResult.testCase = ? and vaccineGroup = ? order by softwareResult.runDate desc");
         query.setParameter(0, testCase);
         query.setParameter(1, forecastExpected.getVaccineGroup());
         otherActualList = query.list();
-        for (Iterator<ForecastActual> it = otherActualList.iterator(); it.hasNext();) {
-          ForecastActual fa = it.next();
-          if (SoftwareManager.isSoftwareAccessRestricted(fa.getSoftwareResult().getSoftware(), user,
-              webSession.getDataSession())) {
-            it.remove();
-          } else if (forecastActual != null) {
-            if (fa.getForecastActualId() == forecastActual.getForecastActualId()) {
+        {
+          Set<Software> softwareSet = new HashSet<Software>();
+          if (forecastActual != null) {
+            softwareSet.add(forecastActual.getSoftwareResult().getSoftware());
+          }
+          for (Iterator<ForecastActual> it = otherActualList.iterator(); it.hasNext();) {
+            ForecastActual fa = it.next();
+            if (SoftwareManager.isSoftwareAccessRestricted(fa.getSoftwareResult().getSoftware(), user,
+                webSession.getDataSession())) {
               it.remove();
+            } else if (forecastActual != null && fa.getForecastActualId() == forecastActual.getForecastActualId()) {
+              it.remove();
+            } else if (softwareSet.contains(fa.getSoftwareResult().getSoftware())) {
+              it.remove();
+            } else {
+              softwareSet.add(fa.getSoftwareResult().getSoftware());
             }
           }
         }
@@ -252,7 +265,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
             final ForecastActual forecastActual = item.getModelObject();
             item.add(new Label("actualLabel", "Actual from "
                 + forecastActual.getSoftwareResult().getSoftware().getLabel()));
-            item.add(new Label("actualAdmin", (forecastActual.getAdmin() == null ? Admin.UNKNOWN : forecastExpected
+            item.add(new Label("actualAdmin", (forecastActual.getAdmin() == null ? Admin.UNKNOWN : forecastActual
                 .getAdmin()).getLabel()));
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
             String actualDoseNumber = forecastActual.getDoseNumber() != null ? forecastActual.getDoseNumber() : "-";
@@ -287,7 +300,6 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
 
           TextField<String> expectedDoseNumberField = new TextField<String>("expectedDoseNumberField",
               editExpectedform.getExpectedDoseNumberModel());
-          expectedDoseNumberField.setRequired(true);
           editExpectedform.add(expectedDoseNumberField);
 
           TextField<Date> expectedDueDateField = new TextField<Date>("expectedDueDateField",
@@ -473,7 +485,6 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
       addExpectedDoseNumberModel = new Model<String>();
       TextField<String> addExpectedDoseNumberField = new TextField<String>("expectedDoseNumberField",
           addExpectedDoseNumberModel);
-      addExpectedDoseNumberField.setRequired(true);
       addExpectedForm.add(addExpectedDoseNumberField);
 
       addExpectedValidDateModel = new Model<Date>();

@@ -90,7 +90,7 @@ public class AddTestCasePage extends FTBasePage implements SecurePage {
         user.setSelectedTestCase(testCase);
         user.setSelectedTestPanelCase(testPanelCase);
         transaction.commit();
-        setResponsePage(new CalendarPage());
+        setResponsePage(new EditTestCasePage());
       }
     };
 
