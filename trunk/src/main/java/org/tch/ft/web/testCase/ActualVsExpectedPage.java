@@ -442,6 +442,7 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
           forecastExpectedByUser.setDueDate(addExpectedDueDateModel.getObject());
           forecastExpectedByUser.setOverdueDate(addExpectedOverdueDateModel.getObject());
           forecastExpectedByUser.setAdmin(addExpectedAdminStatusModel.getObject());
+          forecastExpectedByUser.setUpdatedDate(new Date());
           dataSession.saveOrUpdate(forecastExpectedByUser);
           if (canEdit) {
             TestPanelForecast testPanelForecast = null;
