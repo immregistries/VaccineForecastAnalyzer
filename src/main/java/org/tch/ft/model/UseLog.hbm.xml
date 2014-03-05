@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.tch.ft.model">
+  <class name="UseLog" table="use_log">
+    <id name="useLogId" column="use_log_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="registration" column="registration_id" class="Registration"/>
+    <property name="moduleType" column="module_type" type="string"/>
+    <property name="useDate" column="use_date" type="timestamp"/>
+    <property name="startupDate" column="startup_date" type="timestamp"/>
+    <property name="softwareVersion" column="software_version" type="string"/>
+    <property name="usageCount" column="usage_count" type="integer"/>
+  </class>
+</hibernate-mapping>
