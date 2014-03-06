@@ -170,6 +170,9 @@ public class ForecastActualGenerator
             forecastActual.setVaccineCvx(null);
             forecastActual.getSoftwareResult().setLogText(errorLog);
           }
+          if (forecastActual.getDoseNumber() != null && forecastActual.getDoseNumber().length() > 20) {
+            forecastActual.setDoseNumber(forecastActual.getDoseNumber().substring(0, 20));
+          }
           session.saveOrUpdate(forecastActual.getSoftwareResult());
           session.saveOrUpdate(forecastActual);
           ForecastActualExpectedCompare forecastCompare = new ForecastActualExpectedCompare();
