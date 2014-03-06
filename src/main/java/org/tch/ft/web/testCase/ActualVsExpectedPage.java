@@ -336,19 +336,19 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         item.add(new StyleClassLabel("actualAdmin", (actualAdmin == null ? Admin.UNKNOWN : actualAdmin).getLabel(),
             styleClass));
 
-        styleClass = expectedDoseNumber.equals(actualDoseNumber) ? "pass" : "fail";
+        styleClass = compareDoseNumbers(expectedDoseNumber, actualDoseNumber) ? "pass" : "fail";
         item.add(new StyleClassLabel("expectedDoseNumber", expectedDoseNumber, styleClass));
         item.add(new StyleClassLabel("actualDoseNumber", actualDoseNumber, styleClass));
 
-        styleClass = expectedValidDateString.equals(actualValidDateString) ? "pass" : "fail";
+        styleClass = compareDoseNumbers(expectedValidDateString, actualValidDateString) ? "pass" : "fail";
         item.add(new StyleClassLabel("expectedValidDate", expectedValidDateString, styleClass));
         item.add(new StyleClassLabel("actualValidDate", actualValidDateString, styleClass));
 
-        styleClass = expectedDueDateString.equals(actualDueDateString) ? "pass" : "fail";
+        styleClass = compareDoseNumbers(expectedDueDateString, actualDueDateString) ? "pass" : "fail";
         item.add(new StyleClassLabel("expectedDueDate", expectedDueDateString, styleClass));
         item.add(new StyleClassLabel("actualDueDate", actualDueDateString, styleClass));
 
-        styleClass = expectedOverdueDateString.equals(actualOverdueDateString) ? "pass" : "fail";
+        styleClass = compareDoseNumbers(expectedOverdueDateString, actualOverdueDateString) ? "pass" : "fail";
         item.add(new StyleClassLabel("expectedOverdueDate", expectedOverdueDateString, styleClass));
         item.add(new StyleClassLabel("actualOverdueDate", actualOverdueDateString, styleClass));
 
@@ -359,6 +359,18 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
         item.add(new Label("setExpectedValuesLabel", canEdit ? "Set Expected Values for Task Group"
             : "Set Expected Values"));
 
+      }
+
+      private boolean compareDoseNumbers(String expectedDoseNumber, String actualDoseNumber) {
+        if (expectedDoseNumber == null || expectedDoseNumber.equals("-"))
+        {
+          expectedDoseNumber = "";
+        }
+        if (actualDoseNumber == null || actualDoseNumber.equals("-"))
+        {
+          actualDoseNumber = "";
+        }
+        return expectedDoseNumber.equals(actualDoseNumber);
       }
 
     };
