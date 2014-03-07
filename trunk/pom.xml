@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>org.tch.fc</groupId>
 			<artifactId>ForecastConnector</artifactId>
-			<version>3.01</version>
+			<version>3.03</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
