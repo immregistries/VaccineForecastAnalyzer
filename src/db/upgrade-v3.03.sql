@@ -1,0 +1,20 @@
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (16, "base", "assumeHepASeriesCompleteAtAge", "Assume Hep A Series Complete at Age", "Forecaster should assume that a patient that has reached a certain age (for example 18 years) must have already completed the primary series whether or not it is documented in their record and thus should always forecast the next dose due as the standard 10 year booster. ", "", NULL);
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (17, "tch", "assumeHepASeriesCompleteAtAge", "Assume Hep A Series Complete at Age", "Forecaster should assume that a patient that has reached a certain age (for example 18 years) must have already completed the primary series whether or not it is documented in their record and thus  series is complete.", "", 12);
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (18, "base", "assumeHepBSeriesCompleteAtAge", "Assume Hep B Series Complete at Age", "Forecaster should assume that a patient that has reached a certain age (for example 18 years) must have already completed the primary series whether or not it is documented in their record and thus  series is complete.", "", NULL);
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (19, "tch", "assumeHepBSeriesCompleteAtAge", "Assume Hep B Series Complete at Age", "Forecaster should assume that a patient that has reached a certain age (for example 18 years) must have already completed the primary series whether or not it is documented in their record and thus  series is complete.", "", 12);
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (20, "base", "assumeMMRSeriesCompleteAtAge", "Assume MMR Series Complete at Age", "Forecaster should assume that a patient that has reached a certain age (for example 18 years) must have already completed the primary series whether or not it is documented in their record and thus  series is complete.", "", NULL);
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (21, "tch", "assumeMMRSeriesCompleteAtAge", "Assume MMR Series Complete at Age", "Forecaster should assume that a patient that has reached a certain age (for example 18 years) must have already completed the primary series whether or not it is documented in their record and thus  series is complete.", "", 12);
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (22, "base", "assumeVarSeriesCompleteAtAge", "Assume Varicella Series Complete at Age", "Forecaster should assume that a patient that has reached a certain age (for example 18 years) must have already completed the primary series whether or not it is documented in their record and thus  series is complete.", "", NULL);
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (23, "tch", "assumeVarSeriesCompleteAtAge", "Assume Varicella Series Complete at Age", "Forecaster should assume that a patient that has reached a certain age (for example 18 years) must have already completed the primary series whether or not it is documented in their record and thus  series is complete.", "", 12);
+
+INSERT INTO admin(admin_status, label) VALUES ('A', 'assumed complete or immune' );
+
+CREATE TABLE condition_table (
+  condition_code   VARCHAR(1) NOT NULL PRIMARY KEY,
+  label            VARCHAR(120)
+);
+
+INSERT INTO condition_table (condition_code, label) VALUES ('S', 'Sub Potent');
+INSERT INTO condition_table (condition_code, label) VALUES ('F', 'Force Valid');
+
+ALTER TABLE test_event ADD COLUMN condition_code VARCHAR(1);

@@ -37,6 +37,7 @@ import org.apache.wicket.validation.validator.StringValidator;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.fc.model.Condition;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.ServiceOption;
 import org.tch.fc.model.Software;
@@ -190,6 +191,7 @@ public class EditTestCasePage extends FTBasePage implements SecurePage {
         item.add(new Label("label", testEvent.getEvent().getLabel()));
         item.add(new Label("vacineCvx", testEvent.getEvent().getVaccineCvx()));
         item.add(new Label("vacineMvx", testEvent.getEvent().getVaccineMvx()));
+        item.add(new Label("condition", testEvent.getCondition() == null ? "" : testEvent.getCondition().getLabel()));
         item.add(new Label("eventDate", sdf.format(testEvent.getEventDate())));
 
         Form<Void> deleteForm = new Form<Void>("deleteForm") {
@@ -225,6 +227,10 @@ public class EditTestCasePage extends FTBasePage implements SecurePage {
     DropDownChoice<Event> eventField = new DropDownChoice<Event>("event", eventList);
     eventField.setRequired(true);
     addTestEventForm.add(eventField);
+    
+    List<Condition> conditionList = Condition.valueList();
+    DropDownChoice<Condition> conditionField = new DropDownChoice<Condition>("condition", conditionList);
+    addTestEventForm.add(conditionField);
 
     TextField<Date> eventDate = new TextField<Date>("eventDate");
     eventDate.setRequired(true);

@@ -57,6 +57,7 @@
 				<th>Item</th>
 				<th>CVX</th>
 				<th>MVX</th>
+				<th>Condition</th>
 				<th>Date</th>
 				<th></th>
 			</tr>
@@ -65,6 +66,7 @@
 				<td wicket:id="label">MMR</td>
 				<td wicket:id="vacineCvx">78</td>
 				<td wicket:id="vacineMvx"></td>
+				<td wicket:id="condition"></td>
 				<td wicket:id="eventDate">10/09/2002</td>
 				<td><form wicket:id="deleteForm">
 						<input type="submit" value="delete" class="fauxbutton" />
@@ -73,6 +75,7 @@
 			<form wicket:id="addTestEventForm">
 				<tr>
 					<td colspan="4"><select wicket:id="event"></select></td>
+					<td><select wicket:id="condition"></select></td>
 					<td><input type="text" wicket:id="eventDate" size="10" /></td>
 					<td><input type="submit" value="add" class="fauxbutton" /></td>
 				</tr>
