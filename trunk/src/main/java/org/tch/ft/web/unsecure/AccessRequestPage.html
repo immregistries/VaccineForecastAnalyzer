@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+
+<head>
+<meta charset="utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" href="index.css" type="text/css" media="screen"
+	title="Stylesheet" />
+</head>
+
+<body>
+	<span wicket:id="navigationPanel"></span>
+	<div class="content">
+		<h1>Access Request</h1>
+		<p>Do you need access to the TCH Forecater? Do you need to download the TCH Forecaster? Complete this page in order to request access to the TCH Forecast online or to download the TCH Forecaster for local use. Access will be granted to users who have agreed to the applicable TCH terms. </p>
+		<h2>Confidentiality</h2>
+		<p>Please note that this system is designed to enable maximum
+			collaboration between immunization forecast experts and all
+			information provided by you, including your contact information, will
+			be available to all registered users of this system. Please do not
+			provide any information below or within this site that you consider
+			confidential or which should be specifically protected.</p>
+		<span wicket:id="feedback"></span>
+		<form wicket:id="registerUserForm">
+			<table>
+				<tr>
+					<td>Name</td>
+					<td><input type="text" wicket:id="name" size="20" /></td>
+				</tr>
+				<tr>
+				  <td>Title</td>
+				  <td><input type="text" wicket:id="title" size="30" /></td>
+			  </tr>
+				<tr>
+					<td>Position</td>
+					<td><input type="text" wicket:id="position" value="" size="30" /></td>
+				</tr>
+				<tr>
+					<td>Organization</td>
+					<td>
+                      <select wicket:id="taskGroup">
+                        <option value="1">Texas Children's Hospital</option>
+                        <option value="2">Indian Health Service</option>
+                    </select></td>
+				</tr>
+				<tr>
+					<td>Facility</td>
+					<td><input type="text" wicket:id="facility" value=""
+						size="30"></td>
+				</tr>
+				<tr>
+					<td>Email</td>
+					<td><input type="text" wicket:id="email" value="" size="20" /></td>
+				</tr>
+				<tr>
+					<td>Phone</td>
+					<td><input type="text" wicket:id="phone" value="" /></td>
+				</tr>
+				<tr>
+					<td>User Agreement</td>
+					<td><div class="aggreementText" wicket:id="agreementText"></div>
+						<br>I accept the terms of the software usage agreement: <input
+						type="checkbox" wicket:id="agreedToAgreement" /></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="right"><input type="submit"
+						name="submit" value="request access" class="fauxbutton" /></td>
+				</tr>
+			</table>
+		</form>
+	</div>
+</body>
+</html>

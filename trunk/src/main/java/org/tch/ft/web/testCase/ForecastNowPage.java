@@ -76,7 +76,7 @@ public class ForecastNowPage extends FTBasePage implements SecurePage {
       protected void onSubmit() {
         for (Software software : softwareSelected) {
           try {
-            ForecastActualGenerator.runForecastActual(testPanelCase, software, dataSession);
+            ForecastActualGenerator.runForecastActual(testPanelCase, software, dataSession, true);
           } catch (Exception e) {
             e.printStackTrace();
           }

@@ -1,5 +1,6 @@
 package org.tch.ft.manager;
 
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Query;
@@ -30,7 +31,6 @@ public class TestCaseImporter {
         testPanelCase.setResult(Result.RESEARCH);
         dataSession.update(testPanelCase);
         TestCase testCase = testPanelCase.getTestCase();
-        System.out.println("--> testCase = " + testCase.getTestCaseId());
         testCase.setLabel(testCaseImported.getLabel());
         testCase.setDescription(testCaseImported.getDescription());
         testCase.setEvalDate(testCaseImported.getEvalDate());
@@ -51,6 +51,7 @@ public class TestCaseImporter {
             ForecastExpected forecastExpected = null;
             if (forecastExpectedList.size() > 0) {
               forecastExpected = forecastExpectedList.get(0);
+              forecastExpected.setAdmin(forecastExpectedImported.getAdmin());
               forecastExpected.setVaccineGroup(forecastExpectedImported.getVaccineGroup());
               forecastExpected.setDoseNumber(forecastExpectedImported.getDoseNumber());
               forecastExpected.setValidDate(forecastExpectedImported.getValidDate());
@@ -58,6 +59,8 @@ public class TestCaseImporter {
               forecastExpected.setOverdueDate(forecastExpectedImported.getOverdueDate());
               forecastExpected.setFinishedDate(forecastExpectedImported.getFinishedDate());
               forecastExpected.setVaccineCvx(forecastExpectedImported.getVaccineCvx());
+              forecastExpected.setForecastReason(forecastExpectedImported.getForecastReason());
+              forecastExpected.setUpdatedDate(new Date());
               dataSession.update(forecastExpected);
             } else {
               forecastExpected = forecastExpectedImported;
@@ -74,12 +77,10 @@ public class TestCaseImporter {
         query = dataSession.createQuery("from TestEvent where testCase = ?");
         query.setParameter(0, testCase);
         List<TestEvent> testEventList = query.list();
-        System.out.println("-->   old size = " + testEventList.size());
         for (TestEvent testEventToDelete : testEventList) {
           dataSession.delete(testEventToDelete);
         }
         testEventList = testCaseImported.getTestEventList();
-        System.out.println("-->   new size = " + testEventList.size());
         if (testEventList != null) {
           for (TestEvent testEvent : testEventList) {
             testEvent.setTestCase(testCase);
