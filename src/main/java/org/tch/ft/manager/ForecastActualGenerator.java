@@ -131,6 +131,9 @@ public class ForecastActualGenerator
         } catch (Exception e) {
           errorOccurred = true;
         }
+        if (forecastActualList == null) {
+          forecastActualList = new ArrayList<ForecastActual>();
+        }
         // TODO record forecast actuals
         for (TestPanelForecast testPanelForecast : testCaseMap.get(testCase)) {
           ForecastExpected forecastExpected = testPanelForecast.getForecastExpected();
