@@ -32,7 +32,7 @@ import org.tch.ft.model.TestPanelForecast;
 public class ForecastActualGenerator
 {
   public static List<ForecastActualExpectedCompare> runForecastActual(TestPanel testPanel, Software software,
-      Session session) throws Exception {
+      Session session, boolean logText) throws Exception {
 
     List<TestPanelForecast> testPanelForecastList = null;
     {
@@ -41,11 +41,11 @@ public class ForecastActualGenerator
       testPanelForecastList = query.list();
     }
 
-    return runForecastActual(software, session, testPanelForecastList);
+    return runForecastActual(software, session, testPanelForecastList, logText);
   }
 
   public static List<ForecastActualExpectedCompare> runForecastActual(TestPanelCase testPanelCase, Software software,
-      Session session) throws Exception {
+      Session session, boolean logText) throws Exception {
 
     List<TestPanelForecast> testPanelForecastList = null;
     {
@@ -54,11 +54,11 @@ public class ForecastActualGenerator
       testPanelForecastList = query.list();
     }
 
-    return runForecastActual(software, session, testPanelForecastList);
+    return runForecastActual(software, session, testPanelForecastList, logText);
   }
 
   public static List<ForecastActualExpectedCompare> runForecastActual(Software software, Session session,
-      List<TestPanelForecast> testPanelForecastList) throws Exception {
+      List<TestPanelForecast> testPanelForecastList, boolean logText) throws Exception {
 
     // Get list of previously run forecast results
     Query query;
@@ -68,6 +68,7 @@ public class ForecastActualGenerator
     List<VaccineGroup> vaccineGroupList = query.list();
     SoftwareManager.initSoftware(software, session);
     ConnectorInterface connector = ConnectFactory.createConnecter(software, vaccineGroupList);
+    connector.setLogText(logText);
 
     Map<TestCase, List<TestPanelForecast>> testCaseMap = new HashMap<TestCase, List<TestPanelForecast>>();
 
@@ -94,95 +95,103 @@ public class ForecastActualGenerator
         query.setParameter(0, testCase);
         testCase.setTestCaseSettingList(query.list());
         List<ForecastActual> forecastActualList = null;
+
+        query = session.createQuery("from SoftwareResult where software = ? and testCase = ? order by runDate DESC");
+        query.setMaxResults(1);
+        query.setParameter(0, software);
+        query.setParameter(1, testCase);
+        List<SoftwareResult> softwareResultList = query.list();
+        SoftwareResult softwareResult = null;
+        if (softwareResultList.size() > 0) {
+          softwareResult = softwareResultList.get(0);
+          int ratingCount = 0;
+          // check to see if we can use this one still, if it has an associated evaluation then it needs to be preserved
+          query = session.createQuery("from EvaluationActualRating where evaluationActual.softwareResult = ?");
+          query.setParameter(0, softwareResult);
+          ratingCount += query.list().size();
+          query = session.createQuery("from ForecastActualRating where forecastActual.softwareResult = ?");
+          query.setParameter(0, softwareResult);
+          ratingCount += query.list().size();
+          if (ratingCount > 0) {
+            softwareResult = null;
+          }
+        }
+        if (softwareResult == null) {
+          softwareResult = new SoftwareResult();
+          softwareResult.setSoftware(software);
+          softwareResult.setTestCase(testCase);
+        }
+        softwareResult.setRunDate(new Date());
+        session.saveOrUpdate(softwareResult);
+
+        boolean errorOccurred = false;
         try {
           errorLog = null;
-          forecastActualList = connector.queryForForecast(testCase);
+          forecastActualList = connector.queryForForecast(testCase, softwareResult);
         } catch (Exception e) {
-          e.printStackTrace();
-          Writer writer = new StringWriter();
-          PrintWriter printWriter = new PrintWriter(writer);
-          printWriter.println("Unable to run forecast, exception ocurred:");
-          e.printStackTrace(printWriter);
-          printWriter.close();
-          errorLog = writer.toString();
+          errorOccurred = true;
         }
+        // TODO record forecast actuals
         for (TestPanelForecast testPanelForecast : testCaseMap.get(testCase)) {
           ForecastExpected forecastExpected = testPanelForecast.getForecastExpected();
-          query = session
-              .createQuery("from ForecastActual where softwareResult.testCase = ? and softwareResult.software = ? and vaccineGroup = ?");
-          query.setParameter(0, forecastExpected.getTestCase());
-          query.setParameter(1, software);
-          query.setParameter(2, forecastExpected.getVaccineGroup());
-          List<ForecastActual> forecastActualListOriginal = query.list();
-          ForecastActual forecastActual;
-          if (forecastActualListOriginal.size() > 0) {
-            forecastActual = forecastActualListOriginal.get(0);
-          } else {
-            forecastActual = new ForecastActual();
-            forecastActual.setSoftwareResult(new SoftwareResult());
-            forecastActual.getSoftwareResult().setSoftware(software);
-            forecastActual.setTestCase(testCase);
-            forecastActual.getSoftwareResult().setTestCase(testCase);
+          boolean foundMatch = false;
+          for (ForecastActual forecastActual : forecastActualList) {
+            if (forecastActual.getVaccineGroup().equals(forecastExpected.getVaccineGroup())) {
+              foundMatch = true;
+              break;
+            }
+          }
+          if (!foundMatch) {
+            ForecastActual forecastActual = new ForecastActual();
+            forecastActual.setSoftwareResult(softwareResult);
             forecastActual.setVaccineGroup(forecastExpected.getVaccineGroup());
+            forecastActual.setAdmin(errorOccurred ? Admin.ERROR : Admin.NO_RESULTS);
+            forecastActualList.add(forecastActual);
           }
-          forecastActual.setScheduleName(software.getScheduleName());
-          forecastActual.getSoftwareResult().setRunDate(new Date());
-          if (errorLog == null) {
-            boolean found = false;
-
-            for (ForecastActual result : forecastActualList) {
-              if (result.getVaccineGroup().equals(forecastActual.getVaccineGroup())) {
-                forecastActual.setDoseNumber(result.getDoseNumber());
-                forecastActual.setValidDate(result.getValidDate());
-                forecastActual.setDueDate(result.getDueDate());
-                forecastActual.setOverdueDate(result.getOverdueDate());
-                forecastActual.setFinishedDate(result.getFinishedDate());
-                forecastActual.setVaccineCvx(result.getVaccineCvx());
-                forecastActual.setAdmin(result.getAdmin());
-                forecastActual.setForecastReason(result.getForecastReason());
-                forecastActual.getSoftwareResult().setLogText(result.getSoftwareResult().getLogText());
-                found = true;
-                break;
-              }
-            }
-
-            if (!found) {
-              String logText = "";
-              if (forecastActualList.size() > 0) {
-                logText = forecastActualList.get(0).getSoftwareResult().getLogText();
-              }
-              forecastActual.setAdmin(Admin.NO_RESULTS);
-              forecastActual.setDoseNumber(null);
-              forecastActual.setValidDate(null);
-              forecastActual.setOverdueDate(null);
-              forecastActual.setDueDate(null);
-              forecastActual.setFinishedDate(null);
-              forecastActual.setVaccineCvx(null);
-              forecastActual.getSoftwareResult().setLogText(
-                  "No results found, returning log for first results \n" + logText);
-            }
-          } else {
-            forecastActual.setAdmin(Admin.ERROR);
-            forecastActual.setValidDate(null);
-            forecastActual.setOverdueDate(null);
-            forecastActual.setDueDate(null);
-            forecastActual.setFinishedDate(null);
-            forecastActual.setVaccineCvx(null);
-            forecastActual.getSoftwareResult().setLogText(errorLog);
-          }
-          if (forecastActual.getDoseNumber() != null && forecastActual.getDoseNumber().length() > 20) {
-            forecastActual.setDoseNumber(forecastActual.getDoseNumber().substring(0, 20));
-          }
-          session.saveOrUpdate(forecastActual.getSoftwareResult());
-          session.saveOrUpdate(forecastActual);
-          ForecastActualExpectedCompare forecastCompare = new ForecastActualExpectedCompare();
-          forecastCompare.setTestCase(testCase);
-          forecastCompare.setForecastResultA(forecastExpected);
-          forecastCompare.setForecastResultB(forecastActual);
-          forecastCompare.setRunStatus(ForecastActualExpectedCompare.RunStatus.QUERIED);
-          forecastCompare.setTestPanelCase(testPanelForecast.getTestPanelCase());
-          forecastCompareList.add(forecastCompare);
         }
+
+        query = session.createQuery("from ForecastActual where softwareResult = ?");
+        query.setParameter(0, softwareResult);
+        List<ForecastActual> forecastActualCurrentList = query.list();
+        // delete forecastActuals that didn't come back this time
+        for (ForecastActual forecastActualCurrent : forecastActualCurrentList) {
+          boolean foundMatch = false;
+          for (ForecastActual forecastActual : forecastActualList) {
+            if (forecastActual.getVaccineGroup().equals(forecastActualCurrent.getVaccineGroup())) {
+              foundMatch = true;
+              break;
+            }
+          }
+          if (!foundMatch) {
+            session.delete(forecastActualCurrent);
+          }
+        }
+
+        for (ForecastActual forecastActual : forecastActualList) {
+          boolean foundMatch = false;
+          for (ForecastActual forecastActualCurrent : forecastActualCurrentList) {
+            if (forecastActual.getVaccineGroup().equals(forecastActualCurrent.getVaccineGroup())) {
+              forecastActualCurrent.setScheduleName(forecastActual.getScheduleName());
+              forecastActualCurrent.setAdmin(forecastActual.getAdmin());
+              forecastActualCurrent.setDoseNumber(forecastActual.getDoseNumber());
+              forecastActualCurrent.setValidDate(forecastActual.getValidDate());
+              forecastActualCurrent.setDueDate(forecastActual.getDueDate());
+              forecastActualCurrent.setOverdueDate(forecastActual.getOverdueDate());
+              forecastActualCurrent.setFinishedDate(forecastActual.getFinishedDate());
+              forecastActualCurrent.setVaccineCvx(forecastActual.getVaccineCvx());
+              forecastActualCurrent.setForecastReason(forecastActual.getForecastReason());
+              session.update(forecastActualCurrent);
+              foundMatch = true;
+              break;
+            }
+          }
+          if (!foundMatch) {
+            session.save(forecastActual);
+          }
+        }
+
+        // TODO record evaluation actuals
+
       }
 
       boolean updateStatusOfTestPanel = false;

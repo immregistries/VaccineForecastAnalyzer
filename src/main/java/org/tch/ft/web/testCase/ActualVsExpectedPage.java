@@ -362,12 +362,10 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
       }
 
       private boolean compareDoseNumbers(String expectedDoseNumber, String actualDoseNumber) {
-        if (expectedDoseNumber == null || expectedDoseNumber.equals("-"))
-        {
+        if (expectedDoseNumber == null || expectedDoseNumber.equals("-")) {
           expectedDoseNumber = "";
         }
-        if (actualDoseNumber == null || actualDoseNumber.equals("-"))
-        {
+        if (actualDoseNumber == null || actualDoseNumber.equals("-")) {
           actualDoseNumber = "";
         }
         return expectedDoseNumber.equals(actualDoseNumber);
@@ -378,20 +376,33 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
 
     WebMarkupContainer allResultsForForecaster = new WebMarkupContainer("allResultsForForecaster");
     List<ForecastActual> forecastActualListAll = null;
-    if (software == null) {
+    SoftwareResult softwareResult = null;
+    if (software != null) {
+      allResultsForForecaster.setVisible(true);
+      query = dataSession.createQuery("from SoftwareResult where software = ? order by runDate DESC");
+      query.setParameter(0, software);
+      query.setMaxResults(1);
+      List<SoftwareResult> softwareResultList = query.list();
+      if (softwareResultList.size() > 0)
+      {
+        softwareResult = softwareResultList.get(0);
+        query = dataSession.createQuery("from ForecastActual where softwareResult = ? order by vaccineGroup.label");
+        query.setParameter(0, softwareResult);
+        forecastActualListAll = query.list();
+      }
+    }
+    if (forecastActualListAll == null)
+    {
       allResultsForForecaster.setVisible(false);
       forecastActualListAll = new ArrayList<ForecastActual>();
-    } else {
-      allResultsForForecaster.setVisible(true);
-      query = dataSession
-          .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ?");
-      query.setParameter(0, software);
-      query.setParameter(1, testCase);
-      forecastActualListAll = query.list();
     }
     allResultsForForecaster.add(new Label("allResultsReturned", "All Results for "
         + (software == null ? "" : software.getLabel())));
 
+    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm a z");
+    allResultsForForecaster.add(new Label("runDate", softwareResult == null ? "" : sdf.format(softwareResult.getRunDate())
+        ));
+    
     ListView<ForecastActual> allForecastActualItems = new ListView<ForecastActual>("allForecastActualItems",
         forecastActualListAll) {
       @Override
@@ -400,6 +411,8 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
 
         final ForecastActual forecastActual = item.getModelObject();
         item.add(new Label("actualLabel", forecastActual.getVaccineGroup().getLabel()));
+        item.add(new Label("actualAdmin", (forecastActual.getAdmin() == null ? Admin.UNKNOWN : forecastActual
+            .getAdmin()).getLabel()));
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
         String actualDoseNumber = forecastActual.getDoseNumber() != null ? forecastActual.getDoseNumber() : "-";
         String actualValidDate = forecastActual.getValidDate() != null ? sdf.format(forecastActual.getValidDate())

@@ -192,7 +192,6 @@ public class StcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         testCaseWithExpectations = new TestCaseWithExpectations(testCase);
         testCase = testCaseWithExpectations.getTestCase();
         testEventList = testCase.getTestEventList();
-        System.out.println("--> testCase.getTestEventList().size() = " + testCase.getTestEventList().size());
         testCase.setTestCaseNumber(currentTestCaseId + "." + testCaseNumberCount);
         testCase.setLabel("Test Case " + testCase.getTestCaseNumber());
         Date referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCaseWithExpectations);

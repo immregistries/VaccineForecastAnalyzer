@@ -37,7 +37,7 @@ public class TestForecastActualGenerator extends TestCase {
     Software software = (Software) session.get(Software.class, 5); // 2 == TCH, 3 == MIIS
     assertNotNull(software);
 
-    List<ForecastActualExpectedCompare> forecastCompareList = ForecastActualGenerator.runForecastActual(testPanel, software, session);
+    List<ForecastActualExpectedCompare> forecastCompareList = ForecastActualGenerator.runForecastActual(testPanel, software, session, false);
     System.out.println("Test run foreast count = " + forecastCompareList.size());
     int totalCount = forecastCompareList.size();
     int errorCount = 0;

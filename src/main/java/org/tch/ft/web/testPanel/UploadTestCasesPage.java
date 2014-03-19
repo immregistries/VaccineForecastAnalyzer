@@ -183,7 +183,6 @@ public class UploadTestCasesPage extends FTBasePage implements SecurePage {
                 query = dataSession.createQuery("from TestEvent where testCase = ?");
                 query.setParameter(0, testCaseWithExpectations.getTestCase());
                 List<TestEvent> testEventList = query.list();
-                System.out.println("--> TC " + testCaseWithExpectations.getTestCase().getTestCaseId() + " " + testEventList.size());
               }
 
             } finally {

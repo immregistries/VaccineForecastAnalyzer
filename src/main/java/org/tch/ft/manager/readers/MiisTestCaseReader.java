@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.tch.fc.model.Admin;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.TestCase;
@@ -15,7 +16,8 @@ import org.tch.fc.model.TestEvent;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestCaseWithExpectations;
 
-public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseReader {
+public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseReader
+{
 
   private static final String FIELD_CASE = "Case";
   private static final String FIELD_IZ_SERIES = "IZ Series";
@@ -25,7 +27,6 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
   private static final String FIELD_SHOT_ = "Shot";
   private static final String FIELD_SHOT_CVX = " CVX";
   private static final String FIELD_SHOT_DATE = " Date";
-  private static final String FIELD_FORECAST_NUM = "Forecast#";
   private static final String FIELD_EARLIEST_DATE = "Earliest Date";
   private static final String FIELD_REC_DATE = "Rec Date";
   private static final String FIELD_OVERDUE_DATE = "Overdue Date";
@@ -82,13 +83,12 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
       shotCvxPos[i] = findFieldPos(FIELD_SHOT_ + i + FIELD_SHOT_CVX);
       shotDatePos[i] = findFieldPos(FIELD_SHOT_ + i + FIELD_SHOT_DATE);
     }
-    int forecastNumPos = findFieldPos(FIELD_FORECAST_NUM);
     int earliestDatePos = findFieldPos(FIELD_EARLIEST_DATE);
     int recDatePos = findFieldPos(FIELD_REC_DATE);
     int overdueDatePos = findFieldPos(FIELD_OVERDUE_DATE);
     int referenceDatePos = findFieldPos(FIELD_REFERENCE_DATE);
 
-    Date referenceDate = null;
+    Date referenceDateDefault = null;
     for (List<String> testCaseFieldList : testCaseFieldListList) {
       TestCaseWithExpectations testCaseWithExpectations = new TestCaseWithExpectations();
       TestCase testCase = testCaseWithExpectations.getTestCase();
@@ -99,8 +99,15 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
       testCase.setDescription(readField(vaccineNamesPos, testCaseFieldList));
       testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCaseWithExpectations));
       testCase.setPatientSex(readField(genderPos, testCaseFieldList).toUpperCase().startsWith("M") ? "M" : "F");
+      Date referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCaseWithExpectations);
+      if (referenceDateDefault == null) {
+        referenceDateDefault = referenceDate;
+        if (referenceDateDefault == null) {
+          referenceDateDefault = new Date();
+        }
+      }
       if (referenceDate == null) {
-        referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCaseWithExpectations);
+        referenceDate = referenceDateDefault;
       }
       testCase.setEvalDate(referenceDate);
       List<TestEvent> testEventList = new ArrayList<TestEvent>();
@@ -138,14 +145,33 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
           throw new IllegalArgumentException("Unrecognized category name '" + testCase.getCategoryName() + "'");
         }
       } else {
+        Date dueDate = readDateField(recDatePos, testCaseFieldList, testCaseWithExpectations);
+        Date overdueDate = readDateField(overdueDatePos, testCaseFieldList, testCaseWithExpectations);
         ForecastExpected forecastExpected = new ForecastExpected();
         forecastExpected.setTestCase(testCase);
         forecastExpected.setAuthor(user);
+        forecastExpected.setUpdatedDate(new Date());
         forecastExpected.setVaccineGroup(vaccineGroupItem);
-        forecastExpected.setDoseNumber(readField(forecastNumPos, testCaseFieldList));
+        if (dueDate == null) {
+          forecastExpected.setAdmin(Admin.COMPLETE);
+        } else {
+          if (dueDate.after(referenceDate)) {
+            forecastExpected.setAdmin(Admin.DUE_LATER);
+          } else {
+            if (overdueDate == null || overdueDate.after(referenceDate)) {
+              forecastExpected.setAdmin(Admin.DUE);
+            } else {
+              forecastExpected.setAdmin(Admin.OVERDUE);
+            }
+          }
+        }
+        forecastExpected.setDoseNumber("*");
         forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCaseWithExpectations));
-        forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCaseWithExpectations));
-        forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCaseWithExpectations));
+        forecastExpected.setDueDate(dueDate);
+        forecastExpected.setOverdueDate(overdueDate);
+        forecastExpected.setFinishedDate(null);
+        forecastExpected.setVaccineCvx("");
+        forecastExpected.setForecastReason("");
         List<ForecastExpected> forecastExpectedList = testCaseWithExpectations.getForecastExpectedList();
         if (forecastExpectedList == null) {
           forecastExpectedList = new ArrayList<ForecastExpected>();

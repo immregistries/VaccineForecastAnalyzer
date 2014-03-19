@@ -13,10 +13,10 @@ import org.tch.fc.ConnectorInterface;
 import org.tch.fc.model.Admin;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.VaccineGroup;
-import org.tch.fc.model.ForecastResult;
+import org.tch.fc.model.SoftwareResult;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.web.testCase.RandomNames;
@@ -90,7 +90,7 @@ public class IhsTestCaseReader extends CsvTestCaseReader implements TestCaseRead
       if (loadExpectationsSoftware != null) {
         try {
           ConnectorInterface connector = ConnectFactory.createConnecter(loadExpectationsSoftware, vaccineGroupList);
-          forecastActualList = connector.queryForForecast(testCaseWithExpectations.getTestCase());
+          forecastActualList = connector.queryForForecast(testCaseWithExpectations.getTestCase(), new SoftwareResult());
 
         } catch (Exception e) {
           loadExpectationsSoftware = null;
