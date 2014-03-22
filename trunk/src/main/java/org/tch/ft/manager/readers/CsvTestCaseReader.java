@@ -17,17 +17,19 @@ import org.tch.fc.model.Software;
 import org.tch.ft.model.TestCaseWithExpectations;
 import org.tch.ft.model.User;
 
-public abstract class CsvTestCaseReader implements TestCaseReader {
+public abstract class CsvTestCaseReader implements TestCaseReader
+{
 
   protected SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
   protected List<List<String>> testCaseFieldListList = new ArrayList<List<String>>();
   protected List<TestCaseWithExpectations> testCaseList = new ArrayList<TestCaseWithExpectations>();
   protected List<String> headerFields = null;
   protected Map<String, Event> cvxToEventMap = new HashMap<String, Event>();
+  protected Map<Integer, Event> eventMap = new HashMap<Integer, Event>();
   protected User user = null;
-  
+
   protected Software loadExpectationsSoftware;
-  
+
   public Software getLoadExpectationsSoftware() {
     return loadExpectationsSoftware;
   }
@@ -37,9 +39,8 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
   }
 
   protected String errorMessage = null;
-  
-  public String getErrorMessage()
-  {
+
+  public String getErrorMessage() {
     return errorMessage;
   }
 
@@ -56,6 +57,7 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
       if (event.getEventType() == EventType.VACCINE) {
         cvxToEventMap.put(event.getVaccineCvx(), event);
       }
+      eventMap.put(event.getEventId(), event);
     }
   }
 
@@ -70,7 +72,8 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
     return "";
   }
 
-  protected Date readDateField(int position, List<String> testCaseFieldList, TestCaseWithExpectations testCaseWithExpectations) {
+  protected Date readDateField(int position, List<String> testCaseFieldList,
+      TestCaseWithExpectations testCaseWithExpectations) {
     String dateValue = readField(position, testCaseFieldList);
     if (dateValue.equals("")) {
       return null;
@@ -139,6 +142,5 @@ public abstract class CsvTestCaseReader implements TestCaseReader {
     }
     in.close();
   }
-
 
 }

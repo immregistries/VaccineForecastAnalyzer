@@ -31,6 +31,7 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
   private static final String FIELD_REC_DATE = "Rec Date";
   private static final String FIELD_OVERDUE_DATE = "Overdue Date";
   private static final String FIELD_REFERENCE_DATE = "Reference Date";
+  private static final String FIELD_COMMENT_HISTORY = "Comment History";
 
   private Map<String, VaccineGroup> vaccineGroupMap = new HashMap<String, VaccineGroup>();
 
@@ -83,12 +84,13 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
       shotCvxPos[i] = findFieldPos(FIELD_SHOT_ + i + FIELD_SHOT_CVX);
       shotDatePos[i] = findFieldPos(FIELD_SHOT_ + i + FIELD_SHOT_DATE);
     }
+    int commentHistoryPos = findFieldPos(FIELD_COMMENT_HISTORY);
     int earliestDatePos = findFieldPos(FIELD_EARLIEST_DATE);
     int recDatePos = findFieldPos(FIELD_REC_DATE);
     int overdueDatePos = findFieldPos(FIELD_OVERDUE_DATE);
     int referenceDatePos = findFieldPos(FIELD_REFERENCE_DATE);
 
-    Date referenceDateDefault = null;
+    Date referenceDate = null;
     for (List<String> testCaseFieldList : testCaseFieldListList) {
       TestCaseWithExpectations testCaseWithExpectations = new TestCaseWithExpectations();
       TestCase testCase = testCaseWithExpectations.getTestCase();
@@ -99,19 +101,39 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
       testCase.setDescription(readField(vaccineNamesPos, testCaseFieldList));
       testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCaseWithExpectations));
       testCase.setPatientSex(readField(genderPos, testCaseFieldList).toUpperCase().startsWith("M") ? "M" : "F");
-      Date referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCaseWithExpectations);
-      if (referenceDateDefault == null) {
-        referenceDateDefault = referenceDate;
-        if (referenceDateDefault == null) {
-          referenceDateDefault = new Date();
-        }
-      }
       if (referenceDate == null) {
-        referenceDate = referenceDateDefault;
+        referenceDate = readDateField(referenceDatePos, testCaseFieldList, testCaseWithExpectations);
+        if (referenceDate == null) {
+          referenceDate = new Date();
+        }
       }
       testCase.setEvalDate(referenceDate);
       List<TestEvent> testEventList = new ArrayList<TestEvent>();
       testCase.setTestEventList(testEventList);
+      String commentHistory = readField(commentHistoryPos, testCaseFieldList);
+      if (commentHistory.length() > 0) {
+        int commaPos = commentHistory.indexOf(',');
+        if (commaPos > 0) {
+          commentHistory = commentHistory.substring(0, commaPos);
+        }
+        try {
+          int clientConditionCode = Integer.parseInt(commentHistory);
+          int eventId = clientConditionCode + Event.EVENT_ID_RANGE_MIIS;
+          Event event = eventMap.get(eventId);
+          if (event == null) {
+            throw new IllegalArgumentException("Unrecognized Client Condition code '" + clientConditionCode
+                + "' for test case " + testCase.getTestCaseNumber() + "");
+          }
+
+          TestEvent testEvent = new TestEvent();
+          testEvent.setEvent(event);
+          testEvent.setEventDate(referenceDate);
+          testEvent.setTestCase(testCase);
+          testEventList.add(testEvent);
+        } catch (NumberFormatException nfe) {
+          // ignore
+        }
+      }
       for (int i = 1; i <= 9; i++) {
         String cvxCode = readField(shotCvxPos[i], testCaseFieldList);
         if (cvxCode.length() == 1) {
