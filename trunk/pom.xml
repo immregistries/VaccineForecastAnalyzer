@@ -4,7 +4,7 @@
 	<groupId>org.tch.ft</groupId>
 	<artifactId>ForecastTester</artifactId>
 	<packaging>war</packaging>
-	<version>3.04</version>
+	<version>3.05</version>
 	<name>Forecast Tester</name>
 	<description></description>
 	<!-- TODO <organization> <name>company name</name> <url>company url</url> 
@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>org.tch.fc</groupId>
 			<artifactId>ForecastConnector</artifactId>
-			<version>3.04</version>
+			<version>3.05</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>

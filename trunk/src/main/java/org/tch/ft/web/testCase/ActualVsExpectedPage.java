@@ -379,8 +379,9 @@ public class ActualVsExpectedPage extends TestCaseDetail implements SecurePage
     SoftwareResult softwareResult = null;
     if (software != null) {
       allResultsForForecaster.setVisible(true);
-      query = dataSession.createQuery("from SoftwareResult where software = ? order by runDate DESC");
+      query = dataSession.createQuery("from SoftwareResult where software = ? and testCase = ? order by runDate DESC");
       query.setParameter(0, software);
+      query.setParameter(1, testCase);
       query.setMaxResults(1);
       List<SoftwareResult> softwareResultList = query.list();
       if (softwareResultList.size() > 0)

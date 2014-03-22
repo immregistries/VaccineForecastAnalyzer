@@ -153,6 +153,7 @@ INSERT INTO event (event_id, label, event_type_code) VALUES (100020, '2-phenoxye
 INSERT INTO event (event_id, label, event_type_code) VALUES (100021, 'alum  aluminum hydroxide  aluminum hydroxyphosphate sulfate  aluminum phosphate  aluminum potassium sulfate', '2');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100022, 'yeast protein', '2');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100023, 'chlortetracycline', '2');
+INSERT INTO event (event_id, label, event_type_code) VALUES (100024, 'egg ingestion', '2');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100025, 'gelatin', '2');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100026, 'latex', '2');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100027, 'neomycin', '2');
@@ -367,6 +368,7 @@ INSERT INTO event (event_id, label, event_type_code) VALUES (100227, 'Meningococ
 INSERT INTO event (event_id, label, event_type_code) VALUES (100228, 'Mumps vaccine', 'E');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100229, 'Pneumo-conjugate vaccine', 'E');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100230, 'Pneumococcal polysacharide (PPSV23) vaccine', 'E');
+INSERT INTO event (event_id, label, event_type_code) VALUES (100231, 'IPV vaccine', 'E');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100232, 'Polio vaccine', 'E');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100233, 'Pertussis vaccine', 'E');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100234, 'Rubella vaccine', 'E');
@@ -398,6 +400,7 @@ INSERT INTO event (event_id, label, event_type_code) VALUES (100348, 'Pneumococc
 INSERT INTO event (event_id, label, event_type_code) VALUES (100349, 'Meningococcal conjugate vaccine (MCV4 or MPSV4  based on age) prolonged exposure risk ', 'S');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100357, 'Meningococcal vaccine (MCV4 or MPSV4, based on age) high risk condition NOT asplenia or sickle cell', 'S');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100358, 'Meningococcal vaccine (MCV) new residential college student through 21 years old', 'S');
+INSERT INTO event (event_id, label, event_type_code) VALUES (100359, '[Code undefined by MIIS]', 'S');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100360, 'Hib vaccine recommended - high risk condition  5 years of age and older', 'S');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100366, 'MMR vaccine - high risk (health care worker  student  traveler  international traveler) ', 'S');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100367, 'Polio vaccine (IPV) recommended', 'S');

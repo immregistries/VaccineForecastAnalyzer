@@ -123,21 +123,21 @@ public class ForecastActualExpectedCompare implements Serializable
     if (forecastResultA == null || forecastResultB == null) {
       return 0;
     }
-    if (same(forecastResultA.getAdmin(), forecastResultB.getAdmin())) {
-      return 100;
-    }
     int score = 0;
+    if (same(forecastResultA.getAdmin(), forecastResultB.getAdmin())) {
+      score += 27;
+    }
     if (same(forecastResultA.getDoseNumber(), forecastResultB.getDoseNumber())) {
-      score += 40;
+      score += 33;
     }
     if (same(forecastResultA.getValidDate(), forecastResultB.getValidDate())) {
-      score += 30;
+      score += 14;
     }
     if (same(forecastResultA.getDueDate(), forecastResultB.getDueDate())) {
-      score += 20;
+      score += 21;
     }
     if (same(forecastResultA.getOverdueDate(), forecastResultB.getOverdueDate())) {
-      score += 10;
+      score += 5;
     }
     return score;
   }
@@ -188,17 +188,11 @@ public class ForecastActualExpectedCompare implements Serializable
   }
 
   public static boolean same(String a, String b) {
-    if (a != null && (a.equals("-") || a.equals(""))) {
-      a = null;
+    if (a == null || a.equals("-")) {
+      a = "";
     }
-    if (b != null && (b.equals("-") || b.equals(""))) {
-      b = null;
-    }
-    if (a == null && b == null) {
-      return true;
-    }
-    if (a == null || b == null) {
-      return false;
+    if (b == null || b.equals("-")) {
+      b = "";
     }
     return a.equals(b) || a.equals("*") || b.equals("*");
   }
