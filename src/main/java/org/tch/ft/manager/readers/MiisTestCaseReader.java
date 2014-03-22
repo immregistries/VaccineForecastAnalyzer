@@ -118,7 +118,7 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
         }
         try {
           int clientConditionCode = Integer.parseInt(commentHistory);
-          int eventId = clientConditionCode + Event.EVENT_ID_RANGE_MIIS;
+          int eventId = clientConditionCode + Event.EVENT_ID_RANGE_1_MIIS;
           Event event = eventMap.get(eventId);
           if (event == null) {
             throw new IllegalArgumentException("Unrecognized Client Condition code '" + clientConditionCode
