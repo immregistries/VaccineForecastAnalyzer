@@ -4,12 +4,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.tch.fc.model.TestEvent;
+
 import junit.framework.TestCase;
 
-public class TestTestCaseDetail extends TestCase {
-  
-  public void testCreateAgeAlmost() throws Exception
-  {
+public class TestTestCaseDetail extends TestCase
+{
+
+  public void testCreateAgeAlmost() throws Exception {
     assertAge("0 Months", "01/01/2011", "01/01/2011");
     assertAge("1 Month", "02/01/2011", "01/01/2011");
     assertAge("2 Months", "03/01/2011", "01/01/2011");
@@ -48,14 +50,18 @@ public class TestTestCaseDetail extends TestCase {
     assertAge("Almost 12 Months", "12/30/2011", "01/01/2011");
     assertAge("Almost 2 Years", "12/30/2012", "01/01/2011");
     assertAge("Almost 4 Years", "12/30/2014", "01/01/2011");
-    
+
   }
 
   public void assertAge(String age, String eventDateString, String referenceDateString) throws ParseException {
     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
     Date eventDate = sdf.parse(eventDateString);
     Date referenceDate = sdf.parse(referenceDateString);
-    assertEquals(age, TestCaseDetail.createAgeAlmost(eventDate, referenceDate));
+    TestEvent testEvent = new TestEvent();
+    testEvent.setEventDate(eventDate);
+    org.tch.fc.model.TestCase tc = new org.tch.fc.model.TestCase();
+    tc.setPatientDob(referenceDate);
+    assertEquals(age, testEvent.getAgeAlmost(tc));
   }
 
 }

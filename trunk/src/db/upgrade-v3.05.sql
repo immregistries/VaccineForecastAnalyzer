@@ -407,3 +407,6 @@ INSERT INTO event (event_id, label, event_type_code) VALUES (100367, 'Polio vacc
 INSERT INTO event (event_id, label, event_type_code) VALUES (100368, 'Tdap recommended every pregnancy between 27 - 36 weeks gestation, but may be given any time during pregnancy', 'S');
 INSERT INTO event (event_id, label, event_type_code) VALUES (100369, 'Meningococcal vaccine (MCV4 or MPSV4, based on age) high risk condition, asplenia or sickle cell', 'S');
 
+
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (24, "base", "assumeSeriesCompleted", "Assume Series Complete", "If no other doses are given then the forecaster should assume that the patient is up-to-date.", "", NULL);
+INSERT INTO service_option (option_id, service_type, option_name, option_label, description, valid_values, base_option_id) VALUES (25, "tch", "assumeSeriesCompleted", "Assume Series Complete", "If no other doses are given then the forecaster should assume that the patient is up-to-date.", "", 24);

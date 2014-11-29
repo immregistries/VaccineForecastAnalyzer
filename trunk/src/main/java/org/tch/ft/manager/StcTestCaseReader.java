@@ -95,7 +95,7 @@ public class StcTestCaseReader {
 
   public void setEventList(List<Event> eventList) {
     for (Event event : eventList) {
-      if (event.getEventType() == EventType.VACCINE) {
+      if (event.getEventType() == EventType.VACCINATION) {
         cvxToEventMap.put(event.getVaccineCvx(), event);
       }
     }

@@ -18,6 +18,8 @@ public class User implements Serializable {
   private String position = "";
   private String phone = "";
   private boolean loggedIn = false;
+  private boolean admin = false;
+  private boolean memberOfGroup = false;
   private Agreement agreement = null;
   private Date agreementDate = null;
   private TaskGroup selectedTaskGroup = null;
@@ -26,7 +28,32 @@ public class User implements Serializable {
   private TestPanelCase selectedTestPanelCase = null;
   private TestCase selectedTestCase = null;
   private SoftwareCompare selectedSoftwareCompare = null;
+  private String selectedCategoryName = null;
   private boolean agreedToAgreement = false;
+
+  public String getSelectedCategoryName() {
+    return selectedCategoryName;
+  }
+
+  public void setSelectedCategoryName(String selectedCategoryName) {
+    this.selectedCategoryName = selectedCategoryName;
+  }
+
+  public boolean isMemberOfGroup() {
+    return memberOfGroup;
+  }
+
+  public void setMemberOfGroup(boolean memberOfGroup) {
+    this.memberOfGroup = memberOfGroup;
+  }
+
+  public boolean isAdmin() {
+    return admin;
+  }
+
+  public void setAdmin(boolean admin) {
+    this.admin = admin;
+  }
 
   public boolean isAgreedToAgreement() {
     return agreedToAgreement;

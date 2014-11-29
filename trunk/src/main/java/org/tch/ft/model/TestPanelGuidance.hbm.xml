@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.tch.ft.model">
+  <class name="TestPanelGuidance" table="test_panel_guidance">
+    <id name="testPanelGuidanceId" column="test_panel_guidance_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="testPanelCase" column="test_panel_case_id" class="org.tch.ft.model.TestPanelCase"/>
+    <many-to-one name="guidanceExpected" column="guidance_expected_id" class="org.tch.ft.model.GuidanceExpected"/>
+  </class>
+</hibernate-mapping>
