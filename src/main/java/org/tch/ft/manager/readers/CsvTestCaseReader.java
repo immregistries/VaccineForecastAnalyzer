@@ -54,7 +54,7 @@ public abstract class CsvTestCaseReader implements TestCaseReader
 
   public void setEventList(List<Event> eventList) {
     for (Event event : eventList) {
-      if (event.getEventType() == EventType.VACCINE) {
+      if (event.getEventType() == EventType.VACCINATION) {
         cvxToEventMap.put(event.getVaccineCvx(), event);
       }
       eventMap.put(event.getEventId(), event);

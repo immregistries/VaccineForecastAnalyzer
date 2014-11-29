@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping package="org.tch.ft.model">
   <class name="ForecastExpected" table="forecast_expected">
-    <id name="ForecastExpectedId" column="forecast_expected_id">
+    <id name="forecastExpectedId" column="forecast_expected_id">
       <generator class="native"/>
     </id>
     <many-to-one name="testCase" column="test_case_id" class="org.tch.fc.model.TestCase"/>
@@ -17,5 +17,9 @@
     <property name="finishedDate" column="finished_date" type="date"/>
     <property name="vaccineCvx" column="vaccine_cvx" type="string"/>
     <property name="forecastReason" column="forecast_reason" type="string"/>
+    <many-to-one name="validRule" column="valid_rule_id" class="org.tch.fc.model.RelativeRule"/>
+    <many-to-one name="dueRule" column="due_rule_id" class="org.tch.fc.model.RelativeRule"/>
+    <many-to-one name="overdueRule" column="overdue_rule_id" class="org.tch.fc.model.RelativeRule"/>
+    <many-to-one name="finishedRule" column="finished_rule_id" class="org.tch.fc.model.RelativeRule"/>
   </class>
 </hibernate-mapping>

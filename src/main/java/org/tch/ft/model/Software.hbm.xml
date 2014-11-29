@@ -10,5 +10,6 @@
     <property name="serviceType" column="service_type" type="string"/>
     <property name="scheduleName" column="schedule_name" type="string"/>
     <property name="visibleStatus" column="visible_status" type="string"/>
+    <property name="supportsFixed" column="supports_fixed" type="yes_no"/>
   </class>
 </hibernate-mapping>

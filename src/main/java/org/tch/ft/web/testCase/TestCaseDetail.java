@@ -35,7 +35,8 @@ import org.tch.ft.web.MenuSection;
 import org.tch.ft.web.SecurePage;
 import org.tch.ft.web.WebSession;
 
-public class TestCaseDetail extends FTBasePage implements SecurePage {
+public class TestCaseDetail extends FTBasePage implements SecurePage
+{
   private static final long serialVersionUID = 1L;
 
   public TestCaseDetail() {
@@ -78,83 +79,12 @@ public class TestCaseDetail extends FTBasePage implements SecurePage {
           item.add(new Label("vacineCvx", testEvent.getEvent().getVaccineCvx()));
           item.add(new Label("vacineMvx", testEvent.getEvent().getVaccineMvx()));
           item.add(new Label("eventDate", sdf.format(testEvent.getEventDate())));
-          item.add(new Label("eventAge", createAgeAlmost(testEvent.getEventDate(), testCase.getPatientDob())));
+          item.add(new Label("eventAge", testEvent.getAgeAlmost(testCase)));
         }
       };
       add(testEventItems);
     }
-    
-  }
 
-  protected static String createAgeAlmost(Date eventDate, Date referenceDate) {
-    int monthsBetween = monthsYearsBetween(eventDate, referenceDate);
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(eventDate);
-    calendar.add(Calendar.DAY_OF_MONTH, 4);
-    int almostMonthsBetween = monthsYearsBetween(calendar.getTime(), referenceDate);
-    if (almostMonthsBetween > monthsBetween) {
-      return "Almost " + createAge(calendar.getTime(), referenceDate);
-    }
-    return createAge(eventDate, referenceDate);
-  }
-  
-  private static int monthsYearsBetween(Date eventDate, Date referenceDate)
-  {
-    int months = monthsBetween(eventDate, referenceDate);
-    if (months > 24)
-    {
-      months = months - (months % 12); 
-    }
-    return months;
-  }
-
-  private static int monthsBetween(Date eventDate, Date referenceDate) {
-    Calendar eventCal = Calendar.getInstance();
-    Calendar referenceCal = Calendar.getInstance();
-    eventCal.setTime(eventDate);
-    referenceCal.setTime(referenceDate);
-    int eventYear = eventCal.get(Calendar.YEAR);
-    int referenceYear = referenceCal.get(Calendar.YEAR);
-    int maxMonth = eventCal.getMaximum(Calendar.MONTH);
-    int eventMonth = eventCal.get(Calendar.MONTH);
-    int referenceMonth = referenceCal.get(Calendar.MONTH);
-    int months = (eventYear - referenceYear) * (maxMonth + 1) + (eventMonth - referenceMonth);
-
-    if (eventCal.get(Calendar.DAY_OF_MONTH) < referenceCal.get(Calendar.DAY_OF_MONTH)) {
-      months--;
-    }
-    return months;
-  }
-
-  private static String createAge(Date eventDate, Date referenceDate) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(referenceDate);
-    calendar.add(Calendar.YEAR, 2);
-    if (calendar.getTime().after(eventDate)) {
-      // child was under 2 years of age, use months
-      for (int months = 0; months < 24; months++) {
-        calendar = Calendar.getInstance();
-        calendar.setTime(referenceDate);
-        calendar.add(Calendar.MONTH, months + 1);
-        if (calendar.getTime().after(eventDate)) {
-          if (months == 1) {
-            return "1 Month";
-          }
-          return months + " Months";
-        }
-      }
-      return "23 Months";
-    }
-    // child is over 2 years of age, now show in years
-    for (int years = 2; years < 100; years++) {
-      calendar = Calendar.getInstance();
-      calendar.setTime(referenceDate);
-      calendar.add(Calendar.YEAR, years + 1);
-      if (calendar.getTime().after(eventDate)) {
-        return years + " Years";
-      }
-    }
-    return "Over 100 Years";
   }
 
 }

@@ -5,6 +5,8 @@ import java.util.Date;
 
 public class AccessRequest implements Serializable
 {
+  private static final long serialVersionUID = 1L;
+  
   private int accessRequestId = 0;
   private Registration registration = null;
   private Module module = null;

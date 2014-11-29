@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.tch.fc.model">
+  <class name="RecommendGuidance" table="recommend_guidance">
+    <id name="recommendGuidanceId" column="recommend_guidance_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="recommend" column="recommend_id" class="org.tch.fc.model.Recommend"/>
+    <many-to-one name="guidance" column="guidance_id" class="org.tch.fc.model.Guidance"/>
+  </class>
+</hibernate-mapping>

@@ -8,9 +8,13 @@
     <property name="label" column="label" type="string"/>
     <property name="description" column="description" type="string"/>
     <property name="evalDate" column="eval_date" type="date"/>
+    <many-to-one name="evalRule" column="eval_rule_id" class="org.tch.fc.model.RelativeRule"/>
     <property name="patientFirst" column="patient_first" type="string"/>
     <property name="patientLast" column="patient_last" type="string"/>
     <property name="patientSex" column="patient_sex" type="string"/>
     <property name="patientDob" column="patient_dob" type="date"/>
+    <many-to-one name="evaluationType" column="evaluation_type_id" class="org.tch.fc.model.EvaluationType"/>
+    <many-to-one name="forecastType" column="forecast_type_id" class="org.tch.fc.model.ForecastType"/>
+    <property name="dateSetCode" column="date_set_code" type="string"/>
   </class>
 </hibernate-mapping>

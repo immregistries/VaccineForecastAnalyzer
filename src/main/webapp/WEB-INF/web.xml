@@ -10,6 +10,25 @@
 	  <servlet-class>org.tch.ft.servlet.ExternalTestServlet</servlet-class>
 	</servlet>
 
+	<servlet>
+	  <servlet-name>HomeServlet</servlet-name>
+	  <servlet-class>org.tch.ft.servlet.HomeServlet</servlet-class>
+	</servlet>
+	<servlet>
+	  <servlet-name>TestCasesServlet</servlet-name>
+	  <servlet-class>org.tch.ft.servlet.TestCasesServlet</servlet-class>
+	</servlet>
+
+  <servlet-mapping>
+    <servlet-name>HomeServlet</servlet-name>
+    <url-pattern>/s/home</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>TestCasesServlet</servlet-name>
+    <url-pattern>/s/testCases</url-pattern>
+  </servlet-mapping>
+
   <servlet-mapping>
     <servlet-name>ExternalTestServlet</servlet-name>
     <url-pattern>/ExternalTestServlet</url-pattern>
