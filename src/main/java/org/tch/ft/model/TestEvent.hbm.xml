@@ -8,6 +8,7 @@
     <many-to-one name="testCase" column="test_case_id" class="org.tch.fc.model.TestCase"/>
     <many-to-one name="event" column="event_id" class="Event"/>
     <property name="eventDate" column="event_date" type="date"/>
+    <many-to-one name="eventRule" column="event_rule_id" class="RelativeRule"/>
     <property name="conditionCode" column="condition_code" type="string"/>
   </class>
 </hibernate-mapping>
