@@ -29,7 +29,7 @@ public class HomeServlet extends MainServlet
   public static final String PARAM_PASSWORD = "password";
 
   @Override
-  public String execute(HttpServletRequest req, HttpServletResponse resp, String action) throws IOException {
+  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show) throws IOException {
     if (action != null) {
       if (action.equals(ACTION_LOGIN)) {
         name = req.getParameter(PARAM_NAME);
@@ -85,7 +85,7 @@ public class HomeServlet extends MainServlet
       }
     }
 
-    return null;
+    return show;
   }
 
   private String name = "";
@@ -96,7 +96,6 @@ public class HomeServlet extends MainServlet
       throws ServletException, IOException {
     out.println("<div class=\"leftColumn\">");
     if (applicationSession.getUser() == null || !applicationSession.getUser().isLoggedIn()) {
-      out.println("<h1>TCH Forecast Tester</h1>");
       out.println("<p>Welcome, please login to continue. </p>");
       out.println("<h2>Login</h2>");
       out.println("<form method=\"POST\" action=\"home\"> ");
@@ -123,8 +122,6 @@ public class HomeServlet extends MainServlet
     } else if (!applicationSession.getUser().isMemberOfGroup()) {
       out.println("<p>Not yet assigned to expert group</p>");
     } else {
-      out.println("<h1>TCH Forecast Tester</h1>");
-      out.println("<p>Welcome, you are logged in. </p>");
       out.println("<h2>Logout</h2>");
       out.println("<form method=\"POST\" action=\"home\"> ");
       out.println("  <table> ");

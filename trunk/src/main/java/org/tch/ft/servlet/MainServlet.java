@@ -2,6 +2,7 @@ package org.tch.ft.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -33,7 +34,6 @@ public abstract class MainServlet extends HttpServlet
     setup(req);
     if (verifyOkayToExecute()) {
       String show = execute(req, resp);
-      System.out.println("--> show = " + show);
       printPage(req, resp, show);
     } else {
       RequestDispatcher requestDispatcher = req.getRequestDispatcher("/s/home");
@@ -77,14 +77,10 @@ public abstract class MainServlet extends HttpServlet
   }
 
   public String execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    String show = execute(req, resp, req.getParameter(PARAM_ACTION));
-    if (show == null) {
-      show = req.getParameter(show);
-    }
-    return show;
+    return execute(req, resp, req.getParameter(PARAM_ACTION), req.getParameter(PARAM_SHOW));
   }
 
-  public abstract String execute(HttpServletRequest req, HttpServletResponse resp, String action) throws IOException;
+  public abstract String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show) throws IOException;
 
   public void printPage(HttpServletRequest req, HttpServletResponse resp, String show) throws IOException {
     PrintWriter out = new PrintWriter(resp.getWriter());
@@ -143,15 +139,24 @@ public abstract class MainServlet extends HttpServlet
         out.println("    </table>");
       }
     } else {
-      out.println("    <table class=\"menu\">");
-      out.println("      <tr>");
-      out.println("        <td class=\"menuCell\">");
-      out.println("          <a href=\"home\" class=\"menuLink\">Home</a>");
-      out.println("        </td>");
-      out.println("      </tr>");
-      out.println("    </table>");
+      out.println("    <h1>TCH Forecast Tester</h1>");
     }
     out.println("    <div class=\"content\">");
+    if (applicationSession.getAlertError() != null)
+    {
+      out.println("      <p class=\"alertError\">Error: " + applicationSession.getAlertError() + "</p>");
+      applicationSession.setAlertError(null);
+    }
+    if (applicationSession.getAlertWarning() != null)
+    {
+      out.println("      <p class=\"alertWarning\">Warning: " + applicationSession.getAlertWarning() + "</p>");
+      applicationSession.setAlertWarning(null);
+    }
+    if (applicationSession.getAlertInformation() != null)
+    {
+      out.println("      <p class=\"alertInformation\">" + applicationSession.getAlertInformation() + "</p>");
+      applicationSession.setAlertInformation(null);
+    }
   }
 
   public void printFooter(PrintWriter out) {
@@ -173,5 +178,19 @@ public abstract class MainServlet extends HttpServlet
     }
     return s;
   }
+  
+  protected static int notNull(String s, int defaultValue) {
+    if (s == null) {
+      return defaultValue;
+    }
+    return Integer.parseInt(s);
+  }
+  
+  protected static SimpleDateFormat createSimpleDateFormat()
+  {
+    return new SimpleDateFormat("MM/dd/yyyy");
+  }
+  protected SimpleDateFormat sdf = createSimpleDateFormat();
+  
 
 }

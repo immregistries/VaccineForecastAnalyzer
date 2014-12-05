@@ -20,6 +20,7 @@ public class User implements Serializable {
   private boolean loggedIn = false;
   private boolean admin = false;
   private boolean memberOfGroup = false;
+  private boolean canEditTestCase = false; 
   private Agreement agreement = null;
   private Date agreementDate = null;
   private TaskGroup selectedTaskGroup = null;
@@ -30,6 +31,23 @@ public class User implements Serializable {
   private SoftwareCompare selectedSoftwareCompare = null;
   private String selectedCategoryName = null;
   private boolean agreedToAgreement = false;
+  private Expert selectedExpert = null;
+
+  public Expert getSelectedExpert() {
+    return selectedExpert;
+  }
+
+  public void setSelectedExpert(Expert selectedExpert) {
+    this.selectedExpert = selectedExpert;
+  }
+
+  public boolean isCanEditTestCase() {
+    return canEditTestCase;
+  }
+
+  public void setCanEditTestCase(boolean canEditTestCase) {
+    this.canEditTestCase = canEditTestCase;
+  }
 
   public String getSelectedCategoryName() {
     return selectedCategoryName;

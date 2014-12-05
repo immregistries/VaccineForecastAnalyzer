@@ -15,6 +15,11 @@ public enum Role implements Serializable {
 
 		this.label = label;
 	}
+	
+	public boolean canEdit()
+	{
+	  return this == ADMIN || this == EXPERT;
+	}
 
 	public String getRoleStatus() {
 		return roleStatus;

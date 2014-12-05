@@ -5,9 +5,11 @@ import java.util.Comparator;
 
 import org.tch.fc.model.TestCase;
 
-public class TestPanelCase implements Serializable {
+public class TestPanelCase implements Serializable
+{
 
-  public static class TestPanelCaseComparator implements Comparator<TestPanelCase> {
+  public static class TestPanelCaseComparator implements Comparator<TestPanelCase>
+  {
 
     public int compare(TestPanelCase c1, TestPanelCase c2) {
       if (c1.getCategoryName().equals(c2.getCategoryName())) {
@@ -128,5 +130,13 @@ public class TestPanelCase implements Serializable {
 
   public void setResultStatus(String resultStatus) {
     result = Result.getResult(resultStatus);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof TestPanelCase) {
+      return ((TestPanelCase) obj).getTestPanelCaseId() == getTestPanelCaseId();
+    }
+    return super.equals(obj);
   }
 }

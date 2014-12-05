@@ -6,6 +6,7 @@
       <generator class="native"/>
     </id>
     <property name="timePeriodString" column="time_period" type="string"/>
+    <property name="relativeToCode" column="relative_to_code" type="string"/>
     <many-to-one name="testEvent" column="test_event_id" class="org.tch.fc.model.TestEvent"/>
     <many-to-one name="andRule" column="and_rule_id" class="org.tch.fc.model.RelativeRule"/>
   </class>
