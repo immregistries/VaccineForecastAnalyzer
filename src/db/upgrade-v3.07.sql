@@ -70,19 +70,22 @@ ALTER TABLE forecast_expected ADD COLUMN (due_rule_id INTEGER);
 ALTER TABLE forecast_expected ADD COLUMN (overdue_rule_id INTEGER);
 ALTER TABLE forecast_expected ADD COLUMN (finished_rule_id INTEGER);
 
-
 ALTER TABLE evaluation_expected ADD COLUMN (evaluation_reason_code VARCHAR(120));
 ALTER TABLE evaluation_expected ADD COLUMN (vaccine_cvx            VARCHAR(20));
 ALTER TABLE evaluation_expected ADD COLUMN (series_used_code       VARCHAR(120));
 ALTER TABLE evaluation_expected ADD COLUMN (series_used_text       VARCHAR(120));
 ALTER TABLE evaluation_expected ADD COLUMN (dose_number            VARCHAR(20));
 
+ALTER TABLE test_panel_evaluation CHANGE COLUMN forecast_evaluation_id evaluation_expected_id INTEGER NOT NULL;
+
+INSERT INTO admin (admin_status, label) VALUES ('G', 'aged out');
+
 -- Page 4
 
 CREATE TABLE test_panel_guidance (
   test_panel_guidance_id  INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   test_panel_case_id      INTEGER NOT NULL,
-  guidance_evaluation_id  INTEGER NOT NULL
+  guidance_expected_id  INTEGER NOT NULL
 );
 
 CREATE TABLE guidance_expected (
@@ -135,8 +138,8 @@ CREATE TABLE resource_guidance (
 CREATE TABLE recommend (
   recommend_id           INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   recommend_text         VARCHAR(2500) NOT NULL,
-  recommend_type_code    VARCHAR(5) NOT NULL,
-  recommend_range_code   VARCHAR(5) NOT NULL
+  recommend_type_code    VARCHAR(5),
+  recommend_range_code   VARCHAR(5)
 );
 
 CREATE TABLE recommend_type (
@@ -161,7 +164,7 @@ INSERT INTO recommend_range (recommend_range_code, label) VALUES ('P', 'Permanen
 CREATE TABLE consideration (
   consideration_id        INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   consideration_text      VARCHAR(2500) NOT NULL,
-  consideration_type_code VARCHAR(5) NOT NULL 
+  consideration_type_code VARCHAR(5) 
 );
 
 CREATE TABLE consideration_type (
@@ -333,7 +336,7 @@ INSERT INTO event (label, event_type_code) values ('Patient infected with invasi
 INSERT INTO event (label, event_type_code) values ('Patient is at increased risk of HPV', 'N');
 INSERT INTO event (label, event_type_code) values ('Patient is at an increased risk for Japanese Encephalitis', 'N');
 INSERT INTO event (label, event_type_code) values ('Patient (2m through 18m) is at increased risk for invasive meningococcal disease', 'N');
-INSERT INTO event (label, event_type_code) values ('Patient (9m through 23m) is at increased risk for invasive meningococcal disease', 'N');
+INSERT INTO event (label, event_type_code) value('Patient (9m through 23m) is at increased risk for invasive meningococcal disease', 'N');
 INSERT INTO event (label, event_type_code) values ('Patient (2y through 55y)  is at increased risk for invasive meningococcal disease due to medical condition', 'N');
 INSERT INTO event (label, event_type_code) values ('Patient (2y through 55y)  is at increased risk for invasive meningococcal disease due to travel, living, or occupational condition ', 'N');
 INSERT INTO event (label, event_type_code) values ('Patient (56y+) is at increased risk for invasive meningococcal disease', 'N');
@@ -348,14 +351,10 @@ INSERT INTO event (label, event_type_code) values ('Patient may be at increased 
 INSERT INTO event (label, event_type_code) values ('Patient is at increased risk of yellow fever infection due to travel', 'N');
 INSERT INTO event (label, event_type_code) values ('Patient is at increased risk of yellow fever infection due to occupation', 'N');
 
-
-INSERT INTO recommend (recommend_text, recommend_type_code, recommend_range_code) VALUES ('Do not administer any LAIV product', 'C', 'T');
-
-INSERT INTO consideration (consideration_text, consideration_type_code) VALUES ('Patient with history of a life-threatening allergic reaction after a dose of flu vaccine, or a severe allergy to any part of this vaccine, including (for example) an allergy to gelatin, antibiotics, or eggs, may be advized to not get vaccinated', 'G');
-INSERT INTO consideration (consideration_text, consideration_type_code) VALUES ('Paitent with a history of GBS should not get this vaccine. ', 'G');
-
-INSERT INTO rationale (rationale_text) VALUES ('Live virus vaccines, such as LAIV, should only be administered 28 or more days after a previously given live virus vaccine.');
-
-INSERT INTO resource (resource_text, resource_link) VALUES ('Live Attenuated Vaccines ', 'http://vaccine-safety-training.org/live-attenuated-vaccines.html');
+-- INSERT INTO recommend (recommend_text, recommend_type_code, recommend_range_code) VALUES ('Do not administer any LAIV product', 'C', 'T');
+-- INSERT INTO consideration (consideration_text, consideration_type_code) VALUES ('Patient with history of a life-threatening allergic reaction after a dose of flu vaccine, or a severe allergy to any part of this vaccine, including (for example) an allergy to gelatin, antibiotics, or eggs, may be advized to not get vaccinated', 'G');
+-- INSERT INTO consideration (consideration_text, consideration_type_code) VALUES ('Patient with a history of GBS should not get this vaccine. ', 'G');
+-- INSERT INTO rationale (rationale_text) VALUES ('Live virus vaccines, such as LAIV, should only be administered 28 or more days after a previously given live virus vaccine.');
+-- INSERT INTO resource (resource_text, resource_link) VALUES ('Live Attenuated Vaccines ', 'http://vaccine-safety-training.org/live-attenuated-vaccines.html');
 
 
