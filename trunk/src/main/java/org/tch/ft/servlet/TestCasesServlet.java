@@ -23,6 +23,7 @@ import org.hibernate.Transaction;
 import org.tch.fc.model.Admin;
 import org.tch.fc.model.AssociatedDate;
 import org.tch.fc.model.Consideration;
+import org.tch.fc.model.ConsiderationType;
 import org.tch.fc.model.DateSet;
 import org.tch.fc.model.Evaluation;
 import org.tch.fc.model.Event;
@@ -31,6 +32,7 @@ import org.tch.fc.model.ForecastActual;
 import org.tch.fc.model.Rationale;
 import org.tch.fc.model.Recommend;
 import org.tch.fc.model.RecommendRange;
+import org.tch.fc.model.RecommendType;
 import org.tch.fc.model.RelativeRule;
 import org.tch.fc.model.RelativeTo;
 import org.tch.fc.model.Resource;
@@ -39,9 +41,11 @@ import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.util.TimePeriod;
+import org.tch.ft.manager.ExpectationsManager;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.manager.RelativeRuleManager;
 import org.tch.ft.manager.SoftwareManager;
+import org.tch.ft.model.EvaluationExpected;
 import org.tch.ft.model.Expert;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.Include;
@@ -68,6 +72,7 @@ public class TestCasesServlet extends MainServlet
   public static final String ACTION_DELETE_EVENT = "Delete Event";
   public static final String ACTION_ADD_VACCINATION = "Add Vaccination";
   public static final String ACTION_ADD_EVENT = "Add Event";
+  public static final String ACTION_SAVE_EXPECTATIONS = "Save Expectations";
 
   public static final String PARAM_TASK_GROUP_ID = "taskGroupId";
   public static final String PARAM_TEST_PANEL_ID = "testPanelId";
@@ -90,11 +95,35 @@ public class TestCasesServlet extends MainServlet
   public static final String PARAM_EVENT_ID = "eventId";
   public static final String PARAM_EVENT_DATE = "eventDate";
   public static final String PARAM_EVENT_RULE = "eventRule";
-  public static final String PARAM_EVENT_RULE_BEFORE_OR_AFTER = "eventRuleBeforeOrAfter";
   public static final String PARAM_EVENT_LABEL = "eventLabel";
   public static final String PARAM_CONDITION_CODE = "conditionCode";
-  public static final String PARAM_RELATIVE_RULE_TEST_EVENT_ID = "relativeRuleTestEventId";
   public static final String PARAM_EVENT_TYPE_CODE = "eventTypeCode";
+  public static final String PARAM_VALID_DATE = "validDate";
+  public static final String PARAM_VALID_RULE = "validRule";
+  public static final String PARAM_DUE_DATE = "dueDate";
+  public static final String PARAM_DUE_RULE = "dueRule";
+  public static final String PARAM_OVERDUE_DATE = "overdueDate";
+  public static final String PARAM_OVERDUE_RULE = "overdueRule";
+  public static final String PARAM_FINISHED_DATE = "finishedDate";
+  public static final String PARAM_FINISHED_RULE = "finishedRule";
+  public static final String PARAM_ADMIN_STATUS = "adminStatus";
+  public static final String PARAM_DOSE_NUMBER = "doseNumber";
+  public static final String PARAM_EVALUATION_STATUS = "evaluationStatus";
+  public static final String PARAM_RECOMMEND_ID = "recommendId";
+  public static final String PARAM_RECOMMEND_TEXT = "recommendText";
+  public static final String PARAM_RECOMMEND_TYPE_CODE = "recommendTypeCode";
+  public static final String PARAM_RECOMMEND_RANGE_CODE = "recommendRangeCode";
+  public static final String PARAM_CONSIDERATION_ID = "considerationId";
+  public static final String PARAM_CONSIDERATION_TEXT = "considerationText";
+  public static final String PARAM_CONSIDERATION_TYPE_CODE = "considerationTypeCode";
+  public static final String PARAM_RATIONALE_ID = "rationaleId";
+  public static final String PARAM_RATIONALE_TEXT = "rationaleText";
+  public static final String PARAM_RESOURCE_ID = "resourceId";
+  public static final String PARAM_RESOURCE_TEXT = "resourceText";
+  public static final String PARAM_RESOURCE_LINK = "resourceLink";
+
+  public static final String RULE_BEFORE_OR_AFTER = "BeforeOrAfter";
+  public static final String RULE_TEST_EVENT_ID = "TestEventId";
 
   public static final String SHOW_TEST_CASE = "testCase";
   public static final String SHOW_TASK_GROUP = "taskGroup";
@@ -116,6 +145,10 @@ public class TestCasesServlet extends MainServlet
   private int countACIP = 0;
   private int countCondition = 0;
   private int countOther = 0;
+
+  private static Admin[] ADMIN_STANDARD_LIST = { Admin.NOT_COMPLETE, Admin.COMPLETE, Admin.IMMUNE,
+      Admin.CONTRAINDICATED, Admin.AGED_OUT };
+  private static Admin[] ADMIN_NON_STANDARD_LIST = {Admin.OVERDUE, Admin.DUE, Admin.DUE_LATER, Admin.FINISHED, Admin.COMPLETE_FOR_SEASON, Admin.ASSUMED_COMPLETE_OR_IMMUNE, Admin.CONTRAINDICATED};
 
   private static synchronized String getNextTestCaseNumber() {
     SimpleDateFormat sdfShort = new SimpleDateFormat("yyMMdd");
@@ -200,87 +233,287 @@ public class TestCasesServlet extends MainServlet
         int testEventId = notNull(req.getParameter(PARAM_TEST_EVENT_ID), 0);
         return doDelete(testEventId, show, dataSession);
       } else if (action.equals(ACTION_ADD_VACCINATION) || action.equals(ACTION_ADD_EVENT)) {
-        EventType eventType = null;
-        if (req.getParameter(PARAM_EVENT_TYPE_CODE) != null) {
-          eventType = EventType.getEventType(req.getParameter(PARAM_EVENT_TYPE_CODE));
-        }
-        boolean isVacc = action.equals(ACTION_ADD_VACCINATION);
-        int eventId = Integer.parseInt(req.getParameter(PARAM_EVENT_ID));
-        if (eventId == -1) {
-          String newEventLabel = req.getParameter(PARAM_NEW_EVENT_LABEL);
-          if (!isVacc && newEventLabel.length() > 0) {
-            Transaction transaction = dataSession.beginTransaction();
-            Event event = new Event();
-            event.setLabel(newEventLabel);
-            event.setEventType(eventType);
-            dataSession.save(event);
-            transaction.commit();
-            eventId = event.getEventId();
-          } else {
-            applicationSession.setAlertError("Please indicate the new ACIP-Defined Condition label");
-            return show;
-          }
-        }
-        if (eventId == 0) {
-          applicationSession.setAlertError((isVacc ? "Vaccination" : "Condition")
-              + " is required, please select the appropriate vaccination. ");
-          return show;
-        }
-        TestCase testCase = user.getSelectedTestCase();
-        Event event = (Event) dataSession.get(Event.class, eventId);
-        TestEvent testEvent = new TestEvent();
-        testEvent.setTestCase(testCase);
-        testEvent.setEvent(event);
-        if (testCase.getDateSet() == DateSet.FIXED) {
-          String eventDateString = notNull(req.getParameter(PARAM_EVENT_DATE));
-          if (eventDateString.equals("")) {
-            applicationSession
-                .setAlertError((isVacc ? "Administered date is required, please indicate date to create vaccination."
-                    : "Observed date is required, please indicate date condition was observed.") + "  ");
-            return show;
-          }
-          try {
-            testEvent.setEventDate(sdf.parse(eventDateString));
-          } catch (ParseException pe) {
-            applicationSession.setAlertError("Date is not in MM/DD/YYYY format, please correct date. ");
-            return show;
-          }
+        return doAddEvent(req, action, show, user, dataSession);
+      } else if (action.equals(ACTION_SAVE_EXPECTATIONS)) {
+        VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class,
+            notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), 0));
+        TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
+        TestCase testCase = testPanelCase.getTestCase();
+
+        ExpectationsManager expectationsManager = new ExpectationsManager(user, vaccineGroup, false, dataSession);
+        // Read evaluation expected
+        readEvaluationExpectations(req, expectationsManager);
+        String problem = readForecastExpectations(req, dataSession, testCase, expectationsManager);
+        readGuidanceExpectations(req, dataSession, expectationsManager);
+
+        if (problem != null) {
+          applicationSession.setAlertError("Unable to save expectations: " + problem);
+          return SHOW_EDIT_EXPECTATIONS;
         } else {
-          RelativeRule relativeRule = readRelativeRules(req, dataSession, testCase);
-          if (relativeRule == null || relativeRule.getTestEvent() == null) {
-            applicationSession
-                .setAlertError((isVacc ? "Administered" : "Observed")
-                    + " needs to be set before or after a selected event. Please select event that this event is before or after. ");
-            return show;
-          }
-          relativeRule.convertBeforeToAfter();
-          testEvent.setEventRule(relativeRule);
-          RelativeRule andRule = relativeRule.getAndRule();
-          RelativeRule parentRule = relativeRule;
-          while (andRule != null) {
-            andRule.convertBeforeToAfter();
-            if (andRule.getTestEvent() == null) {
-              parentRule.setAndRule(null);
-              andRule = null;
-            } else {
-              parentRule = andRule;
-              andRule = andRule.getAndRule();
-            }
-          }
+          //          Transaction transaction = dataSession.beginTransaction();
+          //          transaction.commit();
+          return SHOW_TEST_CASE;
         }
-        testEvent.calculateFixedDates();
-
-        Transaction transaction = dataSession.beginTransaction();
-        if (testEvent.getEventRule() != null) {
-          saveRelativeRule(dataSession, testEvent.getEventRule());
-        }
-        dataSession.save(testEvent);
-        transaction.commit();
-
-        return show;
       }
 
     }
+    return show;
+  }
+
+  public void readGuidanceExpectations(HttpServletRequest req, Session dataSession,
+      ExpectationsManager expectationsManager) {
+    String[] recommendIdStrings = req.getParameterValues(PARAM_RECOMMEND_ID);
+    if (recommendIdStrings != null) {
+      expectationsManager.getRecommendList().clear();
+      for (String recommendIdString : recommendIdStrings) {
+        int recommendId = Integer.parseInt(recommendIdString);
+        Recommend recommend = (Recommend) dataSession.get(Recommend.class, recommendId);
+        expectationsManager.getRecommendList().add(recommend);
+      }
+    }
+    String[] considerationIdStrings = req.getParameterValues(PARAM_CONSIDERATION_ID);
+    if (considerationIdStrings != null) {
+      expectationsManager.getConsiderationList().clear();
+      for (String considerationIdString : considerationIdStrings) {
+        int considerationId = Integer.parseInt(considerationIdString);
+        Consideration consideration = (Consideration) dataSession.get(Consideration.class, considerationId);
+        expectationsManager.getConsiderationList().add(consideration);
+      }
+    }
+    String[] rationaleIdStrings = req.getParameterValues(PARAM_RATIONALE_ID);
+    if (rationaleIdStrings != null) {
+      expectationsManager.getRationaleList().clear();
+      for (String rationaleIdString : rationaleIdStrings) {
+        int rationaleId = Integer.parseInt(rationaleIdString);
+        Rationale rationale = (Rationale) dataSession.get(Rationale.class, rationaleId);
+        expectationsManager.getRationaleList().add(rationale);
+      }
+    }
+    String[] resourceIdStrings = req.getParameterValues(PARAM_RESOURCE_ID);
+    if (resourceIdStrings != null) {
+      expectationsManager.getResourceList().clear();
+      for (String resourceIdString : resourceIdStrings) {
+        int resourceId = Integer.parseInt(resourceIdString);
+        Resource resource = (Resource) dataSession.get(Resource.class, resourceId);
+        expectationsManager.getResourceList().add(resource);
+      }
+    }
+  }
+
+  public String readForecastExpectations(HttpServletRequest req, Session dataSession, TestCase testCase,
+      ExpectationsManager expectationsManager) {
+    ForecastExpected forecastExpected = expectationsManager.getForecastExpected();
+    String adminStatus = notNull(req.getParameter(PARAM_ADMIN_STATUS), forecastExpected.getAdminStatus());
+    if (adminStatus.equals("")) {
+      forecastExpected.setAdmin(null);
+    } else {
+      forecastExpected.setAdminStatus(adminStatus);
+    }
+    String doseNumber = notNull(req.getParameter(PARAM_DOSE_NUMBER), forecastExpected.getDoseNumber());
+    forecastExpected.setDoseNumber(doseNumber);
+
+    if (testCase.getDateSet() == DateSet.FIXED) {
+      if (forecastExpected.getValidDate() == null) {
+        forecastExpected.setValidDateString("");
+      } else {
+        forecastExpected.setValidDateString(sdf.format(forecastExpected.getValidDate()));
+      }
+      if (forecastExpected.getDueDate() == null) {
+        forecastExpected.setDueDateString("");
+      } else {
+        forecastExpected.setDueDateString(sdf.format(forecastExpected.getDueDate()));
+      }
+      if (forecastExpected.getOverdueDate() == null) {
+        forecastExpected.setOverdueDateString("");
+      } else {
+        forecastExpected.setOverdueDateString(sdf.format(forecastExpected.getOverdueDate()));
+      }
+      if (forecastExpected.getFinishedDate() == null) {
+        forecastExpected.setFinishedDateString("");
+      } else {
+        forecastExpected.setFinishedDateString(sdf.format(forecastExpected.getFinishedDate()));
+      }
+      {
+        String validDateString = notNull(req.getParameter(PARAM_VALID_DATE), forecastExpected.getValidDateString());
+        forecastExpected.setValidDateString(validDateString);
+        if (validDateString.equals("")) {
+          forecastExpected.setValidDate(null);
+        } else {
+          try {
+            forecastExpected.setValidDate(sdf.parse(validDateString));
+          } catch (ParseException pe) {
+            return "Earliest Date is not in MM/DD/YYYY format, please correct date. ";
+          }
+        }
+      }
+      {
+        String dueDateString = notNull(req.getParameter(PARAM_DUE_DATE), forecastExpected.getDueDateString());
+        forecastExpected.setDueDateString(dueDateString);
+        if (dueDateString.equals("")) {
+          forecastExpected.setDueDate(null);
+        } else {
+          try {
+            forecastExpected.setDueDate(sdf.parse(dueDateString));
+          } catch (ParseException pe) {
+            return "Recommended Date is not in MM/DD/YYYY format, please correct date. ";
+          }
+        }
+      }
+      {
+        String overdueDateString = notNull(req.getParameter(PARAM_OVERDUE_DATE),
+            forecastExpected.getOverdueDateString());
+        forecastExpected.setOverdueDateString(overdueDateString);
+        if (overdueDateString.equals("")) {
+          forecastExpected.setOverdueDate(null);
+        } else {
+          try {
+            forecastExpected.setOverdueDate(sdf.parse(overdueDateString));
+          } catch (ParseException pe) {
+            return "Past Due Date is not in MM/DD/YYYY format, please correct date. ";
+          }
+        }
+      }
+      {
+        String finishedDateString = notNull(req.getParameter(PARAM_FINISHED_DATE),
+            forecastExpected.getFinishedDateString());
+        forecastExpected.setFinishedDateString(finishedDateString);
+        if (finishedDateString.equals("")) {
+          forecastExpected.setFinishedDate(null);
+        } else {
+          try {
+            forecastExpected.setFinishedDate(sdf.parse(finishedDateString));
+          } catch (ParseException pe) {
+            return "Latest Date is not in MM/DD/YYYY format, please correct date. ";
+          }
+        }
+      }
+    } else {
+      forecastExpected.setValidRule(updateRelativeRule(PARAM_VALID_RULE, req, dataSession, testCase,
+          forecastExpected.getValidRule()));
+      forecastExpected.setDueRule(updateRelativeRule(PARAM_DUE_RULE, req, dataSession, testCase,
+          forecastExpected.getDueRule()));
+      forecastExpected.setOverdueRule(updateRelativeRule(PARAM_OVERDUE_RULE, req, dataSession, testCase,
+          forecastExpected.getOverdueRule()));
+      forecastExpected.setFinishedRule(updateRelativeRule(PARAM_FINISHED_RULE, req, dataSession, testCase,
+          forecastExpected.getFinishedRule()));
+    }
+    return null;
+  }
+
+  public void readEvaluationExpectations(HttpServletRequest req, ExpectationsManager expectationsManager) {
+    for (TestEvent vaccinationEvent : expectationsManager.getVaccinationEvents()) {
+      EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(
+          vaccinationEvent);
+      String evaluationStatus = notNull(req.getParameter(PARAM_EVALUATION_STATUS + vaccinationEvent.getTestEventId()),
+          evaluationExpected.getEvaluationStatus());
+      if (evaluationStatus.equals("")) {
+        evaluationExpected.setEvaluation(null);
+      } else {
+        evaluationExpected.setEvaluationStatus(evaluationStatus);
+      }
+    }
+  }
+
+  public RelativeRule updateRelativeRule(String paramRuleName, HttpServletRequest req, Session dataSession,
+      TestCase testCase, RelativeRule rrOld) {
+    RelativeRule rrNew = readRelativeRules(paramRuleName, req, dataSession, testCase);
+    if (rrOld == null) {
+      rrOld = rrNew;
+    } else if (rrNew != null) {
+      RelativeRule posOld = rrOld;
+      RelativeRule posNew = rrNew;
+      while (posOld != null && posNew != null) {
+        posOld.setTimePeriod(posNew.getTimePeriod());
+        posOld.setRelativeToCode(posNew.getRelativeToCode());
+        posOld.setTestEvent(posNew.getTestEvent());
+        posOld = posOld.getAndRule();
+        posNew = posNew.getAndRule();
+      }
+      if (posOld == null) {
+        posOld = posNew;
+      }
+    }
+    return rrOld;
+  }
+
+  public String doAddEvent(HttpServletRequest req, String action, String show, User user, Session dataSession) {
+    EventType eventType = null;
+    if (req.getParameter(PARAM_EVENT_TYPE_CODE) != null) {
+      eventType = EventType.getEventType(req.getParameter(PARAM_EVENT_TYPE_CODE));
+    }
+    boolean isVacc = action.equals(ACTION_ADD_VACCINATION);
+    int eventId = Integer.parseInt(req.getParameter(PARAM_EVENT_ID));
+    if (eventId == -1) {
+      String newEventLabel = req.getParameter(PARAM_NEW_EVENT_LABEL);
+      if (!isVacc && newEventLabel.length() > 0) {
+        Transaction transaction = dataSession.beginTransaction();
+        Event event = new Event();
+        event.setLabel(newEventLabel);
+        event.setEventType(eventType);
+        dataSession.save(event);
+        transaction.commit();
+        eventId = event.getEventId();
+      } else {
+        applicationSession.setAlertError("Please indicate the new ACIP-Defined Condition label");
+        return show;
+      }
+    }
+    if (eventId == 0) {
+      applicationSession.setAlertError((isVacc ? "Vaccination" : "Condition")
+          + " is required, please select the appropriate vaccination. ");
+      return show;
+    }
+    TestCase testCase = user.getSelectedTestCase();
+    Event event = (Event) dataSession.get(Event.class, eventId);
+    TestEvent testEvent = new TestEvent();
+    testEvent.setTestCase(testCase);
+    testEvent.setEvent(event);
+    if (testCase.getDateSet() == DateSet.FIXED) {
+      String eventDateString = notNull(req.getParameter(PARAM_EVENT_DATE));
+      if (eventDateString.equals("")) {
+        applicationSession
+            .setAlertError((isVacc ? "Administered date is required, please indicate date to create vaccination."
+                : "Observed date is required, please indicate date condition was observed.") + "  ");
+        return show;
+      }
+      try {
+        testEvent.setEventDate(sdf.parse(eventDateString));
+      } catch (ParseException pe) {
+        applicationSession.setAlertError("Date is not in MM/DD/YYYY format, please correct date. ");
+        return show;
+      }
+    } else {
+      RelativeRule relativeRule = readRelativeRules(PARAM_EVENT_RULE, req, dataSession, testCase);
+      if (relativeRule == null || relativeRule.getTestEvent() == null) {
+        applicationSession
+            .setAlertError((isVacc ? "Administered" : "Observed")
+                + " needs to be set before or after a selected event. Please select event that this event is before or after. ");
+        return show;
+      }
+      relativeRule.convertBeforeToAfter();
+      testEvent.setEventRule(relativeRule);
+      RelativeRule andRule = relativeRule.getAndRule();
+      RelativeRule parentRule = relativeRule;
+      while (andRule != null) {
+        andRule.convertBeforeToAfter();
+        if (andRule.getTestEvent() == null) {
+          parentRule.setAndRule(null);
+          andRule = null;
+        } else {
+          parentRule = andRule;
+          andRule = andRule.getAndRule();
+        }
+      }
+    }
+    testEvent.calculateFixedDates();
+
+    Transaction transaction = dataSession.beginTransaction();
+    if (testEvent.getEventRule() != null) {
+      saveRelativeRule(dataSession, testEvent.getEventRule());
+    }
+    dataSession.save(testEvent);
+    transaction.commit();
+
     return show;
   }
 
@@ -499,12 +732,16 @@ public class TestCasesServlet extends MainServlet
       EventType eventType = EventType.getEventType(req.getParameter(PARAM_EVENT_TYPE_CODE));
       printEditEvents(req, out, dataSession, user, eventType, show);
     } else if (SHOW_EDIT_EXPECTATIONS.equals(show)) {
-      VaccineGroup vacineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class,
+      VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class,
           notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), 0));
       TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
       TestCase testCase = testPanelCase.getTestCase();
+
+      ExpectationsManager expectationsManager = new ExpectationsManager(user, vaccineGroup, true, dataSession);
+
+      printShowRowScript(out);
       out.println("<div class=\"centerColumn\">");
-      out.println("  <h2>Expectations for " + vacineGroup.getLabel());
+      out.println("  <h2>Expectations for " + vaccineGroup.getLabel());
       out.println("    <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&"
           + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Cancel</a>");
       out.println("  </h2>");
@@ -513,7 +750,7 @@ public class TestCasesServlet extends MainServlet
 
       out.println("  <form method=\"POST\" action=\"testCases\">");
       if (countVaccination > 0) {
-        out.println("  <h2>Evaluation of Vaccinations</h2>");
+        out.println("  <h3>Evaluation of Vaccination History</h3>");
         out.println("  <table width=\"100%\">");
         out.println("    <tr>");
         out.println("      <th>#</th>");
@@ -542,11 +779,12 @@ public class TestCasesServlet extends MainServlet
             out.println("      <td>" + (testEvent.getEventDate() == null ? "" : sdf.format(testEvent.getEventDate()))
                 + "</td>");
             out.println("      <td>");
+            EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(
+                testEvent);
             out.println("          <select name=\"" + "todo" + "\">");
             out.println("            <option value=\"0\">--select--</option>");
-            String evaluationStatus = ""; // todo 
             for (Evaluation evaluation : Evaluation.values()) {
-              if (evaluationStatus == evaluation.getEvaluationStatus()) {
+              if (evaluationExpected != null && evaluationExpected.getEvaluation() == evaluation) {
                 out.println("            <option value=\"" + evaluation.getEvaluationStatus()
                     + "\" selected=\"selected\">" + evaluation.getLabel() + "</option>");
               } else {
@@ -562,156 +800,265 @@ public class TestCasesServlet extends MainServlet
         out.println("  </table>");
       }
 
+      ForecastExpected forecastExpected = expectationsManager.getForecastExpected();
       out.println("  <h3>Forecast</h3>");
       out.println("  <table>");
       out.println("    <tr>");
-      out.println("      <th>Status</th>");
+      out.println("      <th>Series Status</th>");
       out.println("      <td>");
-      out.println("          <select name=\"" + "todo" + "\">");
-      out.println("            <option value=\"0\">--select--</option>");
+      out.println("          <select name=\"" + PARAM_ADMIN_STATUS + "\">");
+      out.println("            <option value=\"0\">--select CDSi values--</option>");
       String adminStatus = ""; // todo 
-      for (Admin admin : Admin.values()) {
-        if (adminStatus == admin.getAdminStatus()) {
-          out.println("            <option value=\"" + admin.getAdminStatus() + "\" selected=\"selected\">"
-              + admin.getLabel() + "</option>");
-        } else {
-          out.println("            <option value=\"" + admin.getAdminStatus() + "\">" + admin.getLabel() + "</option>");
-        }
+      for (Admin admin : ADMIN_STANDARD_LIST) {
+        printAdminSelect(out, adminStatus, admin);
+      }
+      out.println("            <option value=\"0\">--select other values--</option>");
+      for (Admin admin : ADMIN_NON_STANDARD_LIST) {
+        printAdminSelect(out, adminStatus, admin);
       }
       out.println("          </select>");
       out.println("      </td>");
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <th>Dose</th>");
-      out.println("      <td><input type=\"text\" name=\"\" value=\"\" size=\"5\"/></td>");
+      out.println("      <td><input type=\"text\" name=\"" + PARAM_DOSE_NUMBER + "\" value=\"\" size=\"5\"/></td>");
       out.println("    </tr>");
-      out.println("    <tr>");
-      out.println("      <th>Valid</th>");
-      out.println("      <td><input type=\"text\" name=\"\" value=\"\" size=\"10\"/></td>");
-      out.println("    </tr>");
-      out.println("    <tr>");
-      out.println("      <th>Due</th>");
-      out.println("      <td><input type=\"text\" name=\"\" value=\"\" size=\"10\"/></td>");
-      out.println("    </tr>");
-      out.println("    <tr>");
-      out.println("      <th>Overdue</th>");
-      out.println("      <td><input type=\"text\" name=\"\" value=\"\" size=\"10\"/></td>");
-      out.println("    </tr>");
+      if (testCase.getDateSet() == DateSet.FIXED) {
+        out.println("    <tr>");
+        out.println("      <th>Earliest Date</th>");
+        out.println("      <td><input type=\"text\" name=\"" + PARAM_VALID_DATE + "\" value=\""
+            + forecastExpected.getValidDateString() + "\" size=\"10\"/></td>");
+        out.println("    </tr>");
+        out.println("    <tr>");
+        out.println("      <th>Recommended Date</th>");
+        out.println("      <td><input type=\"text\" name=\"" + PARAM_DUE_DATE + "\" value=\""
+            + forecastExpected.getDueDateString() + "\" size=\"10\"/></td>");
+        out.println("    </tr>");
+        out.println("    <tr>");
+        out.println("      <th>Latest Date</th>");
+        out.println("      <td><input type=\"text\" name=\"" + PARAM_OVERDUE_DATE + "\" value=\""
+            + forecastExpected.getOverdueDateString() + "\" size=\"10\"/></td>");
+        out.println("    </tr>");
+        out.println("    <tr>");
+        out.println("      <th>Latest Date</th>");
+        out.println("      <td><input type=\"text\" name=\"" + PARAM_OVERDUE_DATE + "\" value=\""
+            + forecastExpected.getFinishedDateString() + "\" size=\"10\"/></td>");
+        out.println("    </tr>");
+      } else {
+        printRelativeRuleRow(PARAM_VALID_RULE, out, forecastExpected.getValidRule(), "Earliest Date");
+        printRelativeRuleRow(PARAM_DUE_RULE, out, forecastExpected.getDueRule(), "Recommended Date");
+        printRelativeRuleRow(PARAM_OVERDUE_RULE, out, forecastExpected.getOverdueRule(), "Past Due Date");
+        printRelativeRuleRow(PARAM_FINISHED_RULE, out, forecastExpected.getFinishedRule(), "Finished Date");
+      }
+      out.println("        <tr>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
+          + "\" size=\"15\" value=\"" + ACTION_SAVE_EXPECTATIONS + "\"/></td>");
+      out.println("        </tr>");
+
       out.println("  </table>");
 
-      out.println("  <h3>Guidance: Recommended Action</h3>");
+      out.println("  <h3>Guidance</h3>");
 
       out.println("  <table width=\"100%\">");
       {
         out.println("      <tr>");
-        out.println("        <td><div class=\"scrollRadioBox\">");
+        out.println("        <th colspan=\"2\">Recommended Actions</th>");
+        out.println("      </tr>");
+        out.println("      <tr>");
+        out.println("        <td colspan=\"2\"><div class=\"scrollRadioBox\">");
+        Set<Recommend> recommendSet = new HashSet<Recommend>();
+        if (expectationsManager.getRecommendList().size() > 0) {
+          out.println("<b>Currently Selected</b><br/>");
+          for (Recommend recommend : expectationsManager.getRecommendList()) {
+            out.println("          <input type=\"checkbox\" name=\"" + PARAM_RECOMMEND_ID + "" + "\" value=\""
+                + recommend.getRecommendId() + "\" checked=\"checked\">" + recommend + "<br/>");
+            recommendSet.add(recommend);
+          }
+          out.println("<b>Select Additional</b><br/>");
+        }
         Query query = dataSession.createQuery("from Recommend order by recommendText");
         List<Recommend> recommendList = query.list();
         for (Recommend recommend : recommendList) {
-          if (false) {
-            out.println("          <input type=\"radio\" name=\"" + "" + "\" value=\"" + recommend.getRecommendId()
-                + "\" checked=\"checked\">" + recommend.getRecommendType().getLabel() + ": "
-                + recommend.getRecommendText() + "<br/>");
-          } else {
-            out.println("          <input type=\"radio\" name=\"" + "" + "\" value=\"" + recommend.getRecommendId()
-                + "\">" + recommend.getRecommendType().getLabel() + ": " + recommend.getRecommendText()
-                + (recommend.getRecommendRange() == RecommendRange.TEMPORAL ? " (temporary)" : "") + "<br/>");
+          if (!recommendSet.contains(recommend)) {
+            out.println("          <input type=\"checkbox\" name=\"" + PARAM_RECOMMEND_ID + "\" value=\""
+                + recommend.getRecommendId() + "\">" + recommend + "<br/>");
           }
         }
-        out.println("          <input type=\"radio\" name=\"" + ""
-            + "\" value=\"-1\">none of these, proposing a new value<br/>");
-        out.println("        </div>propose new ");
-        out.println("        <input type=\"text\" name=\"" + "" + "\" value=\"" + ""
-            + "\" size=\"50\" /></td>");
+        out.println("          <input type=\"checkbox\" name=\""
+            + PARAM_RECOMMEND_ID
+            + ""
+            + "\" value=\"-1\" onChange=\"showRow('recommendNewValue1');showRow('recommendNewValue2');showRow('recommendNewValue3');\">propose a new value<br/>");
+        out.println("        </div></td>");
         out.println("      </tr>");
-      }
-      out.println("  </table>");
-      
-      out.println("  <h3>Guidance: Consideration</h3>");
-      out.println("  <table width=\"100%\">");
-      {
-        out.println("      <tr>");
-        out.println("        <td><div class=\"scrollRadioBox\">");
-        Query query = dataSession.createQuery("from Consideration order by considerationText");
-        List<Consideration> considerationList = query.list();
-        for (Consideration consideration : considerationList) {
-          if (false) {
-            out.println("          <input type=\"radio\" name=\"" + "" + "\" value=\""
-                + consideration.getConsiderationId() + "\" checked=\"checked\">" + consideration.getConsiderationText()
-                + "<br/>");
-          } else {
-            out.println("          <input type=\"radio\" name=\"" + "" + "\" value=\""
-                + consideration.getConsiderationId() + "\">" + consideration.getConsiderationText() + "<br/>");
-          }
-        }
-        out.println("          <input type=\"radio\" name=\"" + ""
-            + "\" value=\"-1\">none of these, proposing a new value<br/>");
-        out.println("        </div>propose new ");
-        out.println("        <input type=\"text\" name=\"" + "" + "\" value=\"" + ""
-            + "\" size=\"50\" /></td>");
+        out.println("      <tr id=\"recommendNewValue1\" style=\"display: none;\">");
+        out.println("        <th>New Text</th>");
+        out.println("        <td>");
+        out.println("          <textarea name=\"" + PARAM_RECOMMEND_TEXT
+            + "\" value=\"\" cols=\"60\" rows=\"3\"></textarea>");
+        out.println("        </td>");
         out.println("      </tr>");
-      }
-      out.println("  </table>");
-      
-      out.println("  <h3>Guidance: Guidance Rationale</h3>");
-      out.println("  <table width=\"100%\">");
-      {
-        out.println("      <tr>");
-        out.println("        <td><div class=\"scrollRadioBox\">");
-        Query query = dataSession.createQuery("from Rationale order by rationaleText");
-        List<Rationale> rationaleList = query.list();
-        for (Rationale rationale : rationaleList) {
-          if (false) {
-            out.println("          <input type=\"radio\" name=\"" + "" + "\" value=\""
-                + rationale.getRationaleId() + "\" checked=\"checked\">" + rationale.getRationaleText()
-                + "<br/>");
-          } else {
-            out.println("          <input type=\"radio\" name=\"" + "" + "\" value=\""
-                + rationale.getRationaleId() + "\" >" + rationale.getRationaleText()
-                + "<br/>");
-          }
+        out.println("      <tr id=\"recommendNewValue2\" style=\"display: none;\">");
+        out.println("        <th>Type</th>");
+        out.println("        <td>");
+        out.println("          <select name=\"" + PARAM_RECOMMEND_TYPE_CODE + "\" >");
+        out.println("            <option value=\"0\">--select--</option>");
+        for (RecommendType recommendType : RecommendType.values()) {
+          out.println("            <option value=\"" + recommendType.getRecommendTypeCode() + "\">"
+              + recommendType.getLabel() + "</option>");
         }
-        out.println("          <input type=\"radio\" name=\"" + ""
-            + "\" value=\"-1\">none of these, proposing a new value<br/>");
-        out.println("        </div>propose new ");
-        out.println("        <input type=\"text\" name=\"" + "" + "\" value=\"" + ""
-            + "\" size=\"50\" /></td>");
+        out.println("          </select>");
+        out.println("        </td>");
         out.println("      </tr>");
-      }
-      out.println("  </table>");
-      
-      out.println("  <h3>Guidance: Additional Resource</h3>");
-      out.println("  <table width=\"100%\">");
-      {
-        out.println("      <tr>");
-        out.println("        <td><div class=\"scrollRadioBox\">");
-        Query query = dataSession.createQuery("from Resource order by resourceText");
-        List<Resource> resourceList = query.list();
-        for (Resource resource : resourceList) {
-          if (false) {
-            out.println("          <input type=\"radio\" name=\"" + "" + "\" value=\""
-                + resource.getResourceId() + "\" checked=\"checked\">" + resource.getResourceText() + " (" + resource.getResourceLink() + ")" 
-                + "<br/>");
-          } else {
-            out.println("          <input type=\"radio\" name=\"" + "" + "\" value=\""
-                + resource.getResourceId() + "\">" + resource.getResourceText() + " (" + resource.getResourceLink() + ")" 
-                + "<br/>");
-          }
+        out.println("      <tr id=\"recommendNewValue3\" style=\"display: none;\">");
+        out.println("        <th>Range</th>");
+        out.println("        <td>");
+        out.println("           <select name=\"" + PARAM_RECOMMEND_RANGE_CODE + "\" >");
+        out.println("            <option value=\"0\">--select--</option>");
+        for (RecommendRange recommendRange : RecommendRange.values()) {
+          out.println("            <option value=\"" + recommendRange.getRecommendRangeCode() + "\">"
+              + recommendRange.getLabel() + "</option>");
         }
-        out.println("          <input type=\"radio\" name=\"" + ""
-            + "\" value=\"-1\">none of these, proposing a new link<br/>");
-        out.println("        </div>");
-        out.println("        propose new text ");
-        out.println("        <input type=\"text\" name=\"" + "" + "\" value=\"" + ""
-            + "\" size=\"50\" /><br/>");
-        out.println("        propose new link ");
-        out.println("        <input type=\"text\" name=\"" + "" + "\" value=\"" + ""
-            + "\" size=\"50\" />");
+        out.println("          </select>");
         out.println("        </td>");
         out.println("      </tr>");
       }
+      {
+        out.println("      <tr>");
+        out.println("        <th colspan=\"2\">Considerations</th>");
+        out.println("      </tr>");
+        out.println("      <tr>");
+        out.println("        <td colspan=\"2\"><div class=\"scrollRadioBox\">");
+        Set<Consideration> considerationSet = new HashSet<Consideration>();
+        if (expectationsManager.getConsiderationList().size() > 0) {
+          out.println("<b>Currently Selected</b><br/>");
+          for (Consideration consideration : expectationsManager.getConsiderationList()) {
+            out.println("          <input type=\"checkbox\" name=\"" + PARAM_CONSIDERATION_ID + "\" value=\""
+                + consideration.getConsiderationId() + "\" checked=\"checked\">" + consideration + "<br/>");
+            considerationSet.add(consideration);
+          }
+          out.println("<b>Select Additional</b><br/>");
+        }
+        Query query = dataSession.createQuery("from Consideration order by considerationText");
+        List<Consideration> considerationList = query.list();
+        for (Consideration consideration : considerationList) {
+          if (!considerationSet.contains(consideration)) {
+            out.println("          <input type=\"checkbox\" name=\"" + PARAM_CONSIDERATION_ID + "\" value=\""
+                + consideration.getConsiderationId() + "\">" + consideration + "<br/>");
+          }
+        }
+        out.println("          <input type=\"checkbox\" name=\""
+            + PARAM_CONSIDERATION_ID
+            + ""
+            + "\" value=\"-1\" onChange=\"showRow('considerationNewValue1');showRow('considerationNewValue2');\">propose a new value<br/>");
+        out.println("        </div></td>");
+        out.println("      </tr>");
+        out.println("      <tr id=\"considerationNewValue1\" style=\"display: none;\">");
+        out.println("        <th>New Text</th>");
+        out.println("        <td>");
+        out.println("          <textarea name=\"" + PARAM_CONSIDERATION_TEXT
+            + "\" value=\"\" cols=\"60\" rows=\"3\"></textarea>");
+        out.println("        </td>");
+        out.println("      </tr>");
+        out.println("      <tr id=\"considerationNewValue2\" style=\"display: none;\">");
+        out.println("        <th>Type</th>");
+        out.println("        <td>");
+        out.println("          <select name=\"" + PARAM_CONSIDERATION_TYPE_CODE + "\" >");
+        out.println("            <option value=\"0\">--select--</option>");
+        for (ConsiderationType considerationType : ConsiderationType.values()) {
+          out.println("            <option value=\"" + considerationType.getConsiderationTypeCode() + "\">"
+              + considerationType.getLabel() + "</option>");
+        }
+        out.println("          </select>");
+        out.println("        </td>");
+        out.println("      </tr>");
+
+      }
+      {
+        out.println("      <tr>");
+        out.println("        <th colspan=\"2\">Guidance Rationales</th>");
+        out.println("      </tr>");
+        out.println("      <tr>");
+        out.println("        <td colspan=\"2\"><div class=\"scrollRadioBox\">");
+        Set<Rationale> rationaleSet = new HashSet<Rationale>();
+        if (expectationsManager.getRationaleList().size() > 0) {
+          out.println("<b>Currently Selected</b><br/>");
+          for (Rationale rationale : expectationsManager.getRationaleList()) {
+            out.println("          <input type=\"checkbox\" name=\"" + PARAM_RATIONALE_ID + "\" value=\""
+                + rationale.getRationaleId() + "\" checked=\"checked\">" + rationale.getRationaleText() + "<br/>");
+            rationaleSet.add(rationale);
+          }
+          out.println("<b>Select Additional</b><br/>");
+        }
+        Query query = dataSession.createQuery("from Rationale order by rationaleText");
+        List<Rationale> rationaleList = query.list();
+        for (Rationale rationale : rationaleList) {
+          if (!rationaleSet.contains(rationale)) {
+            out.println("          <input type=\"checkbox\" name=\"" + PARAM_RATIONALE_ID + "\" value=\""
+                + rationale.getRationaleId() + "\">" + rationale.getRationaleText() + "<br/>");
+          }
+        }
+        out.println("          <input type=\"checkbox\" name=\"" + PARAM_RATIONALE_ID + ""
+            + "\" value=\"-1\" onChange=\"showRow('rationaleNewValue1');\">propose a new value<br/>");
+        out.println("        </div></td>");
+        out.println("      </tr>");
+        out.println("      <tr id=\"rationaleNewValue1\" style=\"display: none;\">");
+        out.println("        <th>New Text</th>");
+        out.println("        <td>");
+        out.println("          <textarea name=\"" + PARAM_RATIONALE_TEXT
+            + "\" value=\"\" cols=\"60\" rows=\"3\"></textarea>");
+        out.println("        </td>");
+        out.println("      </tr>");
+      }
+      {
+        out.println("      <tr>");
+        out.println("        <th colspan=\"2\">Additional Resources</th>");
+        out.println("      </tr>");
+        out.println("      <tr>");
+        out.println("        <td colspan=\"2\"><div class=\"scrollRadioBox\">");
+        Set<Resource> resourceSet = new HashSet<Resource>();
+        if (expectationsManager.getResourceList().size() > 0) {
+          out.println("<b>Currently Selected</b><br/>");
+          for (Resource resource : expectationsManager.getResourceList()) {
+            out.println("          <input type=\"checkbox\" name=\"" + PARAM_RESOURCE_ID + "\" value=\""
+                + resource.getResourceId() + "\" checked=\"checked\">" + resource.getResourceText() + " - "
+                + resource.getResourceLink() + "<br/>");
+            resourceSet.add(resource);
+          }
+          out.println("<b>Select Additional</b><br/>");
+        }
+        Query query = dataSession.createQuery("from Resource order by resourceText");
+        List<Resource> resourceList = query.list();
+        for (Resource resource : resourceList) {
+          if (!resourceSet.contains(resource)) {
+            out.println("          <input type=\"checkbox\" name=\"" + PARAM_RESOURCE_ID + "\" value=\""
+                + resource.getResourceId() + "\">" + resource.getResourceText() + " - " + resource.getResourceLink()
+                + "<br/>");
+          }
+        }
+        out.println("          <input type=\"checkbox\" name=\"" + PARAM_RESOURCE_ID + ""
+            + "\" value=\"-1\" onChange=\"showRow('resourceNewValue1');\">propose a new value<br/>");
+        out.println("        </div></td>");
+        out.println("      </tr>");
+        out.println("      <tr id=\"resourceNewValue1\" style=\"display: none;\">");
+        out.println("        <th>New Text</th>");
+        out.println("        <td>");
+        out.println("          <textarea name=\"" + PARAM_RESOURCE_TEXT
+            + "\" value=\"\" cols=\"60\" rows=\"3\"/></textarea>");
+        out.println("        </td>");
+        out.println("      </tr>");
+        out.println("      <tr id=\"resourceNewValue2\" style=\"display: none;\">");
+        out.println("        <th>Link</th>");
+        out.println("        <td>");
+        out.println("          <input type=\"text\" name=\"" + PARAM_RESOURCE_LINK + "\" value=\"\" size=\"60\"/>");
+        out.println("        </td>");
+        out.println("      </tr>");
+      }
+      out.println("        <tr>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
+          + "\" size=\"15\" value=\"" + ACTION_SAVE_EXPECTATIONS + "\"/></td>");
+      out.println("        </tr>");
       out.println("  </table>");
-      
+
       out.println("<p>&nbsp;</p>");
       out.println("<p>&nbsp;</p>");
       out.println("<p>&nbsp;</p>");
@@ -721,18 +1068,18 @@ public class TestCasesServlet extends MainServlet
 
   }
 
+  public void printAdminSelect(PrintWriter out, String adminStatus, Admin admin) {
+    if (adminStatus == admin.getAdminStatus()) {
+      out.println("            <option value=\"" + admin.getAdminStatus() + "\" selected=\"selected\">"
+          + admin.getLabel() + "</option>");
+    } else {
+      out.println("            <option value=\"" + admin.getAdminStatus() + "\">" + admin.getLabel() + "</option>");
+    }
+  }
+
   public void printEditEvents(HttpServletRequest req, PrintWriter out, Session dataSession, User user,
       EventType eventType, String show) throws UnsupportedEncodingException {
-    out.println("<script>");
-    out.println("  <!-- ");
-    out.println("  function showRow(rowId) { ");
-    out.println("    var rowToShow = document.getElementById(rowId); ");
-    out.println("    if (rowToShow != null) { ");
-    out.println("      rowToShow.style.display = 'table-row'; ");
-    out.println("    }");
-    out.println("  }");
-    out.println("  -->");
-    out.println("</script>");
+    printShowRowScript(out);
 
     setupTestEventList(user);
 
@@ -782,7 +1129,14 @@ public class TestCasesServlet extends MainServlet
     String eventDateString = notNull(req.getParameter(PARAM_EVENT_DATE));
     String newEventLabel = notNull(req.getParameter(PARAM_NEW_EVENT_LABEL));
 
-    RelativeRule relativeRule = readRelativeRules(req, dataSession, user.getSelectedTestCase());
+    RelativeRule relativeRule = readRelativeRules(PARAM_EVENT_RULE, req, dataSession, user.getSelectedTestCase());
+
+    if (eventType == EventType.CONDITION_IMPLICATION && relativeRule.getTestEvent() == null) {
+      relativeRule.setTestEvent(testEventList.get(testEventList.size() - 1));
+    }
+    if (eventType == EventType.ACIP_DEFINED_CONDITION && relativeRule.getTestEvent() == null) {
+      relativeRule.setTestEvent(testEventList.get(testEventList.size() - 1));
+    }
 
     String editButton = "";
     if (eventType != EventType.CONDITION_IMPLICATION) {
@@ -841,13 +1195,8 @@ public class TestCasesServlet extends MainServlet
         out.println("        </td>");
         out.println("      </tr>");
       } else {
-        RelativeRule rr = relativeRule;
-        for (int pos = 1; pos <= 4; pos++) {
-          printRelativeRuleRow(out, testEventList, rr, pos, "Administered");
-          if (rr != null) {
-            rr = rr.getAndRule();
-          }
-        }
+        String label = "Administered";
+        printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label);
       }
       out.println("        <tr>");
       out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
@@ -897,13 +1246,8 @@ public class TestCasesServlet extends MainServlet
         out.println("        </td>");
         out.println("      </tr>");
       } else {
-        RelativeRule rr = relativeRule;
-        for (int pos = 1; pos <= 4; pos++) {
-          printRelativeRuleRow(out, testEventList, rr, pos, "Observed");
-          if (rr != null) {
-            rr = rr.getAndRule();
-          }
-        }
+        String label = "Observed";
+        printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label);
       }
       out.println("        <tr>");
       out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
@@ -955,13 +1299,8 @@ public class TestCasesServlet extends MainServlet
         out.println("        </td>");
         out.println("      </tr>");
       } else {
-        RelativeRule rr = relativeRule;
-        for (int pos = 1; pos <= 4; pos++) {
-          printRelativeRuleRow(out, testEventList, rr, pos, "Asserted");
-          if (rr != null) {
-            rr = rr.getAndRule();
-          }
-        }
+        String label = "Asserted";
+        printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label);
       }
       out.println("        <tr>");
       out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
@@ -980,6 +1319,29 @@ public class TestCasesServlet extends MainServlet
     out.println("</p>");
 
     out.println("</div>");
+  }
+
+  public void printShowRowScript(PrintWriter out) {
+    out.println("<script>");
+    out.println("  <!-- ");
+    out.println("  function showRow(rowId) { ");
+    out.println("    var rowToShow = document.getElementById(rowId); ");
+    out.println("    if (rowToShow != null) { ");
+    out.println("      rowToShow.style.display = 'table-row'; ");
+    out.println("    }");
+    out.println("  }");
+    out.println("  -->");
+    out.println("</script>");
+  }
+
+  public void printRelativeRuleRow(String paramRuleName, PrintWriter out, RelativeRule relativeRule, String label) {
+    RelativeRule rr = relativeRule;
+    for (int pos = 1; pos <= 4; pos++) {
+      printRelativeRuleRow(paramRuleName, out, testEventList, rr, pos, label);
+      if (rr != null) {
+        rr = rr.getAndRule();
+      }
+    }
   }
 
   public void printEventTable(PrintWriter out, User user, EventType eventType, List<TestEvent> testEventList,
@@ -1107,23 +1469,24 @@ public class TestCasesServlet extends MainServlet
     return birthEvent;
   }
 
-  public RelativeRule readRelativeRules(HttpServletRequest req, Session dataSession, TestCase testCase) {
+  public RelativeRule readRelativeRules(String paramRuleName, HttpServletRequest req, Session dataSession,
+      TestCase testCase) {
     RelativeRule relativeRule = null;
     RelativeRule childRule = null;
     int i = 1;
 
-    while (req.getParameter(PARAM_EVENT_RULE + i) != null) {
+    while (req.getParameter(paramRuleName + i) != null) {
       RelativeRule parentRule = childRule;
-      childRule = new RelativeRule(notNull(req.getParameter(PARAM_EVENT_RULE + i)));
+      childRule = new RelativeRule(notNull(req.getParameter(paramRuleName + i)));
       if (parentRule == null) {
         relativeRule = childRule;
       } else {
         parentRule.setAndRule(childRule);
       }
-      String beforeOrAfter = notNull(req.getParameter(PARAM_EVENT_RULE_BEFORE_OR_AFTER + i), "A");
+      String beforeOrAfter = notNull(req.getParameter(paramRuleName + RULE_BEFORE_OR_AFTER + i), "A");
       childRule.setBeforeOrAfter(beforeOrAfter.equals("B") ? RelativeRule.BeforeOrAfter.BEFORE
           : RelativeRule.BeforeOrAfter.AFTER);
-      String relativeRuleTestEventIdString = req.getParameter(PARAM_RELATIVE_RULE_TEST_EVENT_ID + i);
+      String relativeRuleTestEventIdString = req.getParameter(paramRuleName + RULE_TEST_EVENT_ID + i);
       if (relativeRuleTestEventIdString != null) {
         int relativeRuleTestEventId = Integer.parseInt(relativeRuleTestEventIdString);
         TestEvent relativeRuleTestEvent;
@@ -1144,38 +1507,46 @@ public class TestCasesServlet extends MainServlet
     return relativeRule;
   }
 
-  public void printRelativeRuleRow(PrintWriter out, List<TestEvent> testEventList, RelativeRule relativeRule, int pos,
-      String label) {
+  public void printRelativeRuleRow(String paramRuleName, PrintWriter out, List<TestEvent> testEventList,
+      RelativeRule relativeRule, int pos, String label) {
 
     if (pos == 1) {
       out.println("      <tr id=\"" + label + "." + pos + "\">");
       out.println("          <th>" + label + "</th>");
     } else {
-      out.println("      <tr id=\"" + label + "." + pos + "\" style=\"display: none;\">");
-      out.println("          <td>but not before</td>");
+      if (relativeRule != null && relativeRule.getTestEvent() != null) {
+        out.println("      <tr id=\"" + label + "." + pos + "\">");
+        out.println("          <td>but not before</td>");
+      } else {
+        out.println("      <tr id=\"" + label + "." + pos + "\" style=\"display: none;\">");
+        out.println("          <td>but not before</td>");
+      }
     }
     out.println("          <td id=\"\">");
-    out.println("            <input type=\"text\" name=\"" + PARAM_EVENT_RULE + pos + "\" size=\"17\" value=\""
+    out.println("            <input type=\"text\" name=\"" + paramRuleName + pos + "\" size=\"17\" value=\""
         + (relativeRule == null || relativeRule.getTimePeriod() == null ? "" : relativeRule.getTimePeriod()) + "\"/>");
     out.println("            <input type=\"radio\" name=\""
-        + PARAM_EVENT_RULE_BEFORE_OR_AFTER
+        + paramRuleName
+        + RULE_BEFORE_OR_AFTER
         + pos
         + "\" value=\"B\""
         + ((relativeRule != null && relativeRule.getBeforeOrAfter() == RelativeRule.BeforeOrAfter.BEFORE) ? " checked=\"true\""
             : "") + "/> Before ");
     out.println("            <input type=\"radio\" name=\""
-        + PARAM_EVENT_RULE_BEFORE_OR_AFTER
+        + paramRuleName
+        + RULE_BEFORE_OR_AFTER
         + pos
         + "\" value=\"O\""
         + ((relativeRule == null || (relativeRule.isZero() && relativeRule.getBeforeOrAfter() == RelativeRule.BeforeOrAfter.AFTER)) ? " checked=\"true\""
             : "") + "/> On ");
     out.println("            <input type=\"radio\" name=\""
-        + PARAM_EVENT_RULE_BEFORE_OR_AFTER
+        + paramRuleName
+        + RULE_BEFORE_OR_AFTER
         + pos
         + "\" value=\"A\""
         + ((relativeRule != null && !relativeRule.isZero() && relativeRule.getBeforeOrAfter() == RelativeRule.BeforeOrAfter.AFTER) ? " checked=\"true\""
             : "") + "/> After ");
-    out.println("          <select name=\"" + PARAM_RELATIVE_RULE_TEST_EVENT_ID + pos + "\" onChange=\"showRow('"
+    out.println("          <select name=\"" + paramRuleName + RULE_TEST_EVENT_ID + pos + "\" onChange=\"showRow('"
         + label + "." + (pos + 1) + "')\">");
     out.println("            <option value=\"0\">--select--</option>");
     for (TestEvent testEvent : testEventList) {
