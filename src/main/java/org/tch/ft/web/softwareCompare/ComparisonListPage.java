@@ -64,7 +64,7 @@ public class ComparisonListPage extends FTBasePage implements SecurePage {
       forecastCompareList = new ArrayList<ForecastCompare>();
     } else {
       Query query = dataSession
-          .createQuery("from ForecastCompare where softwareCompare = ? order by compareLabel, forecastActual.testCase.label");
+          .createQuery("from ForecastCompare where softwareCompare = ? order by compareLabel, forecastActual.softwareResult.testCase.label");
       query.setParameter(0, softwareCompare);
       forecastCompareList = query.list();
     }

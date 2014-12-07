@@ -28,13 +28,13 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.tch.ft.CentralControl;
+import org.tch.ft.manager.SoftwareCompareManager;
 import org.tch.ft.manager.UserManager;
 import org.tch.ft.model.ForecastCompare;
 import org.tch.ft.model.LoginAttempt;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.User;
-import org.tch.ft.web.softwareCompare.CompareResults;
 
 /**
  * Authenticates the session based on role
@@ -49,8 +49,16 @@ public class WebSession extends AuthenticatedWebSession {
   private MenuSection menuSection = MenuSection.UNSECURE;
   private boolean signedAgreement = false;
   private boolean memberOfGroup = false;
-  private Map<String, List<CompareResults>> compareResultMap;
   private ForecastCompare forecastCompare = null;
+  private transient SoftwareCompareManager softwareCompareManager = null;
+
+  public SoftwareCompareManager getSoftwareCompareManager() {
+    return softwareCompareManager;
+  }
+
+  public void setSoftwareCompareManager(SoftwareCompareManager softwareCompareManager) {
+    this.softwareCompareManager = softwareCompareManager;
+  }
 
   private List<Integer> forecastCompareIdList = null;
   private List<List<TestPanelCase>> categoryList = null;
@@ -87,14 +95,6 @@ public class WebSession extends AuthenticatedWebSession {
 
   public void setForecastCompare(ForecastCompare forecastCompare) {
     this.forecastCompare = forecastCompare;
-  }
-
-  public Map<String, List<CompareResults>> getCompareResultMap() {
-    return compareResultMap;
-  }
-
-  public void setCompareResultMap(Map<String, List<CompareResults>> compareResultMap) {
-    this.compareResultMap = compareResultMap;
   }
 
   public boolean isSignedAgreement() {

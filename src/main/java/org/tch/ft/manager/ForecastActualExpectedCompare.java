@@ -184,7 +184,13 @@ public class ForecastActualExpectedCompare implements Serializable
   }
 
   public static boolean same(Admin a, Admin b) {
-    return a != null && b != null && a == b;
+    if (a == null || b == null) {
+      return false;
+    }
+    if (a == Admin.NOT_COMPLETE) {
+      return b == Admin.NOT_COMPLETE || b == Admin.DUE || b == Admin.DUE_LATER || b == Admin.OVERDUE;
+    }
+    return a == b;
   }
 
   public static boolean same(String a, String b) {
@@ -194,7 +200,7 @@ public class ForecastActualExpectedCompare implements Serializable
     if (b == null || b.equals("-")) {
       b = "";
     }
-    return a.equals(b) || a.equals("*") || b.equals("*");
+    return a.equalsIgnoreCase(b) || a.equals("*") || b.equals("*");
   }
 
   public static boolean same(Date a, Date b) {

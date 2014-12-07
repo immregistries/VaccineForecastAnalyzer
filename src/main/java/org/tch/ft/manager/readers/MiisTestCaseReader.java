@@ -23,10 +23,15 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
   private static final String FIELD_IZ_SERIES = "IZ Series";
   private static final String FIELD_BIRTHDATE = "birthdate";
   private static final String FIELD_GENDER = "Gender";
-  private static final String FIELD_VACCINE_NAMES = "Dosage History";
+  private static final String FIELD_CATEGORY = "Category";
+  private static final String FIELD_LABEL = "Label";
+  private static final String FIELD_DESCRIPTION = "Description";
+  private static final String FIELD_INCLUDE = "Include";
   private static final String FIELD_SHOT_ = "Shot";
   private static final String FIELD_SHOT_CVX = " CVX";
   private static final String FIELD_SHOT_DATE = " Date";
+  private static final String FIELD_FORECAST_STATUS = "Forecast Status";
+  private static final String FIELD_DOSE_DUE = "Dose Due";
   private static final String FIELD_EARLIEST_DATE = "Earliest Date";
   private static final String FIELD_REC_DATE = "Rec Date";
   private static final String FIELD_OVERDUE_DATE = "Overdue Date";
@@ -77,7 +82,10 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
     int izSeriesPos = findFieldPos(FIELD_IZ_SERIES);
     int birthdatePos = findFieldPos(FIELD_BIRTHDATE);
     int genderPos = findFieldPos(FIELD_GENDER);
-    int vaccineNamesPos = findFieldPos(FIELD_VACCINE_NAMES);
+    int descriptionPos = findFieldPos(FIELD_DESCRIPTION);
+    int categoryPos = findFieldPos(FIELD_CATEGORY);
+    int labelPos = findFieldPos(FIELD_LABEL);
+    int includePos = findFieldPos(FIELD_INCLUDE);
     int shotCvxPos[] = new int[10];
     int shotDatePos[] = new int[10];
     for (int i = 1; i <= 9; i++) {
@@ -85,6 +93,8 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
       shotDatePos[i] = findFieldPos(FIELD_SHOT_ + i + FIELD_SHOT_DATE);
     }
     int commentHistoryPos = findFieldPos(FIELD_COMMENT_HISTORY);
+    int forecastStatusPos = findFieldPos(FIELD_FORECAST_STATUS);
+    int doseDuePos = findFieldPos(FIELD_DOSE_DUE);
     int earliestDatePos = findFieldPos(FIELD_EARLIEST_DATE);
     int recDatePos = findFieldPos(FIELD_REC_DATE);
     int overdueDatePos = findFieldPos(FIELD_OVERDUE_DATE);
@@ -92,13 +102,22 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
 
     Date referenceDate = null;
     for (List<String> testCaseFieldList : testCaseFieldListList) {
+      String includeStatus = readField(includePos, testCaseFieldList);
+      if (includeStatus != null && !includeStatus.equalsIgnoreCase("Included")) {
+        continue;
+      }
+      String izSeries = readField(izSeriesPos, testCaseFieldList);
       TestCaseWithExpectations testCaseWithExpectations = new TestCaseWithExpectations();
       TestCase testCase = testCaseWithExpectations.getTestCase();
       testCaseList.add(testCaseWithExpectations);
       testCase.setTestCaseNumber(readField(caseNumberPosition, testCaseFieldList));
-      testCase.setCategoryName(readField(izSeriesPos, testCaseFieldList));
-      testCase.setLabel("Test Case " + testCase.getTestCaseNumber());
-      testCase.setDescription(readField(vaccineNamesPos, testCaseFieldList));
+      testCase.setCategoryName(readField(categoryPos, testCaseFieldList));
+      String label = readField(labelPos, testCaseFieldList);
+      if (label == null || label.equals("")) {
+        label = "Test Case " + testCase.getTestCaseNumber();
+      }
+      testCase.setLabel(label);
+      testCase.setDescription(readField(descriptionPos, testCaseFieldList));
       testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCaseWithExpectations));
       testCase.setPatientSex(readField(genderPos, testCaseFieldList).toUpperCase().startsWith("M") ? "M" : "F");
       if (referenceDate == null) {
@@ -154,17 +173,17 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
           testEventList.add(testEvent);
         }
       }
-      VaccineGroup vaccineGroupItem = vaccineGroupMap.get(testCase.getCategoryName());
+      VaccineGroup vaccineGroupItem = vaccineGroupMap.get(izSeries);
       if (vaccineGroupItem == null) {
         boolean found = false;
         for (String ignoredItem : ignoredItems) {
-          if (testCase.getCategoryName().equals(ignoredItem)) {
+          if (izSeries.equals(ignoredItem)) {
             found = true;
             continue;
           }
         }
         if (!found) {
-          throw new IllegalArgumentException("Unrecognized category name '" + testCase.getCategoryName() + "'");
+          throw new IllegalArgumentException("Unrecognized category name '" + izSeries + "'");
         }
       } else {
         Date dueDate = readDateField(recDatePos, testCaseFieldList, testCaseWithExpectations);
@@ -174,20 +193,13 @@ public class MiisTestCaseReader extends CsvTestCaseReader implements TestCaseRea
         forecastExpected.setAuthor(user);
         forecastExpected.setUpdatedDate(new Date());
         forecastExpected.setVaccineGroup(vaccineGroupItem);
-        if (dueDate == null) {
+        String adminStatus = readField(forecastStatusPos, testCaseFieldList);
+        if (adminStatus == null || adminStatus.equals("") || adminStatus.equals("Complete")) {
           forecastExpected.setAdmin(Admin.COMPLETE);
         } else {
-          if (dueDate.after(referenceDate)) {
-            forecastExpected.setAdmin(Admin.DUE_LATER);
-          } else {
-            if (overdueDate == null || overdueDate.after(referenceDate)) {
-              forecastExpected.setAdmin(Admin.DUE);
-            } else {
-              forecastExpected.setAdmin(Admin.OVERDUE);
-            }
-          }
+          forecastExpected.setAdmin(Admin.NOT_COMPLETE);
         }
-        forecastExpected.setDoseNumber("*");
+        forecastExpected.setDoseNumber(readField(doseDuePos, testCaseFieldList));
         forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCaseWithExpectations));
         forecastExpected.setDueDate(dueDate);
         forecastExpected.setOverdueDate(overdueDate);
