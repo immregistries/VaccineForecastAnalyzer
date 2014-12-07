@@ -31,7 +31,6 @@ import org.tch.ft.web.software.SoftwareDetailsPage;
 import org.tch.ft.web.software.SoftwarePage;
 import org.tch.ft.web.software.TestResultsPage;
 import org.tch.ft.web.softwareCompare.CompareForecastPage;
-import org.tch.ft.web.softwareCompare.CompareSoftwarePage;
 import org.tch.ft.web.softwareCompare.ComparisonListPage;
 import org.tch.ft.web.softwareCompare.SelectSoftwareComparePage;
 import org.tch.ft.web.taskGroup.ExpertsAssignedPage;
@@ -58,12 +57,13 @@ import org.tch.ft.web.unsecure.LogoutPage;
 import org.tch.ft.web.unsecure.RegisterUserPage;
 
 /**
- * Application object for your web application. If you want to run this
- * application without deploying, run the Start class.
+ * Application object for your web application. If you want to run this application without deploying, run the Start
+ * class.
  * 
  * @see org.tch.ft.StartForecastTester#main(String[])
  */
-public class WicketApplication extends AuthenticatedWebApplication {
+public class WicketApplication extends AuthenticatedWebApplication
+{
 
   private Folder uploadFolder = null;
 
@@ -108,7 +108,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
     mountPage("SelectTestPanelPage", SelectTestPanelPage.class);
     mountPage("AddTestCasePage", AddTestCasePage.class);
     mountPage("UploadTestCasesPage", UploadTestCasesPage.class);
-    
+
     mountPage("SoftwarePage", SoftwarePage.class);
     mountPage("SoftwareDetailsPage", SoftwareDetailsPage.class);
     mountPage("EditSoftwarePage", EditSoftwarePage.class);
@@ -124,18 +124,16 @@ public class WicketApplication extends AuthenticatedWebApplication {
     mountPage("ForecastNowPage", ForecastNowPage.class);
     mountPage("CommentsPage", CommentsPage.class);
 
-    mountPage("CompareSoftwarePage", CompareSoftwarePage.class);
     mountPage("SelectSoftwareComparePage", SelectSoftwareComparePage.class);
     mountPage("ComparisonListPage", ComparisonListPage.class);
     mountPage("CompareForecastPage", CompareForecastPage.class);
-    
+
     mountPage("RegisterUserPage", RegisterUserPage.class);
     mountPage("ForgotPasswordPage", ForgotPasswordPage.class);
 
     getSecuritySettings().setAuthorizationStrategy(new AuthStrategy());
     getApplicationSettings().setAccessDeniedPage(HomePage.class);
-    
-    
+
     getResourceSettings().setThrowExceptionOnMissingResource(false);
 
     uploadFolder = new Folder(System.getProperty("java.io.tmpdir"), "wicket-uploads");
@@ -157,5 +155,5 @@ public class WicketApplication extends AuthenticatedWebApplication {
   static {
     System.setProperty("java.awt.headless", "true");
   }
-  
+
 }

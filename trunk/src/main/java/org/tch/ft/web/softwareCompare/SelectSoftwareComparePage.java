@@ -34,6 +34,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.ft.StyleClassLabel;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
+import org.tch.ft.manager.SoftwareCompareManager;
 import org.tch.ft.manager.SoftwareManager;
 import org.tch.fc.model.ForecastActual;
 import org.tch.ft.model.ForecastCompare;
@@ -142,129 +143,9 @@ public class SelectSoftwareComparePage extends FTBasePage implements SecurePage 
       @Override
       protected void onSubmit() {
 
-        Transaction trans = dataSession.beginTransaction();
-        SoftwareCompare softwareCompare = new SoftwareCompare();
-        try {
-
-          softwareCompare.setSoftware(software);
-          softwareCompare.setTestPanel(testPanel);
-          dataSession.save(softwareCompare);
-          for (Software compareSoftware : compareSoftwareSelect) {
-            SoftwareTarget softwareTarget = new SoftwareTarget();
-            softwareTarget.setSoftwareCompare(softwareCompare);
-            softwareTarget.setSoftware(compareSoftware);
-            dataSession.save(softwareTarget);
-          }
-        } finally {
-          trans.commit();
-        }
-
-        trans = dataSession.beginTransaction();
-
-        try {
-
-          Query query = dataSession.createQuery("from TestPanelCase where testPanel = ?");
-          query.setParameter(0, testPanel);
-          List<TestPanelCase> testPanelCaseList = query.list();
-          for (TestPanelCase testPanelCase : testPanelCaseList) {
-
-            query = dataSession
-                .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? order by runDate desc");
-            query.setParameter(0, software);
-            query.setParameter(1, testPanelCase.getTestCase());
-            List<ForecastActual> forecastActualList = query.list();
-            if (forecastActualList.size() != 0) {
-              for (ForecastActual forecastActual : forecastActualList) {
-                ForecastCompare forecastCompare = new ForecastCompare();
-                forecastCompare.setSoftwareCompare(softwareCompare);
-                forecastCompare.setForecastActual(forecastActual);
-
-                boolean allFound = compareSoftwareSelect.size() > 0;
-                List<ForecastActual> compareWithList = new ArrayList<ForecastActual>();
-                List<ForecastActualExpectedCompare> forecastActualExpectedCompareList = new ArrayList<ForecastActualExpectedCompare>();
-                String compareLabel = "";
-                for (Software compareSoftware : compareSoftwareSelect) {
-                  query = dataSession
-                      .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ? order by runDate desc");
-                  query.setParameter(0, compareSoftware);
-                  query.setParameter(1, testPanelCase.getTestCase());
-                  query.setParameter(2, forecastActual.getVaccineGroup());
-                  List<ForecastActual> forecastActualCompareList = query.list();
-                  if (forecastActualCompareList.size() == 0) {
-                    allFound = false;
-                  } else {
-                    ForecastTarget forecastTarget = new ForecastTarget();
-                    forecastTarget.setForecastCompare(forecastCompare);
-                    forecastTarget.setForecastActual(forecastActual);
-
-                    compareWithList.add(forecastActualCompareList.get(0));
-                    ForecastActualExpectedCompare forecastActualExcpectedCompare = new ForecastActualExpectedCompare();
-                    forecastActualExcpectedCompare.setTestCase(testPanelCase.getTestCase());
-                    forecastActualExcpectedCompare.setForecastResultA(forecastActual);
-                    forecastActualExcpectedCompare.setForecastResultB(forecastActualCompareList.get(0));
-                    forecastActualExcpectedCompare.setVaccineGroup(forecastActual.getVaccineGroup());
-                    forecastActualExpectedCompareList.add(forecastActualExcpectedCompare);
-                  }
-                }
-                if (!allFound) {
-                  compareLabel = "X: Not all forecasts run";
-                } else {
-                  boolean matchAll = true;
-                  int matchCount = 0;
-                  for (ForecastActualExpectedCompare forecastActualExcpectedCompare : forecastActualExpectedCompareList) {
-                    if (forecastActualExcpectedCompare.matchExactlyExcludeOverdue()) {
-                      matchCount++;
-                    } else {
-                      matchAll = false;
-                    }
-                  }
-                  if (matchAll) {
-                    compareLabel = "A: Same as all others";
-                  } else if (matchCount > 0) {
-                    compareLabel = "B: Same as at least " + matchCount + " other" + (matchCount == 1 ? "" : "s");
-                  } else {
-                    boolean completelyDisagree = true;
-                    boolean completelyAgree = true;
-                    for (int i = 1; i < compareWithList.size(); i++) {
-                      for (int j = 0; j < i; j++) {
-                        ForecastActualExpectedCompare forecastActualExcpectedCompare = new ForecastActualExpectedCompare();
-                        forecastActualExcpectedCompare.setForecastResultA(compareWithList.get(j));
-                        forecastActualExcpectedCompare.setForecastResultB(compareWithList.get(i));
-                        if (forecastActualExcpectedCompare.matchExactlyExcludeOverdue()) {
-                          completelyDisagree = false;
-                        } else {
-                          completelyAgree = false;
-                        }
-                      }
-                    }
-                    if (completelyDisagree) {
-                      compareLabel = "C: Different than all others and others don't agree";
-                    } else if (completelyAgree) {
-                      compareLabel = "E: Different than all others and others agree";
-                    } else {
-                      compareLabel = "D: Different than all others and others have mixed agreement";
-                    }
-                  }
-                  forecastCompare.setCompareLabel(compareLabel);
-                  dataSession.save(forecastCompare);
-                  for (ForecastActual forecastActualToCompareWith : compareWithList) {
-                    ForecastTarget forecastTarget = new ForecastTarget();
-                    forecastTarget.setForecastCompare(forecastCompare);
-                    forecastTarget.setForecastActual(forecastActualToCompareWith);
-                    dataSession.save(forecastTarget);
-                  }
-
-                }
-
-                dataSession.save(forecastCompare);
-
-              }
-            }
-          }
-
-        } finally {
-          trans.commit();
-        }
+        SoftwareCompareManager softwareCompareManager = new SoftwareCompareManager(testPanel, software, compareSoftwareSelect);
+        softwareCompareManager.start();
+        webSession.setSoftwareCompareManager(softwareCompareManager);
 
         setResponsePage(new SelectSoftwareComparePage());
       }
