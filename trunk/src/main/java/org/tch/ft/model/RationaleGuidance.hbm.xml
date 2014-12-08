@@ -5,7 +5,7 @@
     <id name="rationaleGuidanceId" column="rationale_guidance_id">
       <generator class="native"/>
     </id>
-    <many-to-one name="rationale" column="rational_id" class="org.tch.fc.model.Rationale"/>
+    <many-to-one name="rationale" column="rationale_id" class="org.tch.fc.model.Rationale"/>
     <many-to-one name="guidance" column="guidance_id" class="org.tch.fc.model.Guidance"/>
   </class>
 </hibernate-mapping>

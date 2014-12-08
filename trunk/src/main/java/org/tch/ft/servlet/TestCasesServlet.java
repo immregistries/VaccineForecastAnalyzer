@@ -23,19 +23,24 @@ import org.hibernate.Transaction;
 import org.tch.fc.model.Admin;
 import org.tch.fc.model.AssociatedDate;
 import org.tch.fc.model.Consideration;
+import org.tch.fc.model.ConsiderationGuidance;
 import org.tch.fc.model.ConsiderationType;
 import org.tch.fc.model.DateSet;
 import org.tch.fc.model.Evaluation;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.EventType;
 import org.tch.fc.model.ForecastActual;
+import org.tch.fc.model.Guidance;
 import org.tch.fc.model.Rationale;
+import org.tch.fc.model.RationaleGuidance;
 import org.tch.fc.model.Recommend;
+import org.tch.fc.model.RecommendGuidance;
 import org.tch.fc.model.RecommendRange;
 import org.tch.fc.model.RecommendType;
 import org.tch.fc.model.RelativeRule;
 import org.tch.fc.model.RelativeTo;
 import org.tch.fc.model.Resource;
+import org.tch.fc.model.ResourceGuidance;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
@@ -48,12 +53,16 @@ import org.tch.ft.manager.SoftwareManager;
 import org.tch.ft.model.EvaluationExpected;
 import org.tch.ft.model.Expert;
 import org.tch.ft.model.ForecastExpected;
+import org.tch.ft.model.GuidanceExpected;
 import org.tch.ft.model.Include;
 import org.tch.ft.model.Result;
+import org.tch.ft.model.Role;
 import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
+import org.tch.ft.model.TestPanelEvaluation;
 import org.tch.ft.model.TestPanelForecast;
+import org.tch.ft.model.TestPanelGuidance;
 import org.tch.ft.model.User;
 import org.tch.ft.web.testCase.RandomNames;
 
@@ -148,7 +157,8 @@ public class TestCasesServlet extends MainServlet
 
   private static Admin[] ADMIN_STANDARD_LIST = { Admin.NOT_COMPLETE, Admin.COMPLETE, Admin.IMMUNE,
       Admin.CONTRAINDICATED, Admin.AGED_OUT };
-  private static Admin[] ADMIN_NON_STANDARD_LIST = {Admin.OVERDUE, Admin.DUE, Admin.DUE_LATER, Admin.FINISHED, Admin.COMPLETE_FOR_SEASON, Admin.ASSUMED_COMPLETE_OR_IMMUNE, Admin.CONTRAINDICATED};
+  private static Admin[] ADMIN_NON_STANDARD_LIST = { Admin.OVERDUE, Admin.DUE, Admin.DUE_LATER, Admin.FINISHED,
+      Admin.COMPLETE_FOR_SEASON, Admin.ASSUMED_COMPLETE_OR_IMMUNE, Admin.CONTRAINDICATED };
 
   private static synchronized String getNextTestCaseNumber() {
     SimpleDateFormat sdfShort = new SimpleDateFormat("yyMMdd");
@@ -250,8 +260,167 @@ public class TestCasesServlet extends MainServlet
           applicationSession.setAlertError("Unable to save expectations: " + problem);
           return SHOW_EDIT_EXPECTATIONS;
         } else {
-          //          Transaction transaction = dataSession.beginTransaction();
-          //          transaction.commit();
+
+          boolean canSetTesPanelExpectations = false;
+          {
+            Query query = dataSession.createQuery("from Expert where user = ? and taskGroup = ?");
+            query.setParameter(0, user);
+            query.setParameter(1, user.getSelectedTaskGroup());
+            List<Expert> expertList = query.list();
+            if (expertList.size() > 0) {
+              Role role = expertList.get(0).getRole();
+              canSetTesPanelExpectations = role == Role.ADMIN || role == Role.EXPERT;
+            }
+          }
+          Transaction transaction = dataSession.beginTransaction();
+          for (TestEvent vaccinationEvent : expectationsManager.getVaccinationEvents()) {
+            EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(
+                vaccinationEvent);
+            evaluationExpected.setAuthor(user);
+            evaluationExpected.setUpdatedDate(new Date());
+            dataSession.saveOrUpdate(evaluationExpected);
+            if (canSetTesPanelExpectations) {
+              TestPanelEvaluation testPanelEvaluation = null;
+              Query query = dataSession
+                  .createQuery("from TestPanelEvaluation where testPanelCase = ? and evaluationExpected.testCase = ? and evaluationExpected.vaccineGroup =  ? and evaluationExpected.testEvent = ?");
+              query.setParameter(0, testPanelCase);
+              query.setParameter(1, testCase);
+              query.setParameter(2, vaccineGroup);
+              query.setParameter(3, vaccinationEvent);
+              List<TestPanelEvaluation> testPanelEvaluationList = query.list();
+              if (testPanelEvaluationList.size() > 0) {
+                testPanelEvaluation = testPanelEvaluationList.get(0);
+              } else {
+                testPanelEvaluation = new TestPanelEvaluation();
+                testPanelEvaluation.setTestPanelCase(testPanelCase);
+              }
+              testPanelEvaluation.setEvaluationExpected(evaluationExpected);
+              dataSession.saveOrUpdate(testPanelEvaluation);
+            }
+          }
+          ForecastExpected forecastExpected = expectationsManager.getForecastExpected();
+          forecastExpected.setAuthor(user);
+          forecastExpected.setUpdatedDate(new Date());
+          if (forecastExpected.getValidRule() != null) {
+            forecastExpected.setValidDate(forecastExpected.getValidRule().calculateDate());
+            saveRelativeRule(dataSession, forecastExpected.getValidRule());
+          }
+          if (forecastExpected.getDueRule() != null) {
+            forecastExpected.setDueDate(forecastExpected.getDueRule().calculateDate());
+            saveRelativeRule(dataSession, forecastExpected.getDueRule());
+          }
+          if (forecastExpected.getOverdueRule() != null) {
+            forecastExpected.setOverdueDate(forecastExpected.getOverdueRule().calculateDate());
+            saveRelativeRule(dataSession, forecastExpected.getOverdueRule());
+          }
+          if (forecastExpected.getFinishedRule() != null) {
+            forecastExpected.setFinishedDate(forecastExpected.getFinishedRule().calculateDate());
+            saveRelativeRule(dataSession, forecastExpected.getFinishedRule());
+          }
+          dataSession.saveOrUpdate(forecastExpected);
+          if (canSetTesPanelExpectations) {
+            TestPanelForecast testPanelForecast = null;
+            Query query = dataSession
+                .createQuery("from TestPanelForecast where forecastExpected.testCase = ? and testPanelCase = ? and forecastExpected.vaccineGroup = ? ");
+            query.setParameter(0, testCase);
+            query.setParameter(1, testPanelCase);
+            query.setParameter(2, vaccineGroup);
+            List<TestPanelForecast> testPanelForecastList = query.list();
+            if (testPanelForecastList.size() > 0) {
+              testPanelForecast = testPanelForecastList.get(0);
+            } else {
+              testPanelForecast = new TestPanelForecast();
+              testPanelForecast.setTestPanelCase(testPanelCase);
+            }
+            testPanelForecast.setForecastExpected(forecastExpected);
+            dataSession.saveOrUpdate(testPanelForecast);
+          }
+          {
+            GuidanceExpected guidanceExpected = expectationsManager.getGuidanceExpected();
+            guidanceExpected.setAuthor(user);
+            guidanceExpected.setUpdatedDate(new Date());
+            dataSession.saveOrUpdate(guidanceExpected.getGuidance());
+            dataSession.saveOrUpdate(guidanceExpected);
+
+            Guidance guidance = guidanceExpected.getGuidance();
+            if (canSetTesPanelExpectations) {
+              TestPanelGuidance testPanelGuidance = null;
+              Query query = dataSession
+                  .createQuery("from TestPanelGuidance where guidanceExpected.testCase = ? and testPanelCase = ? and guidanceExpected.guidance.vaccineGroup = ?");
+              query.setParameter(0, testCase);
+              query.setParameter(1, testPanelCase);
+              query.setParameter(2, vaccineGroup);
+              List<TestPanelGuidance> testPanelGuidanceList = query.list();
+              if (testPanelGuidanceList.size() > 0) {
+                testPanelGuidance = testPanelGuidanceList.get(0);
+              } else {
+                testPanelGuidance = new TestPanelGuidance();
+                testPanelGuidance.setTestPanelCase(testPanelCase);
+              }
+              testPanelGuidance.setGuidanceExpected(guidanceExpected);
+              dataSession.saveOrUpdate(testPanelGuidance);
+            }
+            for (RecommendGuidance recommendGuidance : expectationsManager.getRecommendGuidanceDeleteList()) {
+              if (recommendGuidance.getRecommendGuidanceId() > 0) {
+                dataSession.delete(recommendGuidance);
+              }
+            }
+            for (RecommendGuidance recommendGuidance : expectationsManager.getRecommendGuidanceList()) {
+              if (recommendGuidance.getRecommendGuidanceId() == 0) {
+                if (recommendGuidance.getRecommend().getRecommendId() == 0) {
+                  dataSession.save(recommendGuidance.getRecommend());
+                }
+                recommendGuidance.setGuidance(guidance);
+                dataSession.save(recommendGuidance);
+              }
+            }
+
+            for (ConsiderationGuidance considerationGuidance : expectationsManager.getConsiderationGuidanceDeleteList()) {
+              if (considerationGuidance.getConsiderationGuidanceId() > 0) {
+                dataSession.delete(considerationGuidance);
+              }
+            }
+            for (ConsiderationGuidance considerationGuidance : expectationsManager.getConsiderationGuidanceList()) {
+              if (considerationGuidance.getConsiderationGuidanceId() == 0) {
+                if (considerationGuidance.getConsideration().getConsiderationId() == 0) {
+                  dataSession.save(considerationGuidance.getConsideration());
+                }
+                considerationGuidance.setGuidance(guidance);
+                dataSession.save(considerationGuidance);
+              }
+            }
+
+            for (RationaleGuidance rationalGuidance : expectationsManager.getRationaleGuidanceDeleteList()) {
+              if (rationalGuidance.getRationaleGuidanceId() > 0) {
+                dataSession.delete(rationalGuidance);
+              }
+            }
+            for (RationaleGuidance rationalGuidance : expectationsManager.getRationaleGuidanceList()) {
+              if (rationalGuidance.getRationaleGuidanceId() == 0) {
+                if (rationalGuidance.getRationale().getRationaleId() == 0) {
+                  dataSession.save(rationalGuidance.getRationale());
+                }
+                rationalGuidance.setGuidance(guidance);
+                dataSession.save(rationalGuidance);
+              }
+            }
+
+            for (RationaleGuidance resourceGuidance : expectationsManager.getRationaleGuidanceDeleteList()) {
+              if (resourceGuidance.getRationaleGuidanceId() > 0) {
+                dataSession.delete(resourceGuidance);
+              }
+            }
+            for (ResourceGuidance resourceGuidance : expectationsManager.getResourceGuidanceList()) {
+              if (resourceGuidance.getResourceGuidanceId() == 0) {
+                if (resourceGuidance.getResource().getResourceId() == 0) {
+                  dataSession.save(resourceGuidance.getGuidance());
+                }
+                resourceGuidance.setGuidance(guidance);
+                dataSession.save(resourceGuidance);
+              }
+            }
+          }
+          transaction.commit();
           return SHOW_TEST_CASE;
         }
       }
@@ -262,40 +431,161 @@ public class TestCasesServlet extends MainServlet
 
   public void readGuidanceExpectations(HttpServletRequest req, Session dataSession,
       ExpectationsManager expectationsManager) {
+
+    expectationsManager.getRecommendGuidanceDeleteList().clear();
+    expectationsManager.getRecommendGuidanceDeleteList().addAll(expectationsManager.getRecommendGuidanceList());
+    expectationsManager.getRecommendGuidanceList().clear();
     String[] recommendIdStrings = req.getParameterValues(PARAM_RECOMMEND_ID);
     if (recommendIdStrings != null) {
-      expectationsManager.getRecommendList().clear();
       for (String recommendIdString : recommendIdStrings) {
         int recommendId = Integer.parseInt(recommendIdString);
-        Recommend recommend = (Recommend) dataSession.get(Recommend.class, recommendId);
-        expectationsManager.getRecommendList().add(recommend);
+        if (recommendId > 0) {
+          boolean foundInDelete = false;
+          for (RecommendGuidance recommendGuidance : expectationsManager.getRecommendGuidanceDeleteList()) {
+            if (recommendGuidance.getRecommend().getRecommendId() == recommendId) {
+              expectationsManager.getRecommendGuidanceDeleteList().remove(recommendGuidance);
+              expectationsManager.getRecommendGuidanceList().add(recommendGuidance);
+              foundInDelete = true;
+            }
+          }
+          if (!foundInDelete) {
+            Recommend recommend = (Recommend) dataSession.get(Recommend.class, recommendId);
+            RecommendGuidance recommendGuidance = new RecommendGuidance();
+            recommendGuidance.setRecommend(recommend);
+            expectationsManager.getRecommendGuidanceList().add(recommendGuidance);
+          }
+        } else if (recommendId == -1) {
+          String recommendText = req.getParameter(PARAM_RECOMMEND_TEXT);
+          if (!recommendText.equals("")) {
+            Recommend recommend = new Recommend();
+            recommend.setRecommendText(recommendText);
+            String recommendTypeCode = req.getParameter(PARAM_RECOMMEND_TYPE_CODE);
+            if (!recommendTypeCode.equals("")) {
+              recommend.setRecommendTypeCode(recommendTypeCode);
+            }
+            String recommendRangeCode = req.getParameter(PARAM_RECOMMEND_RANGE_CODE);
+            if (!recommendRangeCode.equals("")) {
+              recommend.setRecommendRangeCode(recommendRangeCode);
+            }
+            RecommendGuidance recommendGuidance = new RecommendGuidance();
+            recommendGuidance.setRecommend(recommend);
+            expectationsManager.getRecommendGuidanceList().add(recommendGuidance);
+          }
+        }
       }
     }
+
+    expectationsManager.getConsiderationGuidanceDeleteList().clear();
+    expectationsManager.getConsiderationGuidanceDeleteList().addAll(expectationsManager.getConsiderationGuidanceList());
+    expectationsManager.getConsiderationGuidanceList().clear();
     String[] considerationIdStrings = req.getParameterValues(PARAM_CONSIDERATION_ID);
     if (considerationIdStrings != null) {
-      expectationsManager.getConsiderationList().clear();
+      expectationsManager.getConsiderationGuidanceList().clear();
       for (String considerationIdString : considerationIdStrings) {
         int considerationId = Integer.parseInt(considerationIdString);
-        Consideration consideration = (Consideration) dataSession.get(Consideration.class, considerationId);
-        expectationsManager.getConsiderationList().add(consideration);
+        if (considerationId > 0) {
+          boolean foundInDelete = false;
+          for (ConsiderationGuidance considerationGuidance : expectationsManager.getConsiderationGuidanceDeleteList()) {
+            if (considerationGuidance.getConsideration().getConsiderationId() == considerationId) {
+              expectationsManager.getConsiderationGuidanceDeleteList().remove(considerationGuidance);
+              expectationsManager.getConsiderationGuidanceList().add(considerationGuidance);
+              foundInDelete = true;
+            }
+          }
+          if (!foundInDelete) {
+            Consideration consideration = (Consideration) dataSession.get(Consideration.class, considerationId);
+            ConsiderationGuidance considerationGuidance = new ConsiderationGuidance();
+            considerationGuidance.setConsideration(consideration);
+            expectationsManager.getConsiderationGuidanceList().add(considerationGuidance);
+          }
+        } else if (considerationId == -1) {
+          String considerationText = req.getParameter(PARAM_CONSIDERATION_TEXT);
+          if (!considerationText.equals("")) {
+            Consideration consideration = new Consideration();
+            consideration.setConsiderationText(considerationText);
+            String considerationTypeCode = req.getParameter(PARAM_CONSIDERATION_TYPE_CODE);
+            if (!considerationTypeCode.equals("")) {
+              consideration.setConsiderationTypeCode(considerationTypeCode);
+            }
+            ConsiderationGuidance considerationGuidance = new ConsiderationGuidance();
+            considerationGuidance.setConsideration(consideration);
+            expectationsManager.getConsiderationGuidanceList().add(considerationGuidance);
+          }
+        }
       }
     }
+
+    expectationsManager.getRationaleGuidanceDeleteList().clear();
+    expectationsManager.getRationaleGuidanceDeleteList().addAll(expectationsManager.getRationaleGuidanceList());
+    expectationsManager.getRationaleGuidanceList().clear();
     String[] rationaleIdStrings = req.getParameterValues(PARAM_RATIONALE_ID);
     if (rationaleIdStrings != null) {
-      expectationsManager.getRationaleList().clear();
+      expectationsManager.getRationaleGuidanceList().clear();
       for (String rationaleIdString : rationaleIdStrings) {
         int rationaleId = Integer.parseInt(rationaleIdString);
-        Rationale rationale = (Rationale) dataSession.get(Rationale.class, rationaleId);
-        expectationsManager.getRationaleList().add(rationale);
+        if (rationaleId > 0) {
+          boolean foundInDelete = false;
+          for (RationaleGuidance rationaleGuidance : expectationsManager.getRationaleGuidanceDeleteList()) {
+            if (rationaleGuidance.getRationale().getRationaleId() == rationaleId) {
+              expectationsManager.getRationaleGuidanceDeleteList().remove(rationaleGuidance);
+              expectationsManager.getRationaleGuidanceList().add(rationaleGuidance);
+              foundInDelete = true;
+            }
+          }
+          if (!foundInDelete) {
+            Rationale rationale = (Rationale) dataSession.get(Rationale.class, rationaleId);
+            RationaleGuidance rationaleGuidance = new RationaleGuidance();
+            rationaleGuidance.setRationale(rationale);
+            expectationsManager.getRationaleGuidanceList().add(rationaleGuidance);
+          }
+        } else if (rationaleId == -1) {
+          String rationaleText = req.getParameter(PARAM_RATIONALE_TEXT);
+          if (!rationaleText.equals("")) {
+            Rationale rationale = new Rationale();
+            rationale.setRationaleText(rationaleText);
+            RationaleGuidance rationaleGuidance = new RationaleGuidance();
+            rationaleGuidance.setRationale(rationale);
+            expectationsManager.getRationaleGuidanceList().add(rationaleGuidance);
+          }
+        }
       }
     }
+
+    expectationsManager.getResourceGuidanceDeleteList().clear();
+    expectationsManager.getResourceGuidanceDeleteList().addAll(expectationsManager.getResourceGuidanceList());
+    expectationsManager.getResourceGuidanceList().clear();
     String[] resourceIdStrings = req.getParameterValues(PARAM_RESOURCE_ID);
     if (resourceIdStrings != null) {
-      expectationsManager.getResourceList().clear();
+      expectationsManager.getResourceGuidanceList().clear();
       for (String resourceIdString : resourceIdStrings) {
         int resourceId = Integer.parseInt(resourceIdString);
-        Resource resource = (Resource) dataSession.get(Resource.class, resourceId);
-        expectationsManager.getResourceList().add(resource);
+        if (resourceId > 0) {
+          boolean foundInDelete = false;
+          for (ResourceGuidance resourceGuidance : expectationsManager.getResourceGuidanceDeleteList()) {
+            if (resourceGuidance.getResource().getResourceId() == resourceId) {
+              expectationsManager.getResourceGuidanceDeleteList().remove(resourceGuidance);
+              expectationsManager.getResourceGuidanceList().add(resourceGuidance);
+              foundInDelete = true;
+            }
+          }
+          if (!foundInDelete) {
+            Resource resource = (Resource) dataSession.get(Resource.class, resourceId);
+            ResourceGuidance resourceGuidance = new ResourceGuidance();
+            resourceGuidance.setResource(resource);
+            expectationsManager.getResourceGuidanceList().add(resourceGuidance);
+          }
+        } else if (resourceId == -1) {
+          String resourceText = req.getParameter(PARAM_RESOURCE_TEXT);
+          String resourceLink = req.getParameter(PARAM_RESOURCE_LINK);
+          if (!resourceText.equals("") && !resourceLink.equals("")) {
+            Resource resource = new Resource();
+            resource.setResourceText(resourceText);
+            resource.setResourceLink(resourceLink);
+            ResourceGuidance resourceGuidance = new ResourceGuidance();
+            resourceGuidance.setResource(resource);
+            expectationsManager.getResourceGuidanceList().add(resourceGuidance);
+          }
+        }
       }
     }
   }
@@ -396,6 +686,7 @@ public class TestCasesServlet extends MainServlet
           forecastExpected.getOverdueRule()));
       forecastExpected.setFinishedRule(updateRelativeRule(PARAM_FINISHED_RULE, req, dataSession, testCase,
           forecastExpected.getFinishedRule()));
+
     }
     return null;
   }
@@ -406,12 +697,13 @@ public class TestCasesServlet extends MainServlet
           vaccinationEvent);
       String evaluationStatus = notNull(req.getParameter(PARAM_EVALUATION_STATUS + vaccinationEvent.getTestEventId()),
           evaluationExpected.getEvaluationStatus());
-      if (evaluationStatus.equals("")) {
+      if (evaluationStatus == null || evaluationStatus.equals("")) {
         evaluationExpected.setEvaluation(null);
       } else {
         evaluationExpected.setEvaluationStatus(evaluationStatus);
       }
     }
+
   }
 
   public RelativeRule updateRelativeRule(String paramRuleName, HttpServletRequest req, Session dataSession,
@@ -433,6 +725,23 @@ public class TestCasesServlet extends MainServlet
         posOld = posNew;
       }
     }
+
+    if (rrOld != null) {
+      rrOld.convertBeforeToAfter();
+      RelativeRule andRule = rrOld.getAndRule();
+      RelativeRule parentRule = rrOld;
+      while (andRule != null) {
+        andRule.convertBeforeToAfter();
+        if (andRule.getTestEvent() == null) {
+          parentRule.setAndRule(null);
+          andRule = null;
+        } else {
+          parentRule = andRule;
+          andRule = andRule.getAndRule();
+        }
+      }
+    }
+
     return rrOld;
   }
 
@@ -524,7 +833,16 @@ public class TestCasesServlet extends MainServlet
     if (relativeRule.getRelativeTo() == RelativeTo.BIRTH || relativeRule.getRelativeTo() == RelativeTo.EVALUATION) {
       relativeRule.setTestEvent(null);
     }
-    dataSession.save(relativeRule);
+    dataSession.saveOrUpdate(relativeRule);
+  }
+
+  public void deleteRelativeRule(Session dataSession, RelativeRule relativeRule) {
+    if (relativeRule.getRuleId() > 0) {
+      if (relativeRule.getAndRule() != null) {
+        deleteRelativeRule(dataSession, relativeRule.getAndRule());
+      }
+      dataSession.delete(relativeRule);
+    }
   }
 
   public String doDelete(int testEventId, String show, Session dataSession) {
@@ -749,6 +1067,10 @@ public class TestCasesServlet extends MainServlet
       setupTestEventList(user);
 
       out.println("  <form method=\"POST\" action=\"testCases\">");
+      out.println("    <input type=\"hidden\" name=\"" + PARAM_VACCINE_GROUP_ID + "\" value=\""
+          + testCase.getVaccineGroup().getVaccineGroupId() + "\"/>");
+      out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
+          + testPanelCase.getTestPanelCaseId() + "\"/>");
       if (countVaccination > 0) {
         out.println("  <h3>Evaluation of Vaccination History</h3>");
         out.println("  <table width=\"100%\">");
@@ -764,38 +1086,36 @@ public class TestCasesServlet extends MainServlet
         out.println("      <th>Status</th>");
         out.println("    </tr>");
 
-        for (TestEvent testEvent : testEventList) {
-          if (testEvent.getEvent().getEventType() == EventType.VACCINATION) {
-            out.println("    <tr>");
-            out.println("      <td>" + testEvent.getScreenId() + "</td>");
-            out.println("      <td>" + testEvent.getEvent().getLabel() + "</td>");
-            out.println("      <td>" + testEvent.getEvent().getVaccineCvx() + "</td>");
-            out.println("      <td>" + testEvent.getEvent().getVaccineMvx() + "</td>");
-            if (testCase.getDateSet() == DateSet.RELATIVE) {
-              out.print("      <td>");
-              printOutRelativeRule(out, testEvent.getEventRule());
-              out.print("</td>");
-            }
-            out.println("      <td>" + (testEvent.getEventDate() == null ? "" : sdf.format(testEvent.getEventDate()))
-                + "</td>");
-            out.println("      <td>");
-            EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(
-                testEvent);
-            out.println("          <select name=\"" + "todo" + "\">");
-            out.println("            <option value=\"0\">--select--</option>");
-            for (Evaluation evaluation : Evaluation.values()) {
-              if (evaluationExpected != null && evaluationExpected.getEvaluation() == evaluation) {
-                out.println("            <option value=\"" + evaluation.getEvaluationStatus()
-                    + "\" selected=\"selected\">" + evaluation.getLabel() + "</option>");
-              } else {
-                out.println("            <option value=\"" + evaluation.getEvaluationStatus() + "\">"
-                    + evaluation.getLabel() + "</option>");
-              }
-            }
-            out.println("          </select>");
-            out.println("      </td>");
-            out.println("    </tr>");
+        for (TestEvent vaccinationEvent : expectationsManager.getVaccinationEvents()) {
+          out.println("    <tr>");
+          out.println("      <td>" + vaccinationEvent.getScreenId() + "</td>");
+          out.println("      <td>" + vaccinationEvent.getEvent().getLabel() + "</td>");
+          out.println("      <td>" + vaccinationEvent.getEvent().getVaccineCvx() + "</td>");
+          out.println("      <td>" + vaccinationEvent.getEvent().getVaccineMvx() + "</td>");
+          if (testCase.getDateSet() == DateSet.RELATIVE) {
+            out.print("      <td>");
+            printOutRelativeRule(out, vaccinationEvent.getEventRule());
+            out.print("</td>");
           }
+          out.println("      <td>"
+              + (vaccinationEvent.getEventDate() == null ? "" : sdf.format(vaccinationEvent.getEventDate())) + "</td>");
+          out.println("      <td>");
+          EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(
+              vaccinationEvent);
+          out.println("          <select name=\"" + PARAM_EVALUATION_STATUS + vaccinationEvent.getTestEventId() + "\">");
+          out.println("            <option value=\"0\">--select--</option>");
+          for (Evaluation evaluation : Evaluation.values()) {
+            if (evaluationExpected != null && evaluationExpected.getEvaluation() == evaluation) {
+              out.println("            <option value=\"" + evaluation.getEvaluationStatus()
+                  + "\" selected=\"selected\">" + evaluation.getLabel() + "</option>");
+            } else {
+              out.println("            <option value=\"" + evaluation.getEvaluationStatus() + "\">"
+                  + evaluation.getLabel() + "</option>");
+            }
+          }
+          out.println("          </select>");
+          out.println("      </td>");
+          out.println("    </tr>");
         }
         out.println("  </table>");
       }
@@ -808,7 +1128,7 @@ public class TestCasesServlet extends MainServlet
       out.println("      <td>");
       out.println("          <select name=\"" + PARAM_ADMIN_STATUS + "\">");
       out.println("            <option value=\"0\">--select CDSi values--</option>");
-      String adminStatus = ""; // todo 
+      String adminStatus = forecastExpected.getAdminStatus();
       for (Admin admin : ADMIN_STANDARD_LIST) {
         printAdminSelect(out, adminStatus, admin);
       }
@@ -821,7 +1141,8 @@ public class TestCasesServlet extends MainServlet
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <th>Dose</th>");
-      out.println("      <td><input type=\"text\" name=\"" + PARAM_DOSE_NUMBER + "\" value=\"\" size=\"5\"/></td>");
+      out.println("      <td><input type=\"text\" name=\"" + PARAM_DOSE_NUMBER + "\" value=\""
+          + forecastExpected.getDoseNumber() + "\" size=\"5\"/></td>");
       out.println("    </tr>");
       if (testCase.getDateSet() == DateSet.FIXED) {
         out.println("    <tr>");
@@ -845,10 +1166,10 @@ public class TestCasesServlet extends MainServlet
             + forecastExpected.getFinishedDateString() + "\" size=\"10\"/></td>");
         out.println("    </tr>");
       } else {
-        printRelativeRuleRow(PARAM_VALID_RULE, out, forecastExpected.getValidRule(), "Earliest Date");
-        printRelativeRuleRow(PARAM_DUE_RULE, out, forecastExpected.getDueRule(), "Recommended Date");
-        printRelativeRuleRow(PARAM_OVERDUE_RULE, out, forecastExpected.getOverdueRule(), "Past Due Date");
-        printRelativeRuleRow(PARAM_FINISHED_RULE, out, forecastExpected.getFinishedRule(), "Finished Date");
+        printRelativeRuleRow(PARAM_VALID_RULE, out, forecastExpected.getValidRule(), "Earliest Date", null);
+        printRelativeRuleRow(PARAM_DUE_RULE, out, forecastExpected.getDueRule(), "Recommended Date", null);
+        printRelativeRuleRow(PARAM_OVERDUE_RULE, out, forecastExpected.getOverdueRule(), "Past Due Date", null);
+        printRelativeRuleRow(PARAM_FINISHED_RULE, out, forecastExpected.getFinishedRule(), "Finished Date", null);
       }
       out.println("        <tr>");
       out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
@@ -867,12 +1188,13 @@ public class TestCasesServlet extends MainServlet
         out.println("      <tr>");
         out.println("        <td colspan=\"2\"><div class=\"scrollRadioBox\">");
         Set<Recommend> recommendSet = new HashSet<Recommend>();
-        if (expectationsManager.getRecommendList().size() > 0) {
+        if (expectationsManager.getRecommendGuidanceList().size() > 0) {
           out.println("<b>Currently Selected</b><br/>");
-          for (Recommend recommend : expectationsManager.getRecommendList()) {
+          for (RecommendGuidance recommendGuidance : expectationsManager.getRecommendGuidanceList()) {
             out.println("          <input type=\"checkbox\" name=\"" + PARAM_RECOMMEND_ID + "" + "\" value=\""
-                + recommend.getRecommendId() + "\" checked=\"checked\">" + recommend + "<br/>");
-            recommendSet.add(recommend);
+                + recommendGuidance.getRecommend().getRecommendId() + "\" checked=\"checked\">"
+                + recommendGuidance.getRecommend() + "<br/>");
+            recommendSet.add(recommendGuidance.getRecommend());
           }
           out.println("<b>Select Additional</b><br/>");
         }
@@ -929,12 +1251,13 @@ public class TestCasesServlet extends MainServlet
         out.println("      <tr>");
         out.println("        <td colspan=\"2\"><div class=\"scrollRadioBox\">");
         Set<Consideration> considerationSet = new HashSet<Consideration>();
-        if (expectationsManager.getConsiderationList().size() > 0) {
+        if (expectationsManager.getConsiderationGuidanceList().size() > 0) {
           out.println("<b>Currently Selected</b><br/>");
-          for (Consideration consideration : expectationsManager.getConsiderationList()) {
+          for (ConsiderationGuidance considerationGuidance : expectationsManager.getConsiderationGuidanceList()) {
             out.println("          <input type=\"checkbox\" name=\"" + PARAM_CONSIDERATION_ID + "\" value=\""
-                + consideration.getConsiderationId() + "\" checked=\"checked\">" + consideration + "<br/>");
-            considerationSet.add(consideration);
+                + considerationGuidance.getConsideration().getConsiderationId() + "\" checked=\"checked\">"
+                + considerationGuidance.getConsideration() + "<br/>");
+            considerationSet.add(considerationGuidance.getConsideration());
           }
           out.println("<b>Select Additional</b><br/>");
         }
@@ -980,12 +1303,13 @@ public class TestCasesServlet extends MainServlet
         out.println("      <tr>");
         out.println("        <td colspan=\"2\"><div class=\"scrollRadioBox\">");
         Set<Rationale> rationaleSet = new HashSet<Rationale>();
-        if (expectationsManager.getRationaleList().size() > 0) {
+        if (expectationsManager.getRationaleGuidanceList().size() > 0) {
           out.println("<b>Currently Selected</b><br/>");
-          for (Rationale rationale : expectationsManager.getRationaleList()) {
+          for (RationaleGuidance rationaleGuidance : expectationsManager.getRationaleGuidanceList()) {
             out.println("          <input type=\"checkbox\" name=\"" + PARAM_RATIONALE_ID + "\" value=\""
-                + rationale.getRationaleId() + "\" checked=\"checked\">" + rationale.getRationaleText() + "<br/>");
-            rationaleSet.add(rationale);
+                + rationaleGuidance.getRationale().getRationaleId() + "\" checked=\"checked\">"
+                + rationaleGuidance.getRationale().getRationaleText() + "<br/>");
+            rationaleSet.add(rationaleGuidance.getRationale());
           }
           out.println("<b>Select Additional</b><br/>");
         }
@@ -1016,13 +1340,14 @@ public class TestCasesServlet extends MainServlet
         out.println("      <tr>");
         out.println("        <td colspan=\"2\"><div class=\"scrollRadioBox\">");
         Set<Resource> resourceSet = new HashSet<Resource>();
-        if (expectationsManager.getResourceList().size() > 0) {
+        if (expectationsManager.getResourceGuidanceList().size() > 0) {
           out.println("<b>Currently Selected</b><br/>");
-          for (Resource resource : expectationsManager.getResourceList()) {
+          for (ResourceGuidance resourceGuidance : expectationsManager.getResourceGuidanceList()) {
             out.println("          <input type=\"checkbox\" name=\"" + PARAM_RESOURCE_ID + "\" value=\""
-                + resource.getResourceId() + "\" checked=\"checked\">" + resource.getResourceText() + " - "
-                + resource.getResourceLink() + "<br/>");
-            resourceSet.add(resource);
+                + resourceGuidance.getResource().getResourceId() + "\" checked=\"checked\">"
+                + resourceGuidance.getResource().getResourceText() + " - "
+                + resourceGuidance.getResource().getResourceLink() + "<br/>");
+            resourceSet.add(resourceGuidance.getResource());
           }
           out.println("<b>Select Additional</b><br/>");
         }
@@ -1131,13 +1456,6 @@ public class TestCasesServlet extends MainServlet
 
     RelativeRule relativeRule = readRelativeRules(PARAM_EVENT_RULE, req, dataSession, user.getSelectedTestCase());
 
-    if (eventType == EventType.CONDITION_IMPLICATION && relativeRule.getTestEvent() == null) {
-      relativeRule.setTestEvent(testEventList.get(testEventList.size() - 1));
-    }
-    if (eventType == EventType.ACIP_DEFINED_CONDITION && relativeRule.getTestEvent() == null) {
-      relativeRule.setTestEvent(testEventList.get(testEventList.size() - 1));
-    }
-
     String editButton = "";
     if (eventType != EventType.CONDITION_IMPLICATION) {
       String editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_EVENTS + "&" + PARAM_TEST_PANEL_CASE_ID + "="
@@ -1196,7 +1514,7 @@ public class TestCasesServlet extends MainServlet
         out.println("      </tr>");
       } else {
         String label = "Administered";
-        printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label);
+        printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label, RelativeTo.BIRTH);
       }
       out.println("        <tr>");
       out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
@@ -1247,7 +1565,7 @@ public class TestCasesServlet extends MainServlet
         out.println("      </tr>");
       } else {
         String label = "Observed";
-        printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label);
+        printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label, RelativeTo.EVALUATION);
       }
       out.println("        <tr>");
       out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
@@ -1300,7 +1618,7 @@ public class TestCasesServlet extends MainServlet
         out.println("      </tr>");
       } else {
         String label = "Asserted";
-        printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label);
+        printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label, RelativeTo.EVALUATION);
       }
       out.println("        <tr>");
       out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
@@ -1334,10 +1652,11 @@ public class TestCasesServlet extends MainServlet
     out.println("</script>");
   }
 
-  public void printRelativeRuleRow(String paramRuleName, PrintWriter out, RelativeRule relativeRule, String label) {
+  public void printRelativeRuleRow(String paramRuleName, PrintWriter out, RelativeRule relativeRule, String label,
+      RelativeTo relativeTo) {
     RelativeRule rr = relativeRule;
     for (int pos = 1; pos <= 4; pos++) {
-      printRelativeRuleRow(paramRuleName, out, testEventList, rr, pos, label);
+      printRelativeRuleRow(paramRuleName, out, testEventList, rr, pos, label, (pos == 1 ? relativeTo : null));
       if (rr != null) {
         rr = rr.getAndRule();
       }
@@ -1508,7 +1827,7 @@ public class TestCasesServlet extends MainServlet
   }
 
   public void printRelativeRuleRow(String paramRuleName, PrintWriter out, List<TestEvent> testEventList,
-      RelativeRule relativeRule, int pos, String label) {
+      RelativeRule relativeRule, int pos, String label, RelativeTo relativeTo) {
 
     if (pos == 1) {
       out.println("      <tr id=\"" + label + "." + pos + "\">");
@@ -1550,11 +1869,18 @@ public class TestCasesServlet extends MainServlet
         + label + "." + (pos + 1) + "')\">");
     out.println("            <option value=\"0\">--select--</option>");
     for (TestEvent testEvent : testEventList) {
+      boolean selected = false;
       String eventLabel;
       if (testEvent.getEvent().getEventType() == EventType.BIRTH) {
         eventLabel = "Birth";
+        if (relativeRule != null && relativeRule.getRelativeTo() == RelativeTo.BIRTH) {
+          selected = true;
+        }
       } else if (testEvent.getEvent().getEventType() == EventType.EVALUATION) {
         eventLabel = "Evaluation";
+        if (relativeRule != null && relativeRule.getRelativeTo() == RelativeTo.EVALUATION) {
+          selected = true;
+        }
       } else if (testEvent.getEvent().getEventType() == EventType.VACCINATION) {
         eventLabel = "Vaccination #" + testEvent.getScreenId();
       } else if (testEvent.getEvent().getEventType() == EventType.ACIP_DEFINED_CONDITION) {
@@ -1564,7 +1890,23 @@ public class TestCasesServlet extends MainServlet
       } else {
         eventLabel = "Other Event #" + testEvent.getScreenId();
       }
-      if (relativeRule != null && relativeRule.getTestEvent() != null && relativeRule.getTestEvent().equals(testEvent)) {
+      if (!selected) {
+        if (relativeRule == null) {
+          if (relativeTo != null) {
+            if (relativeTo == RelativeTo.BIRTH && testEvent.getEvent().getEventType() == EventType.BIRTH) {
+              selected = true;
+            } else if (relativeTo == RelativeTo.EVALUATION
+                && testEvent.getEvent().getEventType() == EventType.EVALUATION) {
+              selected = true;
+            }
+          }
+        } else {
+          if (relativeRule.getTestEvent() != null) {
+            selected = relativeRule.getTestEvent().equals(testEvent);
+          }
+        }
+      }
+      if (selected) {
         out.println("            <option value=\"" + testEvent.getTestEventId() + "\" selected=\"selected\">"
             + eventLabel + "</option>");
       } else {
@@ -1707,10 +2049,12 @@ public class TestCasesServlet extends MainServlet
     out.println("</script>");
 
     out.println("<div class=\"centerColumn\">");
-    out.println("  <h2>" + (testPanelCase == null ? "Add" : "Update")
-        + " Test Case <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&"
-        + PARAM_TEST_PANEL_CASE_ID + "=" + applicationSession.getUser().getSelectedTestPanelCase().getTestPanelCaseId()
-        + "\">Cancel</a></h2>");
+    String cancelButton = "";
+    if (testPanelCase != null) {
+      cancelButton = " <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&"
+          + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId() + "\">Cancel</a>";
+    }
+    out.println("  <h2>" + (testPanelCase == null ? "Add" : "Update") + " Test Case" + cancelButton + "</h2>");
     out.println("    <form method=\"POST\" action=\"testCases\">");
     if (testPanelCase != null) {
       out.println("      <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
