@@ -11,7 +11,7 @@ public class GuidanceExpected implements Serializable
 {
   private static final long serialVersionUID = 1L;
 
-  private static int guidanceExpectedId = 0;
+  private int guidanceExpectedId = 0;
   private Guidance guidance = null;
   private TestCase testCase = null;
   private User author = null;
@@ -19,12 +19,12 @@ public class GuidanceExpected implements Serializable
   private RelativeRule effectiveRule = null;
   private RelativeRule expirationRule = null;
 
-  public static int getGuidanceExpectedId() {
+  public int getGuidanceExpectedId() {
     return guidanceExpectedId;
   }
 
-  public static void setGuidanceExpectedId(int guidanceExpectedId) {
-    GuidanceExpected.guidanceExpectedId = guidanceExpectedId;
+  public void setGuidanceExpectedId(int guidanceExpectedId) {
+    this.guidanceExpectedId = guidanceExpectedId;
   }
 
   public Guidance getGuidance() {
