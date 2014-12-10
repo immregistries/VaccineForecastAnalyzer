@@ -40,7 +40,7 @@ public class RelativeRuleManager
         for (TestEvent testEvent : testEventList) {
           findCalculationNeeds(needsToBeCalculatedList, parentEventRule, testEvent);
         }
-        
+
         for (TestEvent testEvent : needsToBeCalculatedList) {
           testEvent.calculateFixedDates();
           dataSession.update(testEvent);

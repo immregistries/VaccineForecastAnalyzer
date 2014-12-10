@@ -7,16 +7,16 @@ public class TestPanelGuidance implements Serializable
 
   private static final long serialVersionUID = 1L;
 
-  private static int testPanelGuidanceId = 0;
+  private int testPanelGuidanceId = 0;
   private TestPanelCase testPanelCase = null;
   private GuidanceExpected guidanceExpected = null;
 
-  public static int getTestPanelGuidanceId() {
+  public int getTestPanelGuidanceId() {
     return testPanelGuidanceId;
   }
 
-  public static void setTestPanelGuidanceId(int testPanelGuidanceId) {
-    TestPanelGuidance.testPanelGuidanceId = testPanelGuidanceId;
+  public void setTestPanelGuidanceId(int testPanelGuidanceId) {
+    this.testPanelGuidanceId = testPanelGuidanceId;
   }
 
   public TestPanelCase getTestPanelCase() {

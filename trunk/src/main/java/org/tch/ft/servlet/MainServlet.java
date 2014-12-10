@@ -83,6 +83,7 @@ public abstract class MainServlet extends HttpServlet
   public abstract String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show) throws IOException;
 
   public void printPage(HttpServletRequest req, HttpServletResponse resp, String show) throws IOException {
+    resp.setContentType("text/html");
     PrintWriter out = new PrintWriter(resp.getWriter());
     try {
       printHeader(out);
