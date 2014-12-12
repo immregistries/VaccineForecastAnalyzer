@@ -29,6 +29,7 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.fc.model.DateSet;
 import org.tch.fc.model.TestCase;
 import org.tch.ft.model.User;
 import org.tch.ft.web.FTBasePage;
@@ -57,6 +58,7 @@ public class CreateTestCasePage extends FTBasePage implements SecurePage {
       @Override
       protected void onSubmit() {
         Transaction transaction = dataSession.beginTransaction();
+        testCase.setDateSet(DateSet.FIXED);
         dataSession.save(testCase);
         transaction.commit();
       }

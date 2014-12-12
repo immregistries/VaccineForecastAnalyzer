@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.fc.TCHConnector;
 import org.tch.fc.model.Admin;
 import org.tch.fc.model.AssociatedDate;
 import org.tch.fc.model.Consideration;
@@ -43,13 +44,17 @@ import org.tch.fc.model.RelativeRule;
 import org.tch.fc.model.RelativeTo;
 import org.tch.fc.model.Resource;
 import org.tch.fc.model.ResourceGuidance;
+import org.tch.fc.model.Service;
 import org.tch.fc.model.Software;
+import org.tch.fc.model.SoftwareResult;
+import org.tch.fc.model.SoftwareSetting;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.util.TimePeriod;
 import org.tch.ft.manager.ExpectationsManager;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
+import org.tch.ft.manager.ForecastActualGenerator;
 import org.tch.ft.manager.RelativeRuleManager;
 import org.tch.ft.manager.SoftwareManager;
 import org.tch.ft.model.EvaluationExpected;
@@ -87,6 +92,7 @@ public class TestCasesServlet extends MainServlet
   public static final String ACTION_ADD_EVENT = "Add Event";
   public static final String ACTION_SAVE_EXPECTATIONS = "Save Expectations";
   public static final String ACTION_UPDATE_RELATIVE_DATES = "Update Relative Dates";
+  public static final String ACTION_REQUEST_ACTUAL_RESULTS = "Request Actual Results";
 
   public static final String PARAM_TASK_GROUP_ID = "taskGroupId";
   public static final String PARAM_TEST_PANEL_ID = "testPanelId";
@@ -96,6 +102,7 @@ public class TestCasesServlet extends MainServlet
   public static final String PARAM_LABEL = "label";
   public static final String PARAM_DESCRIPTION = "description";
   public static final String PARAM_VACCINE_GROUP_ID = "vaccineGroupId";
+  public static final String PARAM_INCLUDE_STATUS = "includeStatus";
   public static final String PARAM_PATIENT_FIRST = "patientFirst";
   public static final String PARAM_PATIENT_LAST = "patientLast";
   public static final String PARAM_PATIENT_SEX = "patientSex";
@@ -135,6 +142,7 @@ public class TestCasesServlet extends MainServlet
   public static final String PARAM_RESOURCE_ID = "resourceId";
   public static final String PARAM_RESOURCE_TEXT = "resourceText";
   public static final String PARAM_RESOURCE_LINK = "resourceLink";
+  public static final String PARAM_SOFTWARE_ID_SELECTED = "softwareIdSelected";
 
   public static final String RULE_BEFORE_OR_AFTER = "BeforeOrAfter";
   public static final String RULE_TEST_EVENT_ID = "TestEventId";
@@ -149,6 +157,9 @@ public class TestCasesServlet extends MainServlet
   public static final String SHOW_EDIT_VACCINATIONS = "editVaccinations";
   public static final String SHOW_EDIT_EXPECTATIONS = "editExpectations";
   public static final String SHOW_EDIT_EVENTS = "editEvents";
+  public static final String SHOW_ADD_ACTUAL_VS_EXPECTED = "Add Actual vs Expected";
+  public static final String SHOW_REQUEST_ACTUAL_RESULTS = "Request Actual Results";
+  public static final String SHOW_DEBUGGING_TOOLS = "Debugging Tools";
 
   private static final int EVALUATION_TEST_EVENT_ID = -2;
   private static final int BIRTH_TEST_EVENT_ID = -1;
@@ -255,10 +266,29 @@ public class TestCasesServlet extends MainServlet
           return SHOW_TEST_CASE;
         }
         return SHOW_EDIT_EXPECTATIONS;
+      } else if (action.equals(ACTION_REQUEST_ACTUAL_RESULTS)) {
+        doRequestActualResults(req, user, dataSession);
+        return SHOW_TEST_CASE;
       }
 
     }
     return show;
+  }
+
+  private void doRequestActualResults(HttpServletRequest req, User user, Session dataSession) {
+    Software software = user.getSelectedSoftware();
+    TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
+    List<Software> softwareList = getListOfUnrestrictedSoftware(user, dataSession, software);
+    for (Software softwareSelected : softwareList) {
+      String isSoftwareSelected = req.getParameter(PARAM_SOFTWARE_ID_SELECTED + softwareSelected.getSoftwareId());
+      if (isSoftwareSelected != null && isSoftwareSelected.equals("true")) {
+        try {
+          ForecastActualGenerator.runForecastActual(testPanelCase, softwareSelected, dataSession, true);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
   }
 
   private void switchToTestPanel(HttpServletRequest req, User user, Session dataSession) {
@@ -336,19 +366,19 @@ public class TestCasesServlet extends MainServlet
       forecastExpected.setAuthor(user);
       forecastExpected.setUpdatedDate(new Date());
       if (forecastExpected.getValidRule() != null) {
-        forecastExpected.setValidDate(forecastExpected.getValidRule().calculateDate());
+        forecastExpected.setValidDate(forecastExpected.getValidRule().calculateDate(testCase));
         saveRelativeRule(dataSession, forecastExpected.getValidRule());
       }
       if (forecastExpected.getDueRule() != null) {
-        forecastExpected.setDueDate(forecastExpected.getDueRule().calculateDate());
+        forecastExpected.setDueDate(forecastExpected.getDueRule().calculateDate(testCase));
         saveRelativeRule(dataSession, forecastExpected.getDueRule());
       }
       if (forecastExpected.getOverdueRule() != null) {
-        forecastExpected.setOverdueDate(forecastExpected.getOverdueRule().calculateDate());
+        forecastExpected.setOverdueDate(forecastExpected.getOverdueRule().calculateDate(testCase));
         saveRelativeRule(dataSession, forecastExpected.getOverdueRule());
       }
       if (forecastExpected.getFinishedRule() != null) {
-        forecastExpected.setFinishedDate(forecastExpected.getFinishedRule().calculateDate());
+        forecastExpected.setFinishedDate(forecastExpected.getFinishedRule().calculateDate(testCase));
         saveRelativeRule(dataSession, forecastExpected.getFinishedRule());
       }
       dataSession.saveOrUpdate(forecastExpected);
@@ -455,7 +485,7 @@ public class TestCasesServlet extends MainServlet
         }
       }
       transaction.commit();
-      return SHOW_TEST_CASE;
+      return SHOW_EDIT_EXPECTATIONS;
     }
   }
 
@@ -937,6 +967,7 @@ public class TestCasesServlet extends MainServlet
     String label = req.getParameter(PARAM_LABEL);
     String description = req.getParameter(PARAM_DESCRIPTION);
     int vaccineGroupId = Integer.parseInt(req.getParameter(PARAM_VACCINE_GROUP_ID));
+    String includeStatus = req.getParameter(PARAM_INCLUDE_STATUS);
     String patientFirst = req.getParameter(PARAM_PATIENT_FIRST);
     String patientLast = req.getParameter(PARAM_PATIENT_LAST);
     String patientSex = req.getParameter(PARAM_PATIENT_SEX);
@@ -1047,6 +1078,7 @@ public class TestCasesServlet extends MainServlet
 
       testPanelCase.setTestCaseNumber(testCaseNumber.trim());
       testPanelCase.setCategoryName(categoryName.trim());
+      testPanelCase.setInclude(Include.getInclude(includeStatus));
 
       if (action.equals(ACTION_UPDATE_TEST_CASE)) {
         if (testCase.getEvalRule() != null) {
@@ -1057,7 +1089,6 @@ public class TestCasesServlet extends MainServlet
       } else if (action.equals(ACTION_COPY_TEST_CASE) || action.equals(ACTION_ADD_TEST_CASE)) {
         testPanelCase.setTestPanel(user.getSelectedTestPanel());
         testPanelCase.setTestCase(testCase);
-        testPanelCase.setInclude(Include.INCLUDED);
         testPanelCase.setResult(Result.RESEARCH);
 
         if (testCase.getEvalRule() != null) {
@@ -1112,6 +1143,8 @@ public class TestCasesServlet extends MainServlet
       user.setSelectedCategoryName(categoryName);
       dataSession.update(user);
       transaction.commit();
+
+      RelativeRuleManager.updateFixedDatesForRelativeRules(testCase, dataSession, true);
       return SHOW_TEST_CASE;
     }
   }
@@ -1131,7 +1164,7 @@ public class TestCasesServlet extends MainServlet
       if (user.getSelectedTaskGroup() != null && user.getSelectedTestPanel() != null
           && user.getSelectedTestPanelCase() != null) {
         TestCase testCase = user.getSelectedTestPanelCase().getTestCase();
-        // RelativeRuleManager.updateFixedDatesForRelativeRules(testCase, dataSession, false);
+        RelativeRuleManager.updateFixedDatesForRelativeRules(testCase, dataSession, false);
         printTestCase(out, user);
         printActualsVsExpected(out, user);
       }
@@ -1141,7 +1174,6 @@ public class TestCasesServlet extends MainServlet
         VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class,
             Integer.parseInt(req.getParameter(PARAM_VACCINE_GROUP_ID)));
         TestCase testCase = user.getSelectedTestPanelCase().getTestCase();
-        RelativeRuleManager.updateFixedDatesForRelativeRules(testCase, dataSession, false);
         printTestCase(out, user);
         printPreview(out, user, vaccineGroup);
       }
@@ -1162,8 +1194,99 @@ public class TestCasesServlet extends MainServlet
       VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class,
           notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), 0));
       printEditExpectations(req, out, dataSession, user, vaccineGroup);
-    }
+    } else if (SHOW_ADD_ACTUAL_VS_EXPECTED.equals(show)) {
+      TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
+      Set<VaccineGroup> vaccineGroupDisplayedSet = new HashSet<VaccineGroup>();
+      {
+        HashMap<VaccineGroup, ForecastActualExpectedCompare> forecastCompareMap = new HashMap<VaccineGroup, ForecastActualExpectedCompare>();
+        if (forecastCompareMap.size() > 0) {
+          for (VaccineGroup vg : forecastCompareMap.keySet()) {
+            vaccineGroupDisplayedSet.add(vg);
+          }
+        }
+      }
+      out.println("<div class=\"centerColumn\">");
+      out.println("<h2>Add Actual vs Expected <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
+          + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "="
+          + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a></h2>");
+      out.println("  <form method=\"POST\" action=\"testCases\">");
+      out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
+          + testPanelCase.getTestPanelCaseId() + "\"/>");
+      out.println("    <input type=\"hidden\" name=\"" + PARAM_SHOW + "\" value=\"" + SHOW_EDIT_EXPECTATIONS + "\"/>");
+      out.println("  <table>");
+      out.println("        <tr>");
+      out.println("          <th>Vaccine Group</th>");
+      out.println("          <td>");
+      out.println("            <select type=\"text\" name=\"" + PARAM_VACCINE_GROUP_ID + "\">");
+      out.println("              <option value=\"0\">--select--</option>");
+      Query query = dataSession.createQuery("from VaccineGroup order by label");
+      List<VaccineGroup> vaccineGroupList = query.list();
+      for (VaccineGroup vg : vaccineGroupList) {
+        if (!vaccineGroupDisplayedSet.contains(vg)) {
+          out.println("              <option value=\"" + vg.getVaccineGroupId() + "\">" + vg.getLabel() + "</option>");
+        }
+      }
+      out.println("            </select");
+      out.println("          </td>");
+      out.println("        </tr>");
+      out.println("        <tr>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
+          + "\" size=\"15\" value=\"" + ACTION_ADD_EXPECTATIONS + "\"/></td>");
+      out.println("        </tr>");
+      out.println("  </table>");
+      out.println("  </form>");
 
+      out.println("</div>");
+    } else if (SHOW_REQUEST_ACTUAL_RESULTS.equals(show)) {
+      Software software = user.getSelectedSoftware();
+      out.println("<div class=\"centerColumn\">");
+      out.println("<h2>Request Actual Results <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
+          + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "="
+          + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a></h2>");
+      out.println("  <form method=\"POST\" action=\"testCases\">");
+      out.println("<table>");
+      out.println("  <tr>");
+      out.println("    <th>CDSi Engine</th>");
+      out.println("    <td>");
+      List<Software> softwareList = getListOfUnrestrictedSoftware(user, dataSession, software);
+      for (Software softwareSelected : softwareList) {
+        if (softwareSelected.getServiceUrl() != null && softwareSelected.getServiceUrl().length() > 0) {
+          out.println("          <input type=\"checkbox\" name=\"" + PARAM_SOFTWARE_ID_SELECTED
+              + softwareSelected.getSoftwareId() + "\" value=\"true\">" + softwareSelected.getLabel() + "<br/>");
+        }
+      }
+      out.println("    </td>");
+      out.println("  </tr>");
+      out.println("        <tr>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
+          + "\" size=\"15\" value=\"" + ACTION_REQUEST_ACTUAL_RESULTS + "\"/></td>");
+      out.println("        </tr>");
+      out.println("</table>");
+      out.println("  </form>");
+
+      out.println("</div>");
+    } else if (SHOW_DEBUGGING_TOOLS.equals(show)) {
+      Software software = user.getSelectedSoftware();
+      TestCase testCase = user.getSelectedTestCase();
+      out.println("<div class=\"centerColumn\">");
+      Software tchSoftware = (Software) dataSession.get(Software.class, Software.TCH_SOFTWARE_ID);
+      out.println("<h2>Debugging Tools <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE
+          + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
+          + "\">Back</a></h2>");
+      out.println("<ul>");
+      String forecastLink = tchSoftware.getServiceUrl() + TCHConnector.createQueryString(testCase, tchSoftware, "html");
+      out.println("  <li><a href=\"" + forecastLink + "\" target=\"_blank\">" + tchSoftware.getLabel() + "</a></li>");
+      if (software != null && !software.equals(tchSoftware) && software.getService() == Service.TCH) {
+        forecastLink = software.getServiceUrl() + TCHConnector.createQueryString(testCase, software, "html");
+        out.println("  <li><a href=\"" + forecastLink + "\" target=\"_blank\">" + software.getLabel() + "</a></li>");
+      }
+      String stepLink = tchSoftware.getServiceUrl().substring(0, tchSoftware.getServiceUrl().length() - "forecast".length()) + "fv/step"
+          + TCHConnector.createQueryString(testCase, tchSoftware, "text");
+      out.println("  <li><a href=\"" + stepLink + "\" target=\"_blank\">TCH Forecast Step Through</a></li>");
+      out.println("</ul>");
+
+      out.println("</div>");
+    }
   }
 
   private void printEditExpectations(HttpServletRequest req, PrintWriter out, Session dataSession, User user,
@@ -1582,7 +1705,6 @@ public class TestCasesServlet extends MainServlet
           + user.getSelectedTestPanelCase().getTestPanelCaseId() + "&" + PARAM_EVENT_TYPE_CODE + "=";
       editButton += " <a class=\"fauxbutton\" href=\"" + editLink + EventType.CONDITION_IMPLICATION.getEventTypeCode()
           + "\">Condition Implication</a>";
-
     }
     if (eventType != EventType.ACIP_DEFINED_CONDITION) {
       String editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_EVENTS + "&" + PARAM_TEST_PANEL_CASE_ID + "="
@@ -1866,6 +1988,7 @@ public class TestCasesServlet extends MainServlet
         "from TestEvent where testCase = ? order by eventDate");
     query.setParameter(0, testCase);
     testEventList = query.list();
+    testCase.setTestEventList(testEventList);
     testEventList.add(0, createBirthEvent(testCase));
     testEventList.add(createEvaluationEvent(testCase));
 
@@ -2113,6 +2236,7 @@ public class TestCasesServlet extends MainServlet
     String dateSetCode;
     String evalDate;
     String evalRule;
+    String includeStatus;
 
     TestCase testCase = null;
     if (testPanelCase != null) {
@@ -2124,6 +2248,7 @@ public class TestCasesServlet extends MainServlet
       description = notNull(req.getParameter(PARAM_DESCRIPTION), testCase.getDescription());
       vaccineGroupId = notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), (testCase.getVaccineGroup() == null ? 0
           : testCase.getVaccineGroup().getVaccineGroupId()));
+      includeStatus = notNull(req.getParameter(PARAM_INCLUDE_STATUS), testPanelCase.getIncludeStatus());
       patientFirst = notNull(req.getParameter(PARAM_PATIENT_FIRST), testCase.getPatientFirst());
       patientLast = notNull(req.getParameter(PARAM_PATIENT_LAST), testCase.getPatientLast());
       patientSex = notNull(req.getParameter(PARAM_PATIENT_SEX), testCase.getPatientSex());
@@ -2139,6 +2264,7 @@ public class TestCasesServlet extends MainServlet
       description = notNull(req.getParameter(PARAM_DESCRIPTION), testCase.getDescription());
       vaccineGroupId = notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), (testCase.getVaccineGroup() == null ? 0
           : testCase.getVaccineGroup().getVaccineGroupId()));
+      includeStatus = notNull(req.getParameter(PARAM_INCLUDE_STATUS), Include.INCLUDED.getIncludeStatus());
       patientFirst = notNull(req.getParameter(PARAM_PATIENT_FIRST), RandomNames.getRandomFirstName());
       patientLast = notNull(req.getParameter(PARAM_PATIENT_LAST), RandomNames.getRandomLastName());
       patientSex = notNull(req.getParameter(PARAM_PATIENT_SEX), testCase.getPatientSex());
@@ -2153,6 +2279,7 @@ public class TestCasesServlet extends MainServlet
       label = notNull(req.getParameter(PARAM_LABEL));
       description = notNull(req.getParameter(PARAM_DESCRIPTION));
       vaccineGroupId = notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), 0);
+      includeStatus = notNull(req.getParameter(PARAM_INCLUDE_STATUS), Include.PROPOSED.getIncludeStatus());
       patientFirst = notNull(req.getParameter(PARAM_PATIENT_FIRST), RandomNames.getRandomFirstName());
       patientLast = notNull(req.getParameter(PARAM_PATIENT_LAST), RandomNames.getRandomLastName());
       patientSex = notNull(req.getParameter(PARAM_PATIENT_SEX), "F");
@@ -2223,7 +2350,6 @@ public class TestCasesServlet extends MainServlet
           + description + "</textarea></td>");
       out.println("        </tr>");
       out.println("        <tr>");
-      out.println("        <tr>");
       out.println("          <th>Vaccine Group</th>");
       out.println("          <td>");
       out.println("            <select type=\"text\" name=\"" + PARAM_VACCINE_GROUP_ID + "\">");
@@ -2243,6 +2369,22 @@ public class TestCasesServlet extends MainServlet
       out.println("          </td>");
       out.println("        </tr>");
     }
+    out.println("        <tr>");
+    out.println("          <th>Include</th>");
+    out.println("          <td>");
+    out.println("            <select type=\"text\" name=\"" + PARAM_INCLUDE_STATUS + "\">");
+    for (Include include : Include.valueList()) {
+      if (include.getIncludeStatus().equals(includeStatus)) {
+        out.println("              <option value=\"" + include.getIncludeStatus() + "\" selected=\"selected\">"
+            + include.getLabel() + "</option>");
+      } else {
+        out.println("              <option value=\"" + include.getIncludeStatus() + "\">" + include.getLabel()
+            + "</option>");
+      }
+    }
+    out.println("            </select");
+    out.println("          </td>");
+    out.println("        </tr>");
 
     out.println("          <th>Number</th>");
     out.println("          <td><input type=\"text\" name=\"" + PARAM_TEST_CASE_NUMBER + "\" size=\"15\" value=\""
@@ -2421,6 +2563,8 @@ public class TestCasesServlet extends MainServlet
       }
     }
 
+    boolean hasPrimaryExpectations = false;
+
     Set<VaccineGroup> vaccineGroupDisplayedSet = new HashSet<VaccineGroup>();
     VaccineGroup vaccineGroup = testCase.getVaccineGroup();
     if (vaccineGroup != null) {
@@ -2431,9 +2575,10 @@ public class TestCasesServlet extends MainServlet
           + vaccineGroup.getVaccineGroupId() + "\">Edit</a><a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW
           + "=" + SHOW_PREVIEW_TEST_CASE + "&" + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId() + "&"
           + PARAM_VACCINE_GROUP_ID + "=" + vaccineGroup.getVaccineGroupId() + "\">Preview</a></h2>");
-      printEvaluationCompare(out, dataSession, testCase, vaccineGroup);
-      printForecastCompare(out, user, dataSession, testCase, forecastCompareMap, vaccineGroup);
-      printGuidanceCompare(out, dataSession, testCase, vaccineGroup);
+      boolean printedEvaluation = printEvaluationCompare(out, dataSession, testCase, vaccineGroup);
+      boolean printedForecast = printForecastCompare(out, user, dataSession, testCase, forecastCompareMap, vaccineGroup);
+      boolean printedGuidance = printGuidanceCompare(out, dataSession, testCase, vaccineGroup);
+      hasPrimaryExpectations = printedEvaluation || printedForecast || printedGuidance;
     }
 
     if (forecastCompareMap.size() > 0) {
@@ -2454,38 +2599,38 @@ public class TestCasesServlet extends MainServlet
       }
     }
 
-    out.println("<h2>Add Actual vs Expected</h2>");
-    out.println("  <form method=\"POST\" action=\"testCases\">");
-    out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
-        + testPanelCase.getTestPanelCaseId() + "\"/>");
-    out.println("    <input type=\"hidden\" name=\"" + PARAM_SHOW + "\" value=\"" + SHOW_EDIT_EXPECTATIONS + "\"/>");
-    out.println("  <table>");
-    out.println("        <tr>");
-    out.println("          <th>Vaccine Group</th>");
-    out.println("          <td>");
-    out.println("            <select type=\"text\" name=\"" + PARAM_VACCINE_GROUP_ID + "\">");
-    out.println("              <option value=\"0\">--select--</option>");
-    Query query = dataSession.createQuery("from VaccineGroup order by label");
-    List<VaccineGroup> vaccineGroupList = query.list();
-    for (VaccineGroup vg : vaccineGroupList) {
-      if (!vaccineGroupDisplayedSet.contains(vg)) {
-        out.println("              <option value=\"" + vg.getVaccineGroupId() + "\">" + vg.getLabel() + "</option>");
-      }
+    out.println("<h2>Other ");
+    out.println("<a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_DEBUGGING_TOOLS + "&"
+        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
+        + "\">Debugging Tools</a>");
+    out.println("<a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_REQUEST_ACTUAL_RESULTS + "&"
+        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
+        + "\">Request Actual Results</a>");
+    out.println("<a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_ADD_ACTUAL_VS_EXPECTED + "&"
+        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
+        + "\">Add Actual vs Expected</a>");
+    out.println("</h2>");
+    if (hasPrimaryExpectations) {
+
     }
-    out.println("            </select");
-    out.println("          </td>");
-    out.println("        </tr>");
-    out.println("        <tr>");
-    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-        + "\" size=\"15\" value=\"" + ACTION_ADD_EXPECTATIONS + "\"/></td>");
-    out.println("        </tr>");
-    out.println("  </table>");
-    out.println("  </form>");
 
     out.println("</div>");
   }
 
-  private void printGuidanceCompare(PrintWriter out, Session dataSession, TestCase testCase, VaccineGroup vaccineGroup) {
+  private List<Software> getListOfUnrestrictedSoftware(User user, Session dataSession, Software software) {
+    Query query1 = dataSession.createQuery("from Software order by label");
+    List<Software> softwareList = query1.list();
+    for (Iterator<Software> it = softwareList.iterator(); it.hasNext();) {
+      Software softwareSelected = it.next();
+      if (SoftwareManager.isSoftwareAccessRestricted(software, user, dataSession)) {
+        it.remove();
+      }
+    }
+    return softwareList;
+  }
+
+  private boolean printGuidanceCompare(PrintWriter out, Session dataSession, TestCase testCase,
+      VaccineGroup vaccineGroup) {
     Query query = dataSession
         .createQuery("from GuidanceExpected where testCase = ? and guidance.vaccineGroup = ? order by updatedDate desc");
     query.setParameter(0, testCase);
@@ -2587,7 +2732,9 @@ public class TestCasesServlet extends MainServlet
       out.println("    </td>");
       out.println("  </tr>");
       out.println("</table>");
+      return true;
     }
+    return false;
   }
 
   public void printPreview(PrintWriter out, User user, VaccineGroup vaccineGroup) {
@@ -2812,7 +2959,7 @@ public class TestCasesServlet extends MainServlet
       if (testEvent.getEvent().getEventType() == eventType) {
         screenId++;
         testEvent.setScreenId(screenId);
-        if (testEvent.getEventDate().equals(testCase.getEvalDate())) {
+        if (testEvent.getEventDate() == null || testEvent.getEventDate().equals(testCase.getEvalDate())) {
           out.println("  <li>" + testEvent.getEvent().getLabel() + "</li>");
         } else {
           out.println("  <li>" + testEvent.getEvent().getLabel() + " on " + sdf.format(testEvent.getEventDate())
@@ -2823,7 +2970,8 @@ public class TestCasesServlet extends MainServlet
     out.println("</ul>");
   }
 
-  private void printEvaluationCompare(PrintWriter out, Session dataSession, TestCase testCase, VaccineGroup vaccineGroup) {
+  private boolean printEvaluationCompare(PrintWriter out, Session dataSession, TestCase testCase,
+      VaccineGroup vaccineGroup) {
     if (countVaccination > 0) {
       Map<User, Map<TestEvent, EvaluationExpected>> expectedMap = new HashMap<User, Map<TestEvent, EvaluationExpected>>();
       List<User> authorList = new ArrayList<User>();
@@ -2875,11 +3023,13 @@ public class TestCasesServlet extends MainServlet
           out.println("  </tr>");
         }
         out.println("</table>");
+        return true;
       }
     }
+    return false;
   }
 
-  private void printForecastCompare(PrintWriter out, User user, Session dataSession, TestCase testCase,
+  private boolean printForecastCompare(PrintWriter out, User user, Session dataSession, TestCase testCase,
       HashMap<VaccineGroup, ForecastActualExpectedCompare> forecastCompareMap, VaccineGroup vaccineGroup) {
     ForecastActualExpectedCompare forecastCompare = forecastCompareMap.get(vaccineGroup);
     if (forecastCompare != null) {
@@ -2946,7 +3096,9 @@ public class TestCasesServlet extends MainServlet
       }
 
       out.println("  </table>");
+      return true;
     }
+    return false;
   }
 
   public void printForecastActual(PrintWriter out, ForecastActual forecastActual) {
@@ -3047,6 +3199,15 @@ public class TestCasesServlet extends MainServlet
 
     if (forecastActual != null) {
       String entityLabel = "Actual from " + forecastActual.getSoftwareResult().getSoftware().getLabel();
+      // todo
+      if (forecastActual.getSoftwareResult() != null) {
+        SoftwareResult softwareResult = forecastActual.getSoftwareResult();
+        String todayString = sdf.format(new Date());
+        String runDateString = sdf.format(softwareResult.getRunDate());
+        if (todayString.equals(runDateString)) {
+          // will work on displaying it somewhere
+        }
+      }
       out.println("    <tr>");
       out.println("      <td class=\"" + styleClassLabel + "\">" + entityLabel + "</td>");
       out.println("      <td class=\"" + styleClassAdmin + "\">" + actualAdmin + "</td>");
@@ -3103,6 +3264,10 @@ public class TestCasesServlet extends MainServlet
             .getLabel()) + "</td>");
     out.println("    </tr>");
     out.println("    <tr>");
+    out.println("      <th>Include Status</th>");
+    out.println("      <td>" + testPanelCase.getInclude().getLabel() + "</td>");
+    out.println("    </tr>");
+    out.println("    <tr>");
     out.println("      <th>Number</th>");
     out.println("      <td>" + testPanelCase.getTestCaseNumber() + "</td>");
     out.println("    </tr>");
@@ -3136,6 +3301,7 @@ public class TestCasesServlet extends MainServlet
         "from TestEvent where testCase = ? order by eventDate");
     query.setParameter(0, testCase);
     testEventList = query.list();
+    testCase.setTestEventList(testEventList);
     for (TestEvent testEvent : testEventList) {
       if (testEvent.getEvent().getEventType() == EventType.VACCINATION) {
         countVaccination++;
