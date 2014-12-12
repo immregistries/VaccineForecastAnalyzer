@@ -39,6 +39,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.fc.model.Condition;
 import org.tch.fc.model.Event;
+import org.tch.fc.model.EventType;
 import org.tch.fc.model.ServiceOption;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
@@ -222,7 +223,9 @@ public class EditTestCasePage extends FTBasePage implements SecurePage {
     };
     add(addTestEventForm);
 
-    query = dataSession.createQuery("from Event order by eventTypeCode, label");
+    query = dataSession.createQuery("from Event where eventTypeCode <> ? and eventTypeCode <> ? order by eventTypeCode, label");
+    query.setParameter(0, EventType.ACIP_DEFINED_CONDITION.getEventTypeCode());
+    query.setParameter(1, EventType.CONDITION_IMPLICATION.getEventTypeCode());
     List<Event> eventList = query.list();
     DropDownChoice<Event> eventField = new DropDownChoice<Event>("event", eventList);
     eventField.setRequired(true);

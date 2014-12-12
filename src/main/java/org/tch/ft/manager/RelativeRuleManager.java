@@ -14,6 +14,7 @@ import org.tch.fc.model.DateSet;
 import org.tch.fc.model.RelativeRule;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
+import org.tch.ft.model.ForecastExpected;
 
 public class RelativeRuleManager
 {
@@ -45,6 +46,31 @@ public class RelativeRuleManager
           testEvent.calculateFixedDates();
           dataSession.update(testEvent);
         }
+        query = dataSession.createQuery("from ForecastExpected where testCase = ?");
+        query.setParameter(0, testCase);
+        List<ForecastExpected> forecastExpectedList = query.list();
+        for (ForecastExpected forecastExpected : forecastExpectedList) {
+          boolean update = false;
+          if (forecastExpected.getValidRule() != null) {
+            forecastExpected.setValidDate(forecastExpected.getValidRule().calculateDate(testCase));
+            update = true;
+          }
+          if (forecastExpected.getDueRule() != null) {
+            forecastExpected.setDueDate(forecastExpected.getDueRule().calculateDate(testCase));
+            update = true;
+          }
+          if (forecastExpected.getOverdueRule() != null) {
+            forecastExpected.setOverdueDate(forecastExpected.getOverdueRule().calculateDate(testCase));
+            update = true;
+          }
+          if (forecastExpected.getFinishedRule() != null) {
+            forecastExpected.setFinishedDate(forecastExpected.getFinishedRule().calculateDate(testCase));
+            update = true;
+          }
+          if (update) {
+            dataSession.update(forecastExpected);
+          }
+        }
 
         dataSession.update(testCase);
         transaction.commit();
@@ -61,9 +87,10 @@ public class RelativeRuleManager
           found = true;
         }
       }
-      if (!found) {
-        needsToBeCalculatedList.add(0, testEvent);
+      if (found) {
+        needsToBeCalculatedList.remove(testEvent);
       }
+      needsToBeCalculatedList.add(0, testEvent);
     }
     try {
       RelativeRule eventRule = testEvent.getEventRule();

@@ -31,6 +31,7 @@ import org.apache.wicket.validation.validator.StringValidator;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.fc.model.DateSet;
 import org.tch.fc.model.TestCase;
 import org.tch.ft.model.Include;
 import org.tch.ft.model.TestPanel;
@@ -59,6 +60,7 @@ public class AddTestCasePage extends FTBasePage implements SecurePage {
 
     final TestCase testCase = new TestCase();
     testCase.setEvalDate(new Date());
+    testCase.setDateSet(DateSet.FIXED);
     testCase.setPatientFirst(RandomNames.getRandomFirstName());
     testCase.setPatientLast(RandomNames.getRandomLastName());
     testCase.setPatientSex("F");

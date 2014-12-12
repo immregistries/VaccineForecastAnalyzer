@@ -18,34 +18,21 @@ package org.tch.ft.web.testCase;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.basic.MultiLineLabel;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.CheckBoxMultipleChoice;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
-import org.hibernate.Query;
 import org.hibernate.Session;
-import org.tch.fc.model.ForecastActual;
 import org.tch.fc.model.Software;
-import org.tch.fc.model.TestCase;
-import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.manager.ForecastActualGenerator;
-import org.tch.ft.model.ForecastExpected;
-import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
-import org.tch.ft.model.TestPanelForecast;
 import org.tch.ft.model.User;
 import org.tch.ft.web.FTBasePage;
 import org.tch.ft.web.MenuSection;
 import org.tch.ft.web.SecurePage;
 import org.tch.ft.web.WebSession;
 import org.tch.ft.web.software.SelectSoftwarePage;
-import org.tch.ft.web.software.TestResultsPage;
 
 public class ForecastNowPage extends FTBasePage implements SecurePage {
   private static final long serialVersionUID = 1L;

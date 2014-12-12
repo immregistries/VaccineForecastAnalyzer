@@ -81,6 +81,9 @@ public class HomeServlet extends MainServlet
         }
 
       } else if (action.equals(ACTION_LOGOUT)) {
+        applicationSession.getDataSession().disconnect();
+        applicationSession.getDataSession().close();
+        applicationSession.setDataSession(null);
         applicationSession = new ApplicationSession();
       }
     }

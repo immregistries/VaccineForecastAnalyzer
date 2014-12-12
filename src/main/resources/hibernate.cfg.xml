@@ -4,17 +4,17 @@
   <session-factory>
     <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
 
-    <!--
     <property name="hibernate.connection.url">jdbc:mysql://localhost/forecast_tester</property>
     <property name="hibernate.connection.username">ft_web</property>
     <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
     <property name="connection.password">cArn88rOw</property>
- --> 
     
+    <!--
     <property name="hibernate.connection.url">jdbc:mysql://localhost/tchforec_ft</property>
     <property name="hibernate.connection.username">tchforec_ftweb</property>
     <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
     <property name="connection.password">YellsSolvesGearsDotage</property>
+ --> 
     
     <property name="show_sql">false</property>
     <property name="hibernate.c3p0.acquire_increment">1</property>
