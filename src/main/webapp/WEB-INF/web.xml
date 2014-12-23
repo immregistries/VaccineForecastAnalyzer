@@ -18,6 +18,10 @@
 	  <servlet-name>TestCasesServlet</servlet-name>
 	  <servlet-class>org.tch.ft.servlet.TestCasesServlet</servlet-class>
 	</servlet>
+	<servlet>
+	  <servlet-name>SoftwareServlet</servlet-name>
+	  <servlet-class>org.tch.ft.servlet.SoftwareServlet</servlet-class>
+	</servlet>
 
   <servlet-mapping>
     <servlet-name>HomeServlet</servlet-name>
@@ -27,6 +31,11 @@
   <servlet-mapping>
     <servlet-name>TestCasesServlet</servlet-name>
     <url-pattern>/s/testCases</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>SoftwareServlet</servlet-name>
+    <url-pattern>/s/software</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>

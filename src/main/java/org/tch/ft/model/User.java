@@ -2,11 +2,15 @@ package org.tch.ft.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
+import org.tch.ft.manager.ForecastActualExpectedCompare;
 
-public class User implements Serializable {
+public class User implements Serializable
+{
 
   private static final long serialVersionUID = 1L;
 
@@ -20,7 +24,8 @@ public class User implements Serializable {
   private boolean loggedIn = false;
   private boolean admin = false;
   private boolean memberOfGroup = false;
-  private boolean canEditTestCase = false; 
+  private boolean canEditTestCase = false;
+  private boolean canEditTestPanelCase = false;
   private Agreement agreement = null;
   private Date agreementDate = null;
   private TaskGroup selectedTaskGroup = null;
@@ -32,6 +37,13 @@ public class User implements Serializable {
   private String selectedCategoryName = null;
   private boolean agreedToAgreement = false;
   private Expert selectedExpert = null;
+  public boolean isCanEditTestPanelCase() {
+    return canEditTestPanelCase;
+  }
+
+  public void setCanEditTestPanelCase(boolean canEditTestPanelCase) {
+    this.canEditTestPanelCase = canEditTestPanelCase;
+  }
 
   public Expert getSelectedExpert() {
     return selectedExpert;

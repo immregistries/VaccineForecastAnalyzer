@@ -1,8 +1,5 @@
 package org.tch.ft.manager;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,11 +15,10 @@ import org.tch.fc.ConnectFactory;
 import org.tch.fc.ConnectorInterface;
 import org.tch.fc.model.Admin;
 import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.SoftwareResult;
-import org.tch.fc.model.VaccineGroup;
-import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.Software;
+import org.tch.fc.model.SoftwareResult;
 import org.tch.fc.model.TestCase;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.Result;
 import org.tch.ft.model.TestPanel;
@@ -31,8 +27,8 @@ import org.tch.ft.model.TestPanelForecast;
 
 public class ForecastActualGenerator
 {
-  public static List<ForecastActualExpectedCompare> runForecastActual(TestPanel testPanel, Software software,
-      Session session, boolean logText) throws Exception {
+  public static void runForecastActual(TestPanel testPanel, Software software, Session session, boolean logText)
+      throws Exception {
 
     List<TestPanelForecast> testPanelForecastList = null;
     {
@@ -41,11 +37,33 @@ public class ForecastActualGenerator
       testPanelForecastList = query.list();
     }
 
-    return runForecastActual(software, session, testPanelForecastList, logText);
+    runForecastActual(software, session, testPanelForecastList, logText);
   }
 
-  public static List<ForecastActualExpectedCompare> runForecastActual(TestPanelCase testPanelCase, Software software,
+  public static void runForecastActual(TestPanel testPanel, Software software, Set<String> categoryNameSet,
       Session session, boolean logText) throws Exception {
+
+    List<TestPanelForecast> testPanelForecastList;
+    {
+      Query query = session.createQuery("from TestPanelForecast where testPanelCase.testPanel = ?");
+      query.setParameter(0, testPanel);
+      if (categoryNameSet == null) {
+        testPanelForecastList = query.list();
+      } else {
+        testPanelForecastList = new ArrayList<TestPanelForecast>();
+        for (TestPanelForecast testPanelForecast : (List<TestPanelForecast>) query.list()) {
+          if (categoryNameSet.contains(testPanelForecast.getTestPanelCase().getCategoryName())) {
+            testPanelForecastList.add(testPanelForecast);
+          }
+        }
+      }
+    }
+
+    runForecastActual(software, session, testPanelForecastList, logText);
+  }
+
+  public static void runForecastActual(TestPanelCase testPanelCase, Software software, Session session, boolean logText)
+      throws Exception {
 
     List<TestPanelForecast> testPanelForecastList = null;
     {
@@ -54,10 +72,10 @@ public class ForecastActualGenerator
       testPanelForecastList = query.list();
     }
 
-    return runForecastActual(software, session, testPanelForecastList, logText);
+    runForecastActual(software, session, testPanelForecastList, logText);
   }
 
-  public static List<ForecastActualExpectedCompare> runForecastActual(Software software, Session session,
+  public static void runForecastActual(Software software, Session session,
       List<TestPanelForecast> testPanelForecastList, boolean logText) throws Exception {
 
     // Get list of previously run forecast results
@@ -197,58 +215,37 @@ public class ForecastActualGenerator
 
       }
 
-      boolean updateStatusOfTestPanel = false;
-      if (testPanelForecastList.size() > 0
-          && testPanelForecastList.get(0).getTestPanelCase().getTestPanel().getTaskGroup().getPrimarySoftware()
-              .equals(software)) {
-        updateStatusOfTestPanel = true;
-      }
-      if (updateStatusOfTestPanel) {
-        Set<TestPanelCase> testPanelCaseSetPass = new HashSet<TestPanelCase>();
-        Set<TestPanelCase> testPanelCaseSetFail = new HashSet<TestPanelCase>();
-        for (ForecastActualExpectedCompare forecastCompare : forecastCompareList) {
-          if (forecastCompare.matchExactly()) {
-            testPanelCaseSetPass.add(forecastCompare.getTestPanelCase());
-          } else {
-            testPanelCaseSetFail.add(forecastCompare.getTestPanelCase());
-          }
-        }
-        testPanelCaseSetPass.remove(testPanelCaseSetFail);
-        for (TestPanelCase testPanelCase : testPanelCaseSetPass) {
-          if (testPanelCase.getResult() == Result.FAIL) {
-            testPanelCase.setResult(Result.FIXED);
-            session.update(testPanelCase);
-          }
-        }
-        for (TestPanelCase testPanelCase : testPanelCaseSetFail) {
-          if (testPanelCase.getResult() == Result.PASS) {
-            testPanelCase.setResult(Result.FAIL);
-            session.update(testPanelCase);
-          }
-        }
-      }
-
     } finally {
       trans.commit();
     }
-    return forecastCompareList;
   }
 
   public static List<ForecastActualExpectedCompare> createForecastComparison(TestPanel testPanel, Software software,
-      Session session) {
+      Set<String> categoryNameSet, Session session) {
     List<ForecastActualExpectedCompare> forecastCompareList = new ArrayList<ForecastActualExpectedCompare>();
     Query query = session.createQuery("from TestPanelForecast where testPanelCase.testPanel = ?");
     query.setParameter(0, testPanel);
-    List<TestPanelForecast> testPanelForecastList = query.list();
+    List<TestPanelForecast> testPanelForecastList;
+    if (categoryNameSet == null) {
+      testPanelForecastList = query.list();
+    } else {
+      testPanelForecastList = new ArrayList<TestPanelForecast>();
+      for (TestPanelForecast testPanelForecast : (List<TestPanelForecast>) query.list()) {
+        if (categoryNameSet.contains(testPanelForecast.getTestPanelCase().getCategoryName())) {
+          testPanelForecastList.add(testPanelForecast);
+        }
+      }
+    }
     for (TestPanelForecast testPanelForecast : testPanelForecastList) {
       ForecastExpected forecastExpected = testPanelForecast.getForecastExpected();
       TestCase testCase = forecastExpected.getTestCase();
       ForecastActualExpectedCompare forecastCompare = new ForecastActualExpectedCompare();
       forecastCompare.setForecastResultA(forecastExpected);
+      forecastCompare.setTestPanelCase(testPanelForecast.getTestPanelCase());
       forecastCompare.setTestCase(testCase);
       // Get forecast results that were run for this software
       query = session
-          .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ?");
+          .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ? order by softwareResult.runDate desc");
       query.setParameter(0, software);
       query.setParameter(1, testCase);
       query.setParameter(2, forecastExpected.getVaccineGroup());
@@ -257,6 +254,45 @@ public class ForecastActualGenerator
         forecastCompare.setForecastResultB(forecastActualList.get(0));
       }
       forecastCompareList.add(forecastCompare);
+    }
+
+    boolean updateStatusOfTestPanel = false;
+    if (testPanelForecastList.size() > 0
+        && testPanelForecastList.get(0).getTestPanelCase().getTestPanel().getTaskGroup().getPrimarySoftware()
+            .equals(software)) {
+      updateStatusOfTestPanel = true;
+    }
+    if (updateStatusOfTestPanel) {
+      Transaction transaction = session.beginTransaction();
+      Set<TestPanelCase> testPanelCaseSetPass = new HashSet<TestPanelCase>();
+      Set<TestPanelCase> testPanelCaseSetFail = new HashSet<TestPanelCase>();
+      for (ForecastActualExpectedCompare forecastCompare : forecastCompareList) {
+        if (forecastCompare.matchExactly()) {
+          testPanelCaseSetPass.add(forecastCompare.getTestPanelCase());
+        } else {
+          testPanelCaseSetFail.add(forecastCompare.getTestPanelCase());
+        }
+      }
+      testPanelCaseSetPass.remove(testPanelCaseSetFail);
+      for (TestPanelCase testPanelCase : testPanelCaseSetPass) {
+        if (testPanelCase.getResult() == null) {
+          testPanelCase.setResult(Result.PASS);
+          session.update(testPanelCase);
+        } else if (testPanelCase.getResult() == Result.FAIL) {
+          testPanelCase.setResult(Result.FIXED);
+          session.update(testPanelCase);
+        }
+      }
+      for (TestPanelCase testPanelCase : testPanelCaseSetFail) {
+        if (testPanelCase.getResult() == null) {
+          testPanelCase.setResult(Result.FAIL);
+          session.update(testPanelCase);
+        } else if (testPanelCase.getResult() == Result.PASS) {
+          testPanelCase.setResult(Result.FAIL);
+          session.update(testPanelCase);
+        }
+      }
+      transaction.commit();
     }
     return forecastCompareList;
   }

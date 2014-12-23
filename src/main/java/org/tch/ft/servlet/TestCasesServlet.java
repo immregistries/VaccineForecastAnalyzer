@@ -47,7 +47,6 @@ import org.tch.fc.model.ResourceGuidance;
 import org.tch.fc.model.Service;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.SoftwareResult;
-import org.tch.fc.model.SoftwareSetting;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.fc.model.VaccineGroup;
@@ -65,6 +64,7 @@ import org.tch.ft.model.Include;
 import org.tch.ft.model.Result;
 import org.tch.ft.model.Role;
 import org.tch.ft.model.TaskGroup;
+import org.tch.ft.model.TestNote;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.TestPanelEvaluation;
@@ -90,6 +90,7 @@ public class TestCasesServlet extends MainServlet
   public static final String ACTION_DELETE_EVENT = "Delete Event";
   public static final String ACTION_ADD_VACCINATION = "Add Vaccination";
   public static final String ACTION_ADD_EVENT = "Add Event";
+  public static final String ACTION_ADD_COMMENT = "Add Comment";
   public static final String ACTION_SAVE_EXPECTATIONS = "Save Expectations";
   public static final String ACTION_UPDATE_RELATIVE_DATES = "Update Relative Dates";
   public static final String ACTION_REQUEST_ACTUAL_RESULTS = "Request Actual Results";
@@ -143,6 +144,8 @@ public class TestCasesServlet extends MainServlet
   public static final String PARAM_RESOURCE_TEXT = "resourceText";
   public static final String PARAM_RESOURCE_LINK = "resourceLink";
   public static final String PARAM_SOFTWARE_ID_SELECTED = "softwareIdSelected";
+  public static final String PARAM_NOTE_TEXT = "noteText";
+  public static final String PARAM_RESULT_STATUS = "resultStatus";
 
   public static final String RULE_BEFORE_OR_AFTER = "BeforeOrAfter";
   public static final String RULE_TEST_EVENT_ID = "TestEventId";
@@ -269,6 +272,31 @@ public class TestCasesServlet extends MainServlet
       } else if (action.equals(ACTION_REQUEST_ACTUAL_RESULTS)) {
         doRequestActualResults(req, user, dataSession);
         return SHOW_TEST_CASE;
+      } else if (action.equals(ACTION_ADD_COMMENT)) {
+        String noteText = req.getParameter(PARAM_NOTE_TEXT).trim();
+        if (noteText.equals("")) {
+          applicationSession.setAlertError("Unable to save, you must enter your comment to save. ");
+        } else {
+          Transaction transaction = dataSession.beginTransaction();
+
+          if (user.isCanEditTestPanelCase()) {
+            String resultStatus = req.getParameter(PARAM_RESULT_STATUS);
+            TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
+            testPanelCase.setResult(Result.getResult(resultStatus));
+            dataSession.update(testPanelCase);
+            if (!noteText.endsWith(".") && !noteText.endsWith("!") && !noteText.endsWith("?")) {
+              noteText += ".";
+            }
+            noteText += " Changed test status to " + testPanelCase.getResult().getLabel() + ".";
+          }
+          TestNote testNote = new TestNote();
+          testNote.setTestCase(user.getSelectedTestCase());
+          testNote.setUser(user);
+          testNote.setNoteText(noteText);
+          testNote.setNoteDate(new Date());
+          dataSession.save(testNote);
+          transaction.commit();
+        }
       }
 
     }
@@ -278,7 +306,7 @@ public class TestCasesServlet extends MainServlet
   private void doRequestActualResults(HttpServletRequest req, User user, Session dataSession) {
     Software software = user.getSelectedSoftware();
     TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
-    List<Software> softwareList = getListOfUnrestrictedSoftware(user, dataSession, software);
+    List<Software> softwareList = SoftwareManager.getListOfUnrestrictedSoftware(user, dataSession);
     for (Software softwareSelected : softwareList) {
       String isSoftwareSelected = req.getParameter(PARAM_SOFTWARE_ID_SELECTED + softwareSelected.getSoftwareId());
       if (isSoftwareSelected != null && isSoftwareSelected.equals("true")) {
@@ -1155,7 +1183,6 @@ public class TestCasesServlet extends MainServlet
     Session dataSession = applicationSession.getDataSession();
 
     User user = applicationSession.getUser();
-
     setupForPrinting(dataSession, user);
 
     printTree(out, dataSession, user);
@@ -1248,7 +1275,7 @@ public class TestCasesServlet extends MainServlet
       out.println("  <tr>");
       out.println("    <th>CDSi Engine</th>");
       out.println("    <td>");
-      List<Software> softwareList = getListOfUnrestrictedSoftware(user, dataSession, software);
+      List<Software> softwareList = SoftwareManager.getListOfUnrestrictedSoftware(user, dataSession);
       for (Software softwareSelected : softwareList) {
         if (softwareSelected.getServiceUrl() != null && softwareSelected.getServiceUrl().length() > 0) {
           out.println("          <input type=\"checkbox\" name=\"" + PARAM_SOFTWARE_ID_SELECTED
@@ -1280,8 +1307,9 @@ public class TestCasesServlet extends MainServlet
         forecastLink = software.getServiceUrl() + TCHConnector.createQueryString(testCase, software, "html");
         out.println("  <li><a href=\"" + forecastLink + "\" target=\"_blank\">" + software.getLabel() + "</a></li>");
       }
-      String stepLink = tchSoftware.getServiceUrl().substring(0, tchSoftware.getServiceUrl().length() - "forecast".length()) + "fv/step"
-          + TCHConnector.createQueryString(testCase, tchSoftware, "text");
+      String stepLink = tchSoftware.getServiceUrl().substring(0,
+          tchSoftware.getServiceUrl().length() - "forecast".length())
+          + "fv/step" + TCHConnector.createQueryString(testCase, tchSoftware, "text");
       out.println("  <li><a href=\"" + stepLink + "\" target=\"_blank\">TCH Forecast Step Through</a></li>");
       out.println("</ul>");
 
@@ -2201,6 +2229,7 @@ public class TestCasesServlet extends MainServlet
     TaskGroup taskGroup = user.getSelectedTaskGroup();
     if (testPanelCase != null || taskGroup != null) {
       user.setCanEditTestCase(false);
+      user.setCanEditTestPanelCase(false);
       Query query = dataSession.createQuery("from Expert where user = ? and taskGroup = ?");
       query.setParameter(0, user);
       query.setParameter(1, taskGroup);
@@ -2210,6 +2239,7 @@ public class TestCasesServlet extends MainServlet
       } else {
         Expert expert = expertList.get(0);
         user.setSelectedExpert(expert);
+        user.setCanEditTestPanelCase(true);
         if (testPanelCase != null && expert.getRole().canEdit()) {
           query = dataSession.createQuery("from TestPanelCase where testCase = ?");
           query.setParameter(0, testPanelCase.getTestCase());
@@ -2386,10 +2416,12 @@ public class TestCasesServlet extends MainServlet
     out.println("          </td>");
     out.println("        </tr>");
 
-    out.println("          <th>Number</th>");
-    out.println("          <td><input type=\"text\" name=\"" + PARAM_TEST_CASE_NUMBER + "\" size=\"15\" value=\""
-        + testCaseNumber + "\"/></td>");
-    out.println("        </tr>");
+    if (testCaseNumber != null) {
+      out.println("          <th>Number</th>");
+      out.println("          <td><input type=\"text\" name=\"" + PARAM_TEST_CASE_NUMBER + "\" size=\"15\" value=\""
+          + testCaseNumber + "\"/></td>");
+      out.println("        </tr>");
+    }
     out.println("        <tr>");
     if (testPanelCase == null || applicationSession.getUser().isCanEditTestCase()) {
 
@@ -2583,7 +2615,7 @@ public class TestCasesServlet extends MainServlet
 
     if (forecastCompareMap.size() > 0) {
       for (VaccineGroup vg : forecastCompareMap.keySet()) {
-        if (vaccineGroup != null && !vg.equals(vaccineGroup)) {
+        if (vaccineGroup == null || !vg.equals(vaccineGroup)) {
           vaccineGroupDisplayedSet.add(vg);
           out.println("<h2>Actual vs Expected for " + vg.getLabel() + " <a class=\"fauxbutton\" href=\"testCases?"
               + PARAM_SHOW + "=" + SHOW_EDIT_EXPECTATIONS + "&" + PARAM_TEST_PANEL_ID + "="
@@ -2615,18 +2647,6 @@ public class TestCasesServlet extends MainServlet
     }
 
     out.println("</div>");
-  }
-
-  private List<Software> getListOfUnrestrictedSoftware(User user, Session dataSession, Software software) {
-    Query query1 = dataSession.createQuery("from Software order by label");
-    List<Software> softwareList = query1.list();
-    for (Iterator<Software> it = softwareList.iterator(); it.hasNext();) {
-      Software softwareSelected = it.next();
-      if (SoftwareManager.isSoftwareAccessRestricted(software, user, dataSession)) {
-        it.remove();
-      }
-    }
-    return softwareList;
   }
 
   private boolean printGuidanceCompare(PrintWriter out, Session dataSession, TestCase testCase,
@@ -3267,6 +3287,19 @@ public class TestCasesServlet extends MainServlet
     out.println("      <th>Include Status</th>");
     out.println("      <td>" + testPanelCase.getInclude().getLabel() + "</td>");
     out.println("    </tr>");
+    String styleClass = "";
+    if (user.isCanEditTestPanelCase()) {
+      Result result = testPanelCase.getResult();
+      if (result == Result.ACCEPT || result == Result.PASS) {
+        styleClass = "pass";
+      } else {
+        styleClass = "fail";
+      }
+      out.println("    <tr>");
+      out.println("      <th>Result Status</th>");
+      out.println("      <td class=\"" + styleClass + "\">" + (result == null ? "-" : result.getLabel()) + "</td>");
+      out.println("    </tr>");
+    }
     out.println("    <tr>");
     out.println("      <th>Number</th>");
     out.println("      <td>" + testPanelCase.getTestCaseNumber() + "</td>");
@@ -3387,6 +3420,58 @@ public class TestCasesServlet extends MainServlet
 
     }
 
+    printShowRowScript(out);
+    String addCommentButton = " <a class=\"fauxbutton\" href=\"javascript: showRow('commentForm')\">Add Comment</a>";
+    out.println("  <h2>Comments" + addCommentButton + "</h2>");
+
+    out.println("  <form method=\"POST\" action=\"testCases\" id=\"commentForm\" style=\"display: none;\">");
+    out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
+        + testPanelCase.getTestPanelCaseId() + "\"/>");
+    out.println("    <table width=\"100%\">");
+    out.println("      <tr>");
+    out.println("        <th>Commment</th>");
+    out.println("        <td>");
+    out.println("          <textarea name=\"" + PARAM_NOTE_TEXT + "\" value=\"\" cols=\"30\" rows=\"5\"></textarea>");
+    out.println("        </td>");
+    out.println("      </tr>");
+    if (user.isCanEditTestPanelCase()) {
+      out.println("      <tr>");
+      out.println("        <th>Test Case Result Status</th>");
+      out.println("        <td>");
+      out.println("            <select type=\"text\" name=\"" + PARAM_RESULT_STATUS + "\">");
+      out.println("              <option value=\"0\">--select--</option>");
+      for (Result result : Result.values()) {
+        if (testPanelCase.getResult() == result) {
+          out.println("              <option value=\"" + result.getResultStatus() + "\" selected=\"true\">"
+              + result.getLabel() + "</option>");
+        } else {
+          out.println("              <option value=\"" + result.getResultStatus() + "\">" + result.getLabel()
+              + "</option>");
+        }
+      }
+      out.println("            </select");
+      out.println("        </td>");
+      out.println("      </tr>");
+    }
+    out.println("      <tr>");
+    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
+        + "\" size=\"15\" value=\"" + ACTION_ADD_COMMENT + "\"/></td>");
+    out.println("      </tr>");
+    out.println("    </table>");
+    out.println("  </form>");
+
+    query = applicationSession.getDataSession().createQuery("from TestNote where testCase = ? order by noteDate");
+    query.setParameter(0, testCase);
+    List<TestNote> testNoteList = query.list();
+    for (TestNote testNote : testNoteList) {
+      out.println("<p>" + testNote.getUser().getName() + " from " + testNote.getUser().getOrganization()
+          + " writes on " + sdf.format(testNote.getNoteDate()) + ":</p>");
+      out.println("<blockquote>");
+      out.println(testNote.getNoteText());
+      out.println("</blockquote>");
+    }
+
+    out.println("<p></p>");
     out.println("</div>");
 
     return testEventList;
@@ -3432,6 +3517,12 @@ public class TestCasesServlet extends MainServlet
       List<TestPanelCase> testPanelCaseList = query.list();
       String lastCategoryName = "";
       boolean selectedCategoryOpened = false;
+      Set<String> categoryHasProblemSet = null;
+      boolean selectedTestPanelWasTested = applicationSession.getForecastCompareList() != null
+          && applicationSession.getForecastCompareTestPanel().equals(user.getSelectedTestPanel());
+      if (selectedTestPanelWasTested) {
+        categoryHasProblemSet = applicationSession.getForecastCompareCategoryHasProblemSet();
+      }
       for (TestPanelCase testPanelCase : testPanelCaseList) {
         String categoryName = testPanelCase.getCategoryName().trim();
         if (!categoryName.equals(lastCategoryName)) {
@@ -3446,20 +3537,51 @@ public class TestCasesServlet extends MainServlet
           }
           final String link2 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_CATEGORY, "UTF-8")
               + "&" + PARAM_CATEGORY_NAME + "=" + categoryName;
+
+          String classStyle = "selectLevel2";
+          if (categoryHasProblemSet != null) {
+            if (applicationSession.getForecastCompareCategoryNameSet() == null
+                || applicationSession.getForecastCompareCategoryNameSet().contains(categoryName)) {
+              classStyle = categoryHasProblemSet.contains(categoryName) ? "selectLevelFail" : "selectLevelPass";
+            }
+          }
           if (user.getSelectedCategoryName() != null && categoryName.equals(user.getSelectedCategoryName())) {
-            out.println("          <li class=\"selectLevel2\"><a href=\"" + link2 + "\">" + categoryName + "</a>");
+            out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName + "</a>");
             out.println("            <ul class=\"selectLevel3\">");
             selectedCategoryOpened = true;
           } else {
-            out.println("          <li class=\"selectLevel2\"><a href=\"" + link2 + "\">" + categoryName + "</a></li>");
+            out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName
+                + "</a></li>");
           }
         }
         if (user.getSelectedCategoryName() != null && categoryName.equals(user.getSelectedCategoryName())) {
           final String link3 = "testCases?" + PARAM_ACTION + "="
               + URLEncoder.encode(ACTION_SELECT_TEST_PANEL_CASE, "UTF-8") + "&" + PARAM_TEST_PANEL_CASE_ID + "="
               + testPanelCase.getTestPanelCaseId();
-          out.println("              <li class=\"selectLevel4\"><a href=\"" + link3 + "\">"
-              + testPanelCase.getTestCase().getLabel() + "</a></li>");
+          String annotations = " ";
+          String styleClass = "selectLevel3";
+          if (selectedTestPanelWasTested) {
+            if (applicationSession.getForecastCompareCategoryNameSet() == null
+                || applicationSession.getForecastCompareCategoryNameSet().contains(categoryName)) {
+              if (applicationSession.getForecastCompareTestPanelCaseHasProblemSet().contains(testPanelCase)) {
+                styleClass = "selectLevelFail";
+              } else {
+                styleClass = "selectLevelPass";
+              }
+            }
+          }
+          if (user.isCanEditTestPanelCase()) {
+            Result result = testPanelCase.getResult();
+            if (result != null && result != Result.PASS) {
+              if (result == Result.ACCEPT) {
+                annotations += " <span class=\"passBox\">" + result.getLabel() + "</span>";
+              } else {
+                annotations += " <span class=\"failBox\">" + result.getLabel() + "</span>";
+              }
+            }
+          }
+          out.println("              <li class=\"" + styleClass + "\"><a href=\"" + link3 + "\">"
+              + testPanelCase.getTestCase().getLabel() + "</a>" + annotations + "</li>");
         }
         lastCategoryName = categoryName;
       }

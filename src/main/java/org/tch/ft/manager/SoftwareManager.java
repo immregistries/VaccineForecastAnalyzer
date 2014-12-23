@@ -1,5 +1,6 @@
 package org.tch.ft.manager;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.Query;
@@ -54,5 +55,17 @@ public class SoftwareManager {
       List<SoftwareSetting> softwareSettingList = query.list();
       software.setSoftwareSettingList(softwareSettingList);
     }
+  }
+
+  public static List<Software> getListOfUnrestrictedSoftware(User user, Session dataSession) {
+    Query query1 = dataSession.createQuery("from Software order by label");
+    List<Software> softwareList = query1.list();
+    for (Iterator<Software> it = softwareList.iterator(); it.hasNext();) {
+      Software softwareSelected = it.next();
+      if (isSoftwareAccessRestricted(softwareSelected, user, dataSession)) {
+        it.remove();
+      }
+    }
+    return softwareList;
   }
 }
