@@ -66,7 +66,7 @@ public class TestResultsPage extends FTBasePage implements SecurePage {
     List<ForecastActualExpectedCompare> forecastCompareList;
     if (user.getSelectedTestPanel() != null) {
       forecastCompareList = ForecastActualGenerator.createForecastComparison(user.getSelectedTestPanel(),
-          user.getSelectedSoftware(), webSession.getDataSession());
+          user.getSelectedSoftware(), null, webSession.getDataSession());
       Collections.sort(forecastCompareList, new ForecastActualExpectedCompare.ForecastCompareComparator());
     } else {
       testResultsSection.setVisible(false);

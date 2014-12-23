@@ -125,7 +125,7 @@ public abstract class MainServlet extends HttpServlet
         out.println("          <a href=\"testCases\" class=\"menuLink\">Test Cases</a>");
         out.println("        </td>");
         out.println("        <td class=\"menuCell\">");
-        out.println("          <a href=\"home\" class=\"menuLink\">CDSi Services</a>");
+        out.println("          <a href=\"software\" class=\"menuLink\">CDSi Services</a>");
         out.println("        </td>");
         out.println("        <td class=\"menuCell\">");
         out.println("          <a href=\"home\" class=\"menuLink\">Concepts</a>");
@@ -192,6 +192,5 @@ public abstract class MainServlet extends HttpServlet
     return new SimpleDateFormat("MM/dd/yyyy");
   }
   protected SimpleDateFormat sdf = createSimpleDateFormat();
-  
 
 }

@@ -5,9 +5,11 @@ import java.util.Comparator;
 import java.util.Date;
 
 import org.tch.fc.model.Admin;
+import org.tch.fc.model.ForecastActual;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.TestCase;
+import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestPanelCase;
 
 public class ForecastActualExpectedCompare implements Serializable
@@ -154,6 +156,11 @@ public class ForecastActualExpectedCompare implements Serializable
 
   public String getMatchSimilarity() {
     return similarity() + "%";
+  }
+  
+  public String getMatchDifference()
+  {
+    return (100 - similarity()) + "%";
   }
 
   public boolean matchExactly() {

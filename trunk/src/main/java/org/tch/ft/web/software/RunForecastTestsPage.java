@@ -54,15 +54,9 @@ public class RunForecastTestsPage extends FTBasePage implements SecurePage {
         if (testPanel != null && software != null) {
           Session dataSession = webSession.getDataSession();
           try {
-            List<ForecastActualExpectedCompare> forecastCompareList = ForecastActualGenerator.runForecastActual(testPanel, software,
+            ForecastActualGenerator.runForecastActual(testPanel, software,
                 dataSession, false);
-            logOut.println("Forecast returned with " + forecastCompareList.size() + " result(s)");
-            for (ForecastActualExpectedCompare forecastCompare : forecastCompareList) {
-              logOut.println(forecastCompare.getTestCase().getLabel() + ": " + forecastCompare.getRunStatus());
-              if (forecastCompare.getRunException() != null) {
-                forecastCompare.getRunException().printStackTrace(logOut);
-              }
-            }
+            logOut.println("Forecast returned with results");
 
           } catch (Exception e) {
             e.printStackTrace(logOut);
