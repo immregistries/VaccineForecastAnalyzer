@@ -45,7 +45,7 @@ public class ForecastActualGenerator
 
     List<TestPanelForecast> testPanelForecastList;
     {
-      Query query = session.createQuery("from TestPanelForecast where testPanelCase.testPanel = ?");
+      Query query = session.createQuery("from TestPanelForecast where testPanelCase.testPanel = ? and testPanelCase.resultStatus <> 'E'");
       query.setParameter(0, testPanel);
       if (categoryNameSet == null) {
         testPanelForecastList = query.list();

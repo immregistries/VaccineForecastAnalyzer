@@ -84,8 +84,10 @@ public class TestCasesServlet extends MainServlet
   public static final String ACTION_SELECT_TEST_PANEL_CASE = "Select Test Panel Case";
   public static final String ACTION_SELECT_CATEGORY = "Select Category";
   public static final String ACTION_ADD_TEST_CASE = "Add Test Case";
+  public static final String ACTION_ADD_TEST_PANEL = "Add Test Panel";
   public static final String ACTION_ADD_EXPECTATIONS = "Add Expectations";
   public static final String ACTION_UPDATE_TEST_CASE = "Update Test Case";
+  public static final String ACTION_UPDATE_TEST_PANEL = "Update Test Panel";
   public static final String ACTION_COPY_TEST_CASE = "Copy Test Case";
   public static final String ACTION_DELETE_EVENT = "Delete Event";
   public static final String ACTION_ADD_VACCINATION = "Add Vaccination";
@@ -100,6 +102,7 @@ public class TestCasesServlet extends MainServlet
   public static final String PARAM_TEST_PANEL_CASE_ID = "testPanelCaseId";
   public static final String PARAM_CATEGORY_NAME = "categoryName";
 
+  public static final String PARAM_SHOW_EXCLUDED_TEST_CASES = "showExcludedTestCases";
   public static final String PARAM_LABEL = "label";
   public static final String PARAM_DESCRIPTION = "description";
   public static final String PARAM_VACCINE_GROUP_ID = "vaccineGroupId";
@@ -154,7 +157,9 @@ public class TestCasesServlet extends MainServlet
   public static final String SHOW_TASK_GROUP = "taskGroup";
   public static final String SHOW_TEST_PANEL = "testPanel";
   public static final String SHOW_EDIT_TEST_CASE = "editTestCase";
+  public static final String SHOW_EDIT_TEST_PANEL = "editTestPanel";
   public static final String SHOW_ADD_TEST_CASE = "addTestCase";
+  public static final String SHOW_ADD_TEST_PANEL = "addTestPanel";
   public static final String SHOW_COPY_TEST_CASE = "copyTestCase";
   public static final String SHOW_PREVIEW_TEST_CASE = "previewTestCase";
   public static final String SHOW_EDIT_VACCINATIONS = "editVaccinations";
@@ -250,6 +255,8 @@ public class TestCasesServlet extends MainServlet
       } else if (action.equals(ACTION_ADD_TEST_CASE) || action.equals(ACTION_UPDATE_TEST_CASE)
           || action.equals(ACTION_COPY_TEST_CASE)) {
         return saveTestCase(req, action, show, user, dataSession);
+      } else if (action.equals(ACTION_ADD_TEST_PANEL) || action.equals(ACTION_UPDATE_TEST_PANEL)) {
+        return saveTestPanel(req, action, show, user, dataSession);
       } else if (action.equals(ACTION_DELETE_EVENT)) {
         int testEventId = notNull(req.getParameter(PARAM_TEST_EVENT_ID), 0);
         return doDelete(testEventId, show, dataSession);
@@ -1175,6 +1182,44 @@ public class TestCasesServlet extends MainServlet
       RelativeRuleManager.updateFixedDatesForRelativeRules(testCase, dataSession, true);
       return SHOW_TEST_CASE;
     }
+
+  }
+
+  public String saveTestPanel(HttpServletRequest req, String action, String show, User user, Session dataSession) {
+    String label = req.getParameter(PARAM_LABEL);
+
+    String problem = null;
+    if (label.equals("")) {
+      problem = "Label is required";
+    }
+    if (problem != null) {
+      applicationSession.setAlertError("Unable to save test panel: " + problem);
+      return show;
+    } else {
+      Transaction transaction = dataSession.beginTransaction();
+      TestPanel testPanel;
+
+      if (action.equals(ACTION_UPDATE_TEST_PANEL)) {
+        testPanel = user.getSelectedTestPanel();
+      } else {
+        testPanel = new TestPanel();
+      }
+      testPanel.setLabel(label);
+      testPanel.setTaskGroup(user.getSelectedTaskGroup());
+
+      if (action.equals(ACTION_UPDATE_TEST_PANEL)) {
+        dataSession.update(testPanel);
+      } else if (action.equals(ACTION_ADD_TEST_PANEL)) {
+        dataSession.save(testPanel);
+      }
+      user.setSelectedTestPanel(testPanel);
+      user.setSelectedTestCase(null);
+      user.setSelectedTestPanelCase(null);
+      user.setSelectedCategoryName(null);
+      dataSession.update(user);
+      transaction.commit();
+    }
+    return SHOW_TEST_PANEL;
   }
 
   @Override
@@ -1185,7 +1230,7 @@ public class TestCasesServlet extends MainServlet
     User user = applicationSession.getUser();
     setupForPrinting(dataSession, user);
 
-    printTree(out, dataSession, user);
+    printTree(out, dataSession, user, req.getParameter(PARAM_SHOW_EXCLUDED_TEST_CASES) != null);
 
     if (SHOW_TEST_CASE.equals(show)) {
       if (user.getSelectedTaskGroup() != null && user.getSelectedTestPanel() != null
@@ -1195,6 +1240,22 @@ public class TestCasesServlet extends MainServlet
         printTestCase(out, user);
         printActualsVsExpected(out, user);
       }
+    } else if (SHOW_TEST_PANEL.equals(show)) {
+      TestPanel testPanel = user.getSelectedTestPanel();
+      String editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_TEST_PANEL + "&" + PARAM_TEST_PANEL_ID + "="
+          + testPanel.getTestPanelId();
+      String editButton = "";
+      if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
+        editButton = " <a class=\"fauxbutton\" href=\"" + editLink + "\">Edit</a>";
+      }
+      out.println("<div class=\"centerLeftColumn\">");
+      out.println("  <h2>Test Panel" + editButton + "</h2>");
+      out.println("  <table width=\"100%\">");
+      out.println("    <tr>");
+      out.println("      <th>Label</th>");
+      out.println("      <td>" + testPanel.getLabel() + "</td>");
+      out.println("    </tr>");
+      out.println("  </table>");
     } else if (SHOW_PREVIEW_TEST_CASE.equals(show)) {
       if (user.getSelectedTaskGroup() != null && user.getSelectedTestPanel() != null
           && user.getSelectedTestPanelCase() != null) {
@@ -1210,6 +1271,10 @@ public class TestCasesServlet extends MainServlet
       printAddEditTestCases(req, out, dataSession, user.getSelectedTestPanelCase(), show);
     } else if (SHOW_COPY_TEST_CASE.equals(show)) {
       printAddEditTestCases(req, out, dataSession, user.getSelectedTestPanelCase(), show);
+    } else if (SHOW_ADD_TEST_PANEL.equals(show)) {
+      printAddEditTestPanel(req, out, dataSession, null, show);
+    } else if (SHOW_EDIT_TEST_PANEL.equals(show)) {
+      printAddEditTestPanel(req, out, dataSession, user.getSelectedTestPanel(), show);
     } else if (SHOW_TASK_GROUP.equals(show)) {
       printTaskGroup(out, dataSession, user);
     } else if (SHOW_EDIT_VACCINATIONS.equals(show)) {
@@ -1253,7 +1318,7 @@ public class TestCasesServlet extends MainServlet
           out.println("              <option value=\"" + vg.getVaccineGroupId() + "\">" + vg.getLabel() + "</option>");
         }
       }
-      out.println("            </select");
+      out.println("            </select>");
       out.println("          </td>");
       out.println("        </tr>");
       out.println("        <tr>");
@@ -2395,7 +2460,7 @@ public class TestCasesServlet extends MainServlet
               + vaccineGroup.getLabel() + "</option>");
         }
       }
-      out.println("            </select");
+      out.println("            </select>");
       out.println("          </td>");
       out.println("        </tr>");
     }
@@ -2412,7 +2477,7 @@ public class TestCasesServlet extends MainServlet
             + "</option>");
       }
     }
-    out.println("            </select");
+    out.println("            </select>");
     out.println("          </td>");
     out.println("        </tr>");
 
@@ -2448,7 +2513,7 @@ public class TestCasesServlet extends MainServlet
       } else {
         out.println("              <option value=\"M\">M</option>");
       }
-      out.println("            </select");
+      out.println("            </select>");
       out.println("          </td>");
       out.println("        </tr>");
       out.println("        <tr>");
@@ -2506,7 +2571,52 @@ public class TestCasesServlet extends MainServlet
     out.println("</div>");
   }
 
-  public void printTree(PrintWriter out, Session dataSession, User user) throws UnsupportedEncodingException {
+  public void printAddEditTestPanel(HttpServletRequest req, PrintWriter out, Session dataSession, TestPanel testPanel,
+      String show) {
+    String label;
+
+    if (show.equals(SHOW_EDIT_TEST_PANEL)) {
+      label = notNull(req.getParameter(PARAM_LABEL), testPanel.getLabel());
+    } else {
+      label = notNull(req.getParameter(PARAM_LABEL));
+    }
+
+    out.println("<div class=\"centerLeftColumn\">");
+    String cancelButton = "";
+    cancelButton = " <a class=\"fauxbutton\" href=\"testCases\">Back</a>";
+    if (show.equals(SHOW_ADD_TEST_PANEL)) {
+      out.println("  <h2>Add Test Panel" + cancelButton + "</h2>");
+    } else if (show.equals(SHOW_EDIT_TEST_PANEL)) {
+      out.println("  <h2>Edit Test Panel" + cancelButton + "</h2>");
+    }
+    out.println("    <form method=\"POST\" action=\"testCases\">");
+    if (show.equals(SHOW_EDIT_TEST_CASE)) {
+      out.println("      <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_ID + "\" value=\""
+          + testPanel.getTestPanelId() + "\"/>");
+    }
+    out.println("      <table>");
+    out.println("        <tr>");
+    out.println("          <th>Label</th>");
+    out.println("          <td><input type=\"text\" name=\"" + PARAM_LABEL + "\" size=\"50\" value=\"" + label
+        + "\"/></td>");
+    out.println("        </tr>");
+
+    out.println("        <tr>");
+    if (show.equals(SHOW_ADD_TEST_PANEL)) {
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
+          + "\" size=\"15\" value=\"" + ACTION_ADD_TEST_PANEL + "\"/></td>");
+    } else if (show.equals(SHOW_EDIT_TEST_PANEL)) {
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
+          + "\" size=\"15\" value=\"" + ACTION_UPDATE_TEST_PANEL + "\"/></td>");
+    }
+    out.println("        </tr>");
+    out.println("      </table>");
+    out.println("    </form>");
+    out.println("</div>");
+  }
+
+  public void printTree(PrintWriter out, Session dataSession, User user, boolean showExcludedTestCases)
+      throws UnsupportedEncodingException {
     Query query = dataSession.createQuery("from TaskGroup order by label");
     List<TaskGroup> taskGroupList = query.list();
 
@@ -2521,15 +2631,16 @@ public class TestCasesServlet extends MainServlet
       query1.setParameter(0, taskGroup1);
       List<TestPanel> testPanelList = query1.list();
       if (user.getSelectedTestPanel() != null) {
-        printTestPanel(out, dataSession, user, user.getSelectedTestPanel());
+        printTestPanel(out, dataSession, user, user.getSelectedTestPanel(), showExcludedTestCases);
       }
       for (TestPanel testPanel : testPanelList) {
         if (user.getSelectedTestPanel() == null || !user.getSelectedTestPanel().equals(testPanel)) {
-          printTestPanel(out, dataSession, user, testPanel);
+          printTestPanel(out, dataSession, user, testPanel, false);
         }
       }
       if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
-        out.println("      <li><a class=\"add\" href=\"\">add test panel</a></li>");
+        out.println("      <li><a class=\"add\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_ADD_TEST_PANEL
+            + "\">add test panel</a></li>");
       } else if (testPanelList.size() == 0) {
         out.println("      <li><em>no test panels defined</em></li>");
       }
@@ -3449,7 +3560,7 @@ public class TestCasesServlet extends MainServlet
               + "</option>");
         }
       }
-      out.println("            </select");
+      out.println("            </select>");
       out.println("        </td>");
       out.println("      </tr>");
     }
@@ -3503,14 +3614,17 @@ public class TestCasesServlet extends MainServlet
     out.println("  </table>");
   }
 
-  public void printTestPanel(PrintWriter out, Session dataSession, User user, TestPanel testPanel)
-      throws UnsupportedEncodingException {
+  public void printTestPanel(PrintWriter out, Session dataSession, User user, TestPanel testPanel,
+      boolean showExcludedTestCases) throws UnsupportedEncodingException {
+    if (!showExcludedTestCases && user.getSelectedTestPanelCase() != null
+        && user.getSelectedTestPanelCase().getInclude() == Include.EXCLUDED) {
+      showExcludedTestCases = true;
+    }
     Query query;
     final String link1 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_TEST_PANEL, "UTF-8") + "&"
         + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId();
     if (user.getSelectedTestPanel() != null && user.getSelectedTestPanel().equals(testPanel)) {
       out.println("      <li class=\"selectLevel1\"><a href=\"" + link1 + "\">" + testPanel.getLabel() + "</a>");
-
       out.println("        <ul class=\"selectLevel2\">");
       query = dataSession.createQuery("from TestPanelCase where testPanel = ? order by categoryName, testCase.label");
       query.setParameter(0, testPanel);
@@ -3523,67 +3637,49 @@ public class TestCasesServlet extends MainServlet
       if (selectedTestPanelWasTested) {
         categoryHasProblemSet = applicationSession.getForecastCompareCategoryHasProblemSet();
       }
+      List<TestPanelCase> testPanelCaseListExcluded = new ArrayList<TestPanelCase>();
       for (TestPanelCase testPanelCase : testPanelCaseList) {
-        String categoryName = testPanelCase.getCategoryName().trim();
-        if (!categoryName.equals(lastCategoryName)) {
-          if (selectedCategoryOpened) {
-            if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
-              out.println("            <li><a class=\"add\" href=\"testCases?show=" + SHOW_ADD_TEST_CASE + "&"
-                  + PARAM_CATEGORY_NAME + "=" + lastCategoryName + "\">add test case</a></li>");
+        if (testPanelCase.getInclude() == Include.EXCLUDED) {
+          testPanelCaseListExcluded.add(testPanelCase);
+        } else {
+          String categoryName = testPanelCase.getCategoryName().trim();
+          if (!categoryName.equals(lastCategoryName)) {
+            if (selectedCategoryOpened) {
+              if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
+                out.println("            <li><a class=\"add\" href=\"testCases?show=" + SHOW_ADD_TEST_CASE + "&"
+                    + PARAM_CATEGORY_NAME + "=" + lastCategoryName + "\">add test case</a></li>");
+              }
+              out.println("          </ul>");
+              out.println("        </li>");
+              selectedCategoryOpened = false;
             }
-            out.println("          </ul>");
-            out.println("        </li>");
-            selectedCategoryOpened = false;
-          }
-          final String link2 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_CATEGORY, "UTF-8")
-              + "&" + PARAM_CATEGORY_NAME + "=" + categoryName;
+            final String link2 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_CATEGORY, "UTF-8")
+                + "&" + PARAM_CATEGORY_NAME + "=" + categoryName;
 
-          String classStyle = "selectLevel2";
-          if (categoryHasProblemSet != null) {
-            if (applicationSession.getForecastCompareCategoryNameSet() == null
-                || applicationSession.getForecastCompareCategoryNameSet().contains(categoryName)) {
-              classStyle = categoryHasProblemSet.contains(categoryName) ? "selectLevelFail" : "selectLevelPass";
+            String classStyle = "selectLevel2";
+            if (categoryHasProblemSet != null) {
+              if (applicationSession.getForecastCompareCategoryNameSet() == null
+                  || applicationSession.getForecastCompareCategoryNameSet().contains(categoryName)) {
+                classStyle = categoryHasProblemSet.contains(categoryName) ? "selectLevelFail" : "selectLevelPass";
+              }
+            }
+            if (!showExcludedTestCases && user.getSelectedCategoryName() != null
+                && categoryName.equals(user.getSelectedCategoryName())) {
+              out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName
+                  + "</a>");
+              out.println("            <ul class=\"selectLevel3\">");
+              selectedCategoryOpened = true;
+            } else {
+              out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName
+                  + "</a></li>");
             }
           }
+
           if (user.getSelectedCategoryName() != null && categoryName.equals(user.getSelectedCategoryName())) {
-            out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName + "</a>");
-            out.println("            <ul class=\"selectLevel3\">");
-            selectedCategoryOpened = true;
-          } else {
-            out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName
-                + "</a></li>");
+            printTestCaseLine(out, user, selectedTestPanelWasTested, testPanelCase, categoryName);
           }
+          lastCategoryName = categoryName;
         }
-        if (user.getSelectedCategoryName() != null && categoryName.equals(user.getSelectedCategoryName())) {
-          final String link3 = "testCases?" + PARAM_ACTION + "="
-              + URLEncoder.encode(ACTION_SELECT_TEST_PANEL_CASE, "UTF-8") + "&" + PARAM_TEST_PANEL_CASE_ID + "="
-              + testPanelCase.getTestPanelCaseId();
-          String annotations = " ";
-          String styleClass = "selectLevel3";
-          if (selectedTestPanelWasTested) {
-            if (applicationSession.getForecastCompareCategoryNameSet() == null
-                || applicationSession.getForecastCompareCategoryNameSet().contains(categoryName)) {
-              if (applicationSession.getForecastCompareTestPanelCaseHasProblemSet().contains(testPanelCase)) {
-                styleClass = "selectLevelFail";
-              } else {
-                styleClass = "selectLevelPass";
-              }
-            }
-          }
-          if (user.isCanEditTestPanelCase()) {
-            Result result = testPanelCase.getResult();
-            if (result != null && result != Result.PASS) {
-              if (result == Result.ACCEPT) {
-                annotations += " <span class=\"passBox\">" + result.getLabel() + "</span>";
-              } else {
-                annotations += " <span class=\"failBox\">" + result.getLabel() + "</span>";
-              }
-            }
-          }
-          out.println("              <li class=\"" + styleClass + "\"><a href=\"" + link3 + "\">"
-              + testPanelCase.getTestCase().getLabel() + "</a>" + annotations + "</li>");
-        }
-        lastCategoryName = categoryName;
       }
       if (selectedCategoryOpened) {
         if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
@@ -3594,6 +3690,21 @@ public class TestCasesServlet extends MainServlet
         out.println("        </li>");
         selectedCategoryOpened = false;
       }
+      if (testPanelCaseListExcluded.size() > 0) {
+        String link = "testCases?" + PARAM_SHOW + "=" + URLEncoder.encode(SHOW_TEST_CASE, "UTF-8") + "&"
+            + PARAM_SHOW_EXCLUDED_TEST_CASES + "=true";
+
+        out.println("      <li class=\"selectLevel2\"><a href=\"" + link + "\"><em>Excluded</em></a>");
+        if (showExcludedTestCases) {
+          out.println("        <ul class=\"selectLevel3\">");
+          for (TestPanelCase testPanelCase : testPanelCaseListExcluded) {
+            printTestCaseLine(out, user, false, testPanelCase, "");
+          }
+          out.println("          </ul>");
+        }
+        out.println("        </li>");
+      }
+
       if (user.getSelectedCategoryName() == null) {
         if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
           out.println("          <li><a class=\"add\" href=\"testCases?show=" + SHOW_ADD_TEST_CASE
@@ -3605,6 +3716,36 @@ public class TestCasesServlet extends MainServlet
     } else {
       out.println("      <li class=\"selectLevel1\"><a href=\"" + link1 + "\">" + testPanel.getLabel() + "</a></li>");
     }
+  }
+
+  public void printTestCaseLine(PrintWriter out, User user, boolean selectedTestPanelWasTested,
+      TestPanelCase testPanelCase, String categoryName) throws UnsupportedEncodingException {
+    final String link3 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_TEST_PANEL_CASE, "UTF-8")
+        + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId();
+    String annotations = " ";
+    String styleClass = "selectLevel3";
+    if (selectedTestPanelWasTested) {
+      if (applicationSession.getForecastCompareCategoryNameSet() == null
+          || applicationSession.getForecastCompareCategoryNameSet().contains(categoryName)) {
+        if (applicationSession.getForecastCompareTestPanelCaseHasProblemSet().contains(testPanelCase)) {
+          styleClass = "selectLevelFail";
+        } else {
+          styleClass = "selectLevelPass";
+        }
+      }
+    }
+    if (user.isCanEditTestPanelCase()) {
+      Result result = testPanelCase.getResult();
+      if (result != null && result != Result.PASS) {
+        if (result == Result.ACCEPT) {
+          annotations += " <span class=\"passBox\">" + result.getLabel() + "</span>";
+        } else {
+          annotations += " <span class=\"failBox\">" + result.getLabel() + "</span>";
+        }
+      }
+    }
+    out.println("              <li class=\"" + styleClass + "\"><a href=\"" + link3 + "\">"
+        + testPanelCase.getTestCase().getLabel() + "</a>" + annotations + "</li>");
   }
 
 }

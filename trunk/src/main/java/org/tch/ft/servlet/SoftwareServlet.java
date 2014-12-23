@@ -172,11 +172,11 @@ public class SoftwareServlet extends MainServlet
             if (user.getSelectedTestPanelCase() != null
                 && user.getSelectedTestPanelCase().getCategoryName().equals(testPanelCase.getCategoryName())) {
               out.println("<input type=\"checkbox\" name=\"" + PARAM_CATEGORY_NAME + "\" value=\""
-                  + UrlEncoded.encodeString(testPanelCase.getCategoryName(), "UTF-8") + "\" checked=\"true\"/>"
+                  + testPanelCase.getCategoryName() + "\" checked=\"true\"/>"
                   + testPanelCase.getCategoryName() + "<br/>");
             } else {
               out.println("<input type=\"checkbox\" name=\"" + PARAM_CATEGORY_NAME + "\" value=\""
-                  + UrlEncoded.encodeString(testPanelCase.getCategoryName(), "UTF-8") + "\"/>"
+                  + testPanelCase.getCategoryName() + "\"/>"
                   + testPanelCase.getCategoryName() + "<br/>");
             }
           }
