@@ -5,50 +5,125 @@ import java.util.Comparator;
 import java.util.Date;
 
 import org.tch.fc.model.Admin;
-import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
 import org.tch.fc.model.TestCase;
-import org.tch.ft.model.ForecastExpected;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.ft.model.TestPanelCase;
 
 public class ForecastActualExpectedCompare implements Serializable
 {
 
+  public static class CompareCriteria
+  {
+    private boolean verifyEvaluationStatus = false;
+    private boolean verifyForecastStatus = true;
+    private boolean verifyForecastDose = true;
+    private boolean verifyForecastValidDate = true;
+    private boolean verifyForecastDueDate = true;
+    private boolean verifyForecastOverdueDate = true;
+    private boolean verifyForecastFinishedDate = false;
+
+    public boolean isVerifyEvaluationStatus() {
+      return verifyEvaluationStatus;
+    }
+
+    public void setVerifyEvaluationStatus(boolean verifyEvaluation) {
+      this.verifyEvaluationStatus = verifyEvaluation;
+    }
+
+    public boolean isVerifyForecastStatus() {
+      return verifyForecastStatus;
+    }
+
+    public void setVerifyForecastStatus(boolean verifyStatus) {
+      this.verifyForecastStatus = verifyStatus;
+    }
+
+    public boolean isVerifyForecastDose() {
+      return verifyForecastDose;
+    }
+
+    public void setVerifyForecastDose(boolean verifyDose) {
+      this.verifyForecastDose = verifyDose;
+    }
+
+    public boolean isVerifyForecastValidDate() {
+      return verifyForecastValidDate;
+    }
+
+    public void setVerifyForecastValidDate(boolean verifyValidDate) {
+      this.verifyForecastValidDate = verifyValidDate;
+    }
+
+    public boolean isVerifyForecastDueDate() {
+      return verifyForecastDueDate;
+    }
+
+    public void setVerifyForecastDueDate(boolean verifyDueDate) {
+      this.verifyForecastDueDate = verifyDueDate;
+    }
+
+    public boolean isVerifyForecastOverdueDate() {
+      return verifyForecastOverdueDate;
+    }
+
+    public void setVerifyForecastOverdueDate(boolean verifyOverdueDate) {
+      this.verifyForecastOverdueDate = verifyOverdueDate;
+    }
+
+    public boolean isVerifyForecastFinishedDate() {
+      return verifyForecastFinishedDate;
+    }
+
+    public void setVerifyForecastFinishedDate(boolean verifyFinishedDate) {
+      this.verifyForecastFinishedDate = verifyFinishedDate;
+    }
+  }
+
   public static class ForecastCompareComparator implements Comparator<ForecastActualExpectedCompare>
   {
 
     public int compare(ForecastActualExpectedCompare c1, ForecastActualExpectedCompare c2) {
-      String labelA = c1.getForecastResultA().getTestCase().getLabel().trim().toUpperCase();
-      String labelB = c2.getForecastResultA().getTestCase().getLabel().trim().toUpperCase();
-      int posA = labelA.lastIndexOf(" ");
-      int numberA = 0;
-      if (posA != -1 && posA < labelA.length()) {
-        try {
-          numberA = Integer.parseInt(labelA.substring(posA).trim());
-        } catch (NumberFormatException nfe) {
-          numberA = 0;
+      String categoryA = c1.getTestPanelCase().getCategoryName();
+      String categoryB = c2.getTestPanelCase().getCategoryName();
+      if (!categoryA.equals(categoryB)) {
+        return categoryA.compareTo(categoryB);
+      } else {
+        String labelA = c1.getForecastResultA().getTestCase().getLabel().trim().toUpperCase();
+        String labelB = c2.getForecastResultA().getTestCase().getLabel().trim().toUpperCase();
+        int posA = labelA.lastIndexOf(" ");
+        int numberA = 0;
+        if (posA != -1 && posA < labelA.length()) {
+          try {
+            numberA = Integer.parseInt(labelA.substring(posA).trim());
+          } catch (NumberFormatException nfe) {
+            numberA = 0;
+          }
+          if (numberA > 0) {
+            labelA = labelA.substring(0, posA).trim();
+          }
         }
-        if (numberA > 0) {
-          labelA = labelA.substring(0, posA).trim();
+        int posB = labelB.lastIndexOf(" ");
+        int numberB = 0;
+        if (posB != -1 && posB < labelB.length()) {
+          try {
+            numberB = Integer.parseInt(labelB.substring(posB).trim());
+          } catch (NumberFormatException nfe) {
+            numberB = 0;
+          }
+          if (numberB > 0) {
+            labelB = labelB.substring(0, posB).trim();
+          }
         }
+        if (labelA.equals(labelB)) {
+          if (numberA == numberB) {
+            return new Integer(c1.getTestPanelCase().getTestPanelCaseId()).compareTo(c2.getTestPanelCase()
+                .getTestPanelCaseId());
+          }
+          return new Integer(numberA).compareTo(numberB);
+        }
+        return labelA.compareTo(labelB);
       }
-      int posB = labelB.lastIndexOf(" ");
-      int numberB = 0;
-      if (posB != -1 && posB < labelB.length()) {
-        try {
-          numberB = Integer.parseInt(labelB.substring(posB).trim());
-        } catch (NumberFormatException nfe) {
-          numberB = 0;
-        }
-        if (numberB > 0) {
-          labelB = labelB.substring(0, posB).trim();
-        }
-      }
-      if (labelA.equals(labelB)) {
-        return new Integer(numberA).compareTo(numberB);
-      }
-      return labelA.compareTo(labelB);
     }
   }
 
@@ -80,6 +155,17 @@ public class ForecastActualExpectedCompare implements Serializable
   private TestCase testCase = null;
   private VaccineGroup vaccineGroup = null;
   private TestPanelCase testPanelCase = null;
+  private CompareCriteria compareCriteria = new CompareCriteria();
+  private Boolean matchExactly = null;
+  private Integer simularity = null;
+
+  public CompareCriteria getCompareCriteria() {
+    return compareCriteria;
+  }
+
+  public void setCompareCriteria(CompareCriteria compareCriteria) {
+    this.compareCriteria = compareCriteria;
+  }
 
   public TestPanelCase getTestPanelCase() {
     return testPanelCase;
@@ -122,72 +208,138 @@ public class ForecastActualExpectedCompare implements Serializable
   }
 
   public int similarity() {
+    return similarity(compareCriteria);
+  }
+
+  public int similarity(CompareCriteria compareCriteria) {
+    if (simularity != null) {
+      return simularity;
+    }
     if (forecastResultA == null || forecastResultB == null) {
       return 0;
     }
-    int score = 0;
-    if (same(forecastResultA.getAdmin(), forecastResultB.getAdmin())) {
-      score += 27;
+    int numerator = 0;
+    int denominator = 0;
+    if (compareCriteria.verifyForecastStatus) {
+      if (same(forecastResultA.getAdmin(), forecastResultB.getAdmin())) {
+        numerator += 27;
+      }
+      denominator += 27;
     }
-    if (same(forecastResultA.getDoseNumber(), forecastResultB.getDoseNumber())) {
-      score += 33;
+    if (compareCriteria.verifyForecastDose) {
+      if (same(forecastResultA.getDoseNumber(), forecastResultB.getDoseNumber())) {
+        numerator += 33;
+      }
+      denominator += 33;
     }
-    if (same(forecastResultA.getValidDate(), forecastResultB.getValidDate())) {
-      score += 14;
+    if (compareCriteria.verifyForecastValidDate) {
+      if (same(forecastResultA.getValidDate(), forecastResultB.getValidDate())) {
+        numerator += 14;
+      }
+      denominator += 14;
     }
-    if (same(forecastResultA.getDueDate(), forecastResultB.getDueDate())) {
-      score += 21;
+    if (compareCriteria.verifyForecastDueDate) {
+      if (same(forecastResultA.getDueDate(), forecastResultB.getDueDate())) {
+        numerator += 21;
+      }
+      denominator += 21;
     }
-    if (same(forecastResultA.getOverdueDate(), forecastResultB.getOverdueDate())) {
-      score += 5;
+    if (compareCriteria.verifyForecastOverdueDate) {
+      if (same(forecastResultA.getOverdueDate(), forecastResultB.getOverdueDate())) {
+        numerator += 5;
+      }
+      denominator += 5;
     }
-    return score;
+    if (compareCriteria.verifyForecastFinishedDate) {
+      if (same(forecastResultA.getFinishedDate(), forecastResultB.getFinishedDate())) {
+        numerator += 5;
+      }
+      denominator += 5;
+    }
+    simularity = (int) (100.0 * numerator / denominator); // not rounding up, so 100% means exactly that
+    return simularity;
   }
 
   public String getMatchStatus() {
+    return getMatchStatus(compareCriteria);
+  }
+
+  public String getMatchStatus(CompareCriteria compareCriteria) {
     if (forecastResultA == null || forecastResultB == null) {
       return "Not Run";
     }
-    if (matchExactly()) {
+    if (matchExactly(compareCriteria)) {
       return "Same";
     }
     return "Different";
   }
 
+  public String getMatchSimilarity(CompareCriteria compareCriteria) {
+    return similarity() + "%";
+  }
+
   public String getMatchSimilarity() {
     return similarity() + "%";
   }
-  
-  public String getMatchDifference()
-  {
+
+  public String getMatchDifference(CompareCriteria compareCriteria) {
+    return (100 - similarity()) + "%";
+  }
+
+  public String getMatchDifference() {
     return (100 - similarity()) + "%";
   }
 
   public boolean matchExactly() {
-    if (forecastResultA == null || forecastResultB == null) {
-      return false;
-    }
-    if (same(forecastResultA.getAdmin(), forecastResultB.getAdmin())
-        && same(forecastResultA.getDoseNumber(), forecastResultB.getDoseNumber())
-        && same(forecastResultA.getValidDate(), forecastResultB.getValidDate())
-        && same(forecastResultA.getDueDate(), forecastResultB.getDueDate())
-        && same(forecastResultA.getOverdueDate(), forecastResultB.getOverdueDate())) {
-      return true;
-    }
-    return false;
+    return matchExactly(compareCriteria);
   }
 
-  public boolean matchExactlyExcludeOverdue() {
+  public boolean matchExactly(CompareCriteria compareCriteria) {
+    if (matchExactly != null) {
+      return matchExactly;
+    }
     if (forecastResultA == null || forecastResultB == null) {
+      matchExactly = false;
       return false;
     }
-    if (same(forecastResultA.getAdmin(), forecastResultB.getAdmin())
-        && same(forecastResultA.getDoseNumber(), forecastResultB.getDoseNumber())
-        && same(forecastResultA.getValidDate(), forecastResultB.getValidDate())
-        && same(forecastResultA.getDueDate(), forecastResultB.getDueDate())) {
-      return true;
+    if (compareCriteria.isVerifyForecastStatus()) {
+      if (!same(forecastResultA.getAdmin(), forecastResultB.getAdmin())) {
+        matchExactly = false;
+        return false;
+      }
     }
-    return false;
+    if (compareCriteria.isVerifyForecastDose()) {
+      if (!same(forecastResultA.getDoseNumber(), forecastResultB.getDoseNumber())) {
+        matchExactly = false;
+        return false;
+      }
+    }
+    if (compareCriteria.isVerifyForecastValidDate()) {
+      if (!same(forecastResultA.getValidDate(), forecastResultB.getValidDate())) {
+        matchExactly = false;
+        return false;
+      }
+    }
+    if (compareCriteria.isVerifyForecastDueDate()) {
+      if (!same(forecastResultA.getDueDate(), forecastResultB.getDueDate())) {
+        matchExactly = false;
+        return false;
+      }
+    }
+    if (compareCriteria.isVerifyForecastOverdueDate()) {
+      if (!same(forecastResultA.getOverdueDate(), forecastResultB.getOverdueDate())) {
+        matchExactly = false;
+        return false;
+      }
+    }
+    if (compareCriteria.isVerifyForecastFinishedDate()) {
+      if (!same(forecastResultA.getFinishedDate(), forecastResultB.getFinishedDate())) {
+        matchExactly = false;
+        return false;
+      }
+    }
+    matchExactly = true;
+    return true;
   }
 
   public static boolean same(Admin a, Admin b) {

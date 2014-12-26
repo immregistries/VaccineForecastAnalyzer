@@ -256,45 +256,47 @@ public class ForecastActualGenerator
       forecastCompareList.add(forecastCompare);
     }
 
-    boolean updateStatusOfTestPanel = false;
-    if (testPanelForecastList.size() > 0
-        && testPanelForecastList.get(0).getTestPanelCase().getTestPanel().getTaskGroup().getPrimarySoftware()
-            .equals(software)) {
-      updateStatusOfTestPanel = true;
-    }
-    if (updateStatusOfTestPanel) {
-      Transaction transaction = session.beginTransaction();
-      Set<TestPanelCase> testPanelCaseSetPass = new HashSet<TestPanelCase>();
-      Set<TestPanelCase> testPanelCaseSetFail = new HashSet<TestPanelCase>();
-      for (ForecastActualExpectedCompare forecastCompare : forecastCompareList) {
-        if (forecastCompare.matchExactly()) {
-          testPanelCaseSetPass.add(forecastCompare.getTestPanelCase());
-        } else {
-          testPanelCaseSetFail.add(forecastCompare.getTestPanelCase());
-        }
-      }
-      testPanelCaseSetPass.remove(testPanelCaseSetFail);
-      for (TestPanelCase testPanelCase : testPanelCaseSetPass) {
-        if (testPanelCase.getResult() == null) {
-          testPanelCase.setResult(Result.PASS);
-          session.update(testPanelCase);
-        } else if (testPanelCase.getResult() == Result.FAIL) {
-          testPanelCase.setResult(Result.FIXED);
-          session.update(testPanelCase);
-        }
-      }
-      for (TestPanelCase testPanelCase : testPanelCaseSetFail) {
-        if (testPanelCase.getResult() == null) {
-          testPanelCase.setResult(Result.FAIL);
-          session.update(testPanelCase);
-        } else if (testPanelCase.getResult() == Result.PASS) {
-          testPanelCase.setResult(Result.FAIL);
-          session.update(testPanelCase);
-        }
-      }
-      transaction.commit();
-    }
+ 
     return forecastCompareList;
+  }
+
+  public static Set<TestPanelCase> updateStatusOfTestPanel(Session session, List<ForecastActualExpectedCompare> forecastCompareList) {
+    Set<TestPanelCase> testPanelCaseList = new HashSet<TestPanelCase>();
+    Transaction transaction = session.beginTransaction();
+    Set<TestPanelCase> testPanelCaseSetPass = new HashSet<TestPanelCase>();
+    Set<TestPanelCase> testPanelCaseSetFail = new HashSet<TestPanelCase>();
+    for (ForecastActualExpectedCompare forecastCompare : forecastCompareList) {
+      if (forecastCompare.matchExactly()) {
+        testPanelCaseSetPass.add(forecastCompare.getTestPanelCase());
+      } else {
+        testPanelCaseSetFail.add(forecastCompare.getTestPanelCase());
+      }
+    }
+    testPanelCaseSetPass.remove(testPanelCaseSetFail);
+    for (TestPanelCase testPanelCase : testPanelCaseSetPass) {
+      if (testPanelCase.getResult() == null) {
+        testPanelCase.setResult(Result.PASS);
+        session.update(testPanelCase);
+        testPanelCaseList.add(testPanelCase);
+      } else if (testPanelCase.getResult() == Result.FAIL) {
+        testPanelCase.setResult(Result.FIXED);
+        session.update(testPanelCase);
+        testPanelCaseList.add(testPanelCase);
+      }
+    }
+    for (TestPanelCase testPanelCase : testPanelCaseSetFail) {
+      if (testPanelCase.getResult() == null) {
+        testPanelCase.setResult(Result.FAIL);
+        session.update(testPanelCase);
+        testPanelCaseList.add(testPanelCase);
+      } else if (testPanelCase.getResult() == Result.PASS) {
+        testPanelCase.setResult(Result.FAIL);
+        session.update(testPanelCase);
+        testPanelCaseList.add(testPanelCase);
+      }
+    }
+    transaction.commit();
+    return testPanelCaseList;
   }
 
 }
