@@ -45,9 +45,12 @@ import org.tch.fc.model.RelativeTo;
 import org.tch.fc.model.Resource;
 import org.tch.fc.model.ResourceGuidance;
 import org.tch.fc.model.Service;
+import org.tch.fc.model.ServiceOption;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.SoftwareResult;
+import org.tch.fc.model.SoftwareSetting;
 import org.tch.fc.model.TestCase;
+import org.tch.fc.model.TestCaseSetting;
 import org.tch.fc.model.TestEvent;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.util.TimePeriod;
@@ -94,6 +97,7 @@ public class TestCasesServlet extends MainServlet
   public static final String ACTION_ADD_EVENT = "Add Event";
   public static final String ACTION_ADD_COMMENT = "Add Comment";
   public static final String ACTION_SAVE_EXPECTATIONS = "Save Expectations";
+  public static final String ACTION_SAVE_TEST_CASE_SETTINGS = "Save Test Case Settings";
   public static final String ACTION_UPDATE_RELATIVE_DATES = "Update Relative Dates";
   public static final String ACTION_REQUEST_ACTUAL_RESULTS = "Request Actual Results";
 
@@ -149,6 +153,8 @@ public class TestCasesServlet extends MainServlet
   public static final String PARAM_SOFTWARE_ID_SELECTED = "softwareIdSelected";
   public static final String PARAM_NOTE_TEXT = "noteText";
   public static final String PARAM_RESULT_STATUS = "resultStatus";
+  public final static String PARAM_OPTION_VALUE = "optionValue";
+
 
   public static final String RULE_BEFORE_OR_AFTER = "BeforeOrAfter";
   public static final String RULE_TEST_EVENT_ID = "TestEventId";
@@ -157,6 +163,7 @@ public class TestCasesServlet extends MainServlet
   public static final String SHOW_TASK_GROUP = "taskGroup";
   public static final String SHOW_TEST_PANEL = "testPanel";
   public static final String SHOW_EDIT_TEST_CASE = "editTestCase";
+  public static final String SHOW_EDIT_TEST_CASE_SETTINGS = "editTestCaseSettings";
   public static final String SHOW_EDIT_TEST_PANEL = "editTestPanel";
   public static final String SHOW_ADD_TEST_CASE = "addTestCase";
   public static final String SHOW_ADD_TEST_PANEL = "addTestPanel";
@@ -225,27 +232,10 @@ public class TestCasesServlet extends MainServlet
     }
     if (action != null) {
       if (action.equals(ACTION_SELECT_TASK_GROUP)) {
-        int taskGroupId = Integer.parseInt(req.getParameter(PARAM_TASK_GROUP_ID));
-        Transaction trans = dataSession.beginTransaction();
-        TaskGroup taskGroup = (TaskGroup) dataSession.get(TaskGroup.class, taskGroupId);
-        user.setSelectedTaskGroup(taskGroup);
-        user.setSelectedTestPanel(null);
-        user.setSelectedTestPanelCase(null);
-        user.setSelectedCategoryName(null);
-        user.setSelectedSoftware(taskGroup.getPrimarySoftware());
-        user.setSelectedSoftwareCompare(null);
-        dataSession.update(user);
-        trans.commit();
+        doSelectTaskGroup(req, user, dataSession);
         return SHOW_TASK_GROUP;
       } else if (action.equals(ACTION_SELECT_TEST_PANEL)) {
-        int testPanelId = Integer.parseInt(req.getParameter(PARAM_TEST_PANEL_ID));
-        Transaction trans = dataSession.beginTransaction();
-        TestPanel testPanel = (TestPanel) dataSession.get(TestPanel.class, testPanelId);
-        user.setSelectedTestPanel(testPanel);
-        user.setSelectedTestPanelCase(null);
-        user.setSelectedCategoryName(null);
-        dataSession.update(user);
-        trans.commit();
+        doSelectTestPanel(req, user, dataSession);
         return SHOW_TEST_PANEL;
       } else if (action.equals(ACTION_SELECT_TEST_PANEL_CASE)) {
         return SHOW_TEST_CASE;
@@ -280,34 +270,100 @@ public class TestCasesServlet extends MainServlet
         doRequestActualResults(req, user, dataSession);
         return SHOW_TEST_CASE;
       } else if (action.equals(ACTION_ADD_COMMENT)) {
-        String noteText = req.getParameter(PARAM_NOTE_TEXT).trim();
-        if (noteText.equals("")) {
-          applicationSession.setAlertError("Unable to save, you must enter your comment to save. ");
-        } else {
-          Transaction transaction = dataSession.beginTransaction();
-
-          if (user.isCanEditTestPanelCase()) {
-            String resultStatus = req.getParameter(PARAM_RESULT_STATUS);
-            TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
-            testPanelCase.setResult(Result.getResult(resultStatus));
-            dataSession.update(testPanelCase);
-            if (!noteText.endsWith(".") && !noteText.endsWith("!") && !noteText.endsWith("?")) {
-              noteText += ".";
-            }
-            noteText += " Changed test status to " + testPanelCase.getResult().getLabel() + ".";
-          }
-          TestNote testNote = new TestNote();
-          testNote.setTestCase(user.getSelectedTestCase());
-          testNote.setUser(user);
-          testNote.setNoteText(noteText);
-          testNote.setNoteDate(new Date());
-          dataSession.save(testNote);
-          transaction.commit();
+        doAddComment(req, user, dataSession);
+      } else if (action.equals(ACTION_SAVE_TEST_CASE_SETTINGS)) {
+        int softwareId = Integer.parseInt(req.getParameter(PARAM_SOFTWARE_ID_SELECTED));
+        Software software = (Software) dataSession.get(Software.class, softwareId);
+        user.setSelectedSoftware(software);
+        TestCase testCase = user.getSelectedTestCase();
+        
+        Query query = applicationSession.getDataSession().createQuery("from TestCaseSetting where testCase = ? and serviceOption.serviceType = ?");
+        query.setParameter(0, testCase);
+        query.setParameter(1, software.getServiceType());
+        List<TestCaseSetting> testCaseSettingList = query.list();
+        Map<ServiceOption, TestCaseSetting> serviceOptionMap = new HashMap<ServiceOption, TestCaseSetting>();
+        for (TestCaseSetting testCaseSetting : testCaseSettingList) {
+          serviceOptionMap.put(testCaseSetting.getServiceOption(), testCaseSetting);
         }
+        query = dataSession.createQuery("from ServiceOption where serviceType = ? order by optionLabel");
+        query.setParameter(0, software.getServiceType());
+        List<ServiceOption> serviceOptionList = query.list();
+        Transaction transaction = dataSession.beginTransaction();
+        dataSession.saveOrUpdate(user);
+        for (ServiceOption serviceOption : serviceOptionList) {
+          String optionValue = req.getParameter(PARAM_OPTION_VALUE + serviceOption.getOptionId());
+          TestCaseSetting testCaseSetting = serviceOptionMap.get(serviceOption);
+          if (optionValue.equals("")) {
+            if (testCaseSetting != null) {
+              dataSession.delete(testCaseSetting);
+            }
+          } else {
+            if (testCaseSetting == null) {
+              testCaseSetting = new TestCaseSetting();
+              testCaseSetting.setTestCase(testCase);
+              testCaseSetting.setServiceOption(serviceOption);
+            }
+            testCaseSetting.setOptionValue(optionValue);
+            dataSession.saveOrUpdate(testCaseSetting);
+          }
+        }
+        transaction.commit();
       }
 
     }
     return show;
+  }
+
+  public void doSelectTaskGroup(HttpServletRequest req, User user, Session dataSession) {
+    int taskGroupId = Integer.parseInt(req.getParameter(PARAM_TASK_GROUP_ID));
+    Transaction trans = dataSession.beginTransaction();
+    TaskGroup taskGroup = (TaskGroup) dataSession.get(TaskGroup.class, taskGroupId);
+    user.setSelectedTaskGroup(taskGroup);
+    user.setSelectedTestPanel(null);
+    user.setSelectedTestPanelCase(null);
+    user.setSelectedCategoryName(null);
+    user.setSelectedSoftware(taskGroup.getPrimarySoftware());
+    user.setSelectedSoftwareCompare(null);
+    dataSession.update(user);
+    trans.commit();
+  }
+
+  public void doSelectTestPanel(HttpServletRequest req, User user, Session dataSession) {
+    int testPanelId = Integer.parseInt(req.getParameter(PARAM_TEST_PANEL_ID));
+    Transaction trans = dataSession.beginTransaction();
+    TestPanel testPanel = (TestPanel) dataSession.get(TestPanel.class, testPanelId);
+    user.setSelectedTestPanel(testPanel);
+    user.setSelectedTestPanelCase(null);
+    user.setSelectedCategoryName(null);
+    dataSession.update(user);
+    trans.commit();
+  }
+
+  public void doAddComment(HttpServletRequest req, User user, Session dataSession) {
+    String noteText = req.getParameter(PARAM_NOTE_TEXT).trim();
+    if (noteText.equals("")) {
+      applicationSession.setAlertError("Unable to save, you must enter your comment to save. ");
+    } else {
+      Transaction transaction = dataSession.beginTransaction();
+
+      if (user.isExpertOrAdmin(user.getSelectedTaskGroup())) {
+        String resultStatus = req.getParameter(PARAM_RESULT_STATUS);
+        TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
+        testPanelCase.setResult(Result.getResult(resultStatus));
+        dataSession.update(testPanelCase);
+        if (!noteText.endsWith(".") && !noteText.endsWith("!") && !noteText.endsWith("?")) {
+          noteText += ".";
+        }
+        noteText += " Changed test status to " + testPanelCase.getResult().getLabel() + ".";
+      }
+      TestNote testNote = new TestNote();
+      testNote.setTestCase(user.getSelectedTestCase());
+      testNote.setUser(user);
+      testNote.setNoteText(noteText);
+      testNote.setNoteDate(new Date());
+      dataSession.save(testNote);
+      transaction.commit();
+    }
   }
 
   private void doRequestActualResults(HttpServletRequest req, User user, Session dataSession) {
@@ -1287,99 +1343,176 @@ public class TestCasesServlet extends MainServlet
           notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), 0));
       printEditExpectations(req, out, dataSession, user, vaccineGroup);
     } else if (SHOW_ADD_ACTUAL_VS_EXPECTED.equals(show)) {
-      TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
-      Set<VaccineGroup> vaccineGroupDisplayedSet = new HashSet<VaccineGroup>();
-      {
-        HashMap<VaccineGroup, ForecastActualExpectedCompare> forecastCompareMap = new HashMap<VaccineGroup, ForecastActualExpectedCompare>();
-        if (forecastCompareMap.size() > 0) {
-          for (VaccineGroup vg : forecastCompareMap.keySet()) {
-            vaccineGroupDisplayedSet.add(vg);
+      printActualVsExpected(out, dataSession, user);
+    } else if (SHOW_REQUEST_ACTUAL_RESULTS.equals(show)) {
+      printRequestActualResults(out, dataSession, user);
+    } else if (SHOW_DEBUGGING_TOOLS.equals(show)) {
+      printDebuggingTools(out, dataSession, user);
+    } else if (SHOW_EDIT_TEST_CASE_SETTINGS.equals(show)) {
+      printEditTestCaseSettings(req, out, user);
+    }
+  }
+
+  public void printEditTestCaseSettings(HttpServletRequest req, PrintWriter out, User user) {
+    Software software = user.getSelectedSoftware();
+    TestCase testCase = user.getSelectedTestCase();
+    out.println("<div class=\"centerColumn\">");
+    out.println("<h2>Edit Software Settings for " + software.getService().getServiceType() + "</h2>");
+    Query query = applicationSession.getDataSession().createQuery("from TestCaseSetting where testCase = ? and serviceOption.serviceType = ?");
+    query.setParameter(0, testCase);
+    query.setParameter(1, software.getServiceType());
+    List<TestCaseSetting> testCaseSettingList = query.list();
+    Map<ServiceOption, TestCaseSetting> serviceOptionMap = new HashMap<ServiceOption, TestCaseSetting>();
+    for (TestCaseSetting testCaseSetting : testCaseSettingList) {
+      serviceOptionMap.put(testCaseSetting.getServiceOption(), testCaseSetting);
+    }
+    query = applicationSession.getDataSession().createQuery("from ServiceOption where serviceType = ?");
+    query.setParameter(0, software.getServiceType());
+    List<ServiceOption> serviceOptionList = query.list();
+    out.println("  <table width=\"100%\">");
+    out.println("  <form method=\"POST\" action=\"testCases\">");
+    out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID_SELECTED + "\" value=\"" + software.getSoftwareId()
+        + "\"/>");
+    out.println("  <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\"" + user.getSelectedTestPanelCase().getTestPanelCaseId()
+        + "\"/>");
+    for (ServiceOption serviceOption : serviceOptionList) {
+      out.println("    <tr>");
+      out.println("      <th>" + serviceOption.getOptionLabel() + "</th>");
+      TestCaseSetting testCaseSetting = serviceOptionMap.get(serviceOption);
+      String optionValue;
+      if (testCaseSetting == null) {
+        optionValue = notNull(req.getParameter(PARAM_OPTION_VALUE + serviceOption.getOptionId()), "");
+      } else {
+        optionValue = notNull(req.getParameter(PARAM_OPTION_VALUE + serviceOption.getOptionId()),
+            testCaseSetting.getOptionValue());
+      }
+      if (serviceOption.getValidValues().equals("")) {
+        out.println("      <td><input type=\"text\" size=\"20\" name=\"" + PARAM_OPTION_VALUE
+            + serviceOption.getOptionId() + "\" value=\"" + optionValue + "\"/></td>");
+      } else {
+        out.println("      <td>");
+        out.println("        <select name=\"" + PARAM_OPTION_VALUE + serviceOption.getOptionId() + "\">");
+        out.println("          <option value=\"\">--select--</option>");
+        for (String validValue : serviceOption.getValidValues().split("\\,")) {
+          validValue = validValue.trim();
+          if (optionValue.equalsIgnoreCase(validValue)) {
+            out.println("              <option value=\"" + validValue + "\" selected=\"selected\">" + validValue
+                + "</option>");
+          } else {
+            out.println("              <option value=\"" + validValue + "\">" + validValue + "</option>");
           }
         }
+        out.println("        </select>");
+        out.println("      </td>");
       }
-      out.println("<div class=\"centerColumn\">");
-      out.println("<h2>Add Actual vs Expected <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
-          + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "="
-          + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a></h2>");
-      out.println("  <form method=\"POST\" action=\"testCases\">");
-      out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
-          + testPanelCase.getTestPanelCaseId() + "\"/>");
-      out.println("    <input type=\"hidden\" name=\"" + PARAM_SHOW + "\" value=\"" + SHOW_EDIT_EXPECTATIONS + "\"/>");
-      out.println("  <table>");
-      out.println("        <tr>");
-      out.println("          <th>Vaccine Group</th>");
-      out.println("          <td>");
-      out.println("            <select type=\"text\" name=\"" + PARAM_VACCINE_GROUP_ID + "\">");
-      out.println("              <option value=\"0\">--select--</option>");
-      Query query = dataSession.createQuery("from VaccineGroup order by label");
-      List<VaccineGroup> vaccineGroupList = query.list();
-      for (VaccineGroup vg : vaccineGroupList) {
-        if (!vaccineGroupDisplayedSet.contains(vg)) {
-          out.println("              <option value=\"" + vg.getVaccineGroupId() + "\">" + vg.getLabel() + "</option>");
-        }
-      }
-      out.println("            </select>");
-      out.println("          </td>");
-      out.println("        </tr>");
-      out.println("        <tr>");
-      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" size=\"15\" value=\"" + ACTION_ADD_EXPECTATIONS + "\"/></td>");
-      out.println("        </tr>");
-      out.println("  </table>");
-      out.println("  </form>");
-
-      out.println("</div>");
-    } else if (SHOW_REQUEST_ACTUAL_RESULTS.equals(show)) {
-      Software software = user.getSelectedSoftware();
-      out.println("<div class=\"centerColumn\">");
-      out.println("<h2>Request Actual Results <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
-          + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "="
-          + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a></h2>");
-      out.println("  <form method=\"POST\" action=\"testCases\">");
-      out.println("<table>");
-      out.println("  <tr>");
-      out.println("    <th>CDSi Engine</th>");
-      out.println("    <td>");
-      List<Software> softwareList = SoftwareManager.getListOfUnrestrictedSoftware(user, dataSession);
-      for (Software softwareSelected : softwareList) {
-        if (softwareSelected.getServiceUrl() != null && softwareSelected.getServiceUrl().length() > 0) {
-          out.println("          <input type=\"checkbox\" name=\"" + PARAM_SOFTWARE_ID_SELECTED
-              + softwareSelected.getSoftwareId() + "\" value=\"true\">" + softwareSelected.getLabel() + "<br/>");
-        }
-      }
-      out.println("    </td>");
-      out.println("  </tr>");
-      out.println("        <tr>");
-      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" size=\"15\" value=\"" + ACTION_REQUEST_ACTUAL_RESULTS + "\"/></td>");
-      out.println("        </tr>");
-      out.println("</table>");
-      out.println("  </form>");
-
-      out.println("</div>");
-    } else if (SHOW_DEBUGGING_TOOLS.equals(show)) {
-      Software software = user.getSelectedSoftware();
-      TestCase testCase = user.getSelectedTestCase();
-      out.println("<div class=\"centerColumn\">");
-      Software tchSoftware = (Software) dataSession.get(Software.class, Software.TCH_SOFTWARE_ID);
-      out.println("<h2>Debugging Tools <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE
-          + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
-          + "\">Back</a></h2>");
-      out.println("<ul>");
-      String forecastLink = tchSoftware.getServiceUrl() + TCHConnector.createQueryString(testCase, tchSoftware, "html");
-      out.println("  <li><a href=\"" + forecastLink + "\" target=\"_blank\">" + tchSoftware.getLabel() + "</a></li>");
-      if (software != null && !software.equals(tchSoftware) && software.getService() == Service.TCH) {
-        forecastLink = software.getServiceUrl() + TCHConnector.createQueryString(testCase, software, "html");
-        out.println("  <li><a href=\"" + forecastLink + "\" target=\"_blank\">" + software.getLabel() + "</a></li>");
-      }
-      String stepLink = tchSoftware.getServiceUrl().substring(0,
-          tchSoftware.getServiceUrl().length() - "forecast".length())
-          + "fv/step" + TCHConnector.createQueryString(testCase, tchSoftware, "text");
-      out.println("  <li><a href=\"" + stepLink + "\" target=\"_blank\">TCH Forecast Step Through</a></li>");
-      out.println("</ul>");
-
-      out.println("</div>");
+      out.println("    </tr>");
     }
+    out.println("        <tr>");
+    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
+        + "\" size=\"15\" value=\"" + ACTION_SAVE_TEST_CASE_SETTINGS + "\"/></td>");
+    out.println("        </tr>");
+    out.println("  </table>");
+
+    out.println("</div>");
+  }
+
+  public void printDebuggingTools(PrintWriter out, Session dataSession, User user) {
+    Software software = user.getSelectedSoftware();
+    TestCase testCase = user.getSelectedTestCase();
+    out.println("<div class=\"centerColumn\">");
+    Software tchSoftware = (Software) dataSession.get(Software.class, Software.TCH_SOFTWARE_ID);
+    out.println("<h2>Debugging Tools <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE
+        + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
+        + "\">Back</a></h2>");
+    out.println("<ul>");
+    String forecastLink = tchSoftware.getServiceUrl() + TCHConnector.createQueryString(testCase, tchSoftware, "html");
+    out.println("  <li><a href=\"" + forecastLink + "\" target=\"_blank\">" + tchSoftware.getLabel() + "</a></li>");
+    if (software != null && !software.equals(tchSoftware) && software.getService() == Service.TCH) {
+      forecastLink = software.getServiceUrl() + TCHConnector.createQueryString(testCase, software, "html");
+      out.println("  <li><a href=\"" + forecastLink + "\" target=\"_blank\">" + software.getLabel() + "</a></li>");
+    }
+    String stepLink = tchSoftware.getServiceUrl().substring(0,
+        tchSoftware.getServiceUrl().length() - "forecast".length())
+        + "fv/step" + TCHConnector.createQueryString(testCase, tchSoftware, "text");
+    out.println("  <li><a href=\"" + stepLink + "\" target=\"_blank\">TCH Forecast Step Through</a></li>");
+    out.println("</ul>");
+
+    out.println("</div>");
+  }
+
+  public void printRequestActualResults(PrintWriter out, Session dataSession, User user) {
+    Software software = user.getSelectedSoftware();
+    out.println("<div class=\"centerColumn\">");
+    out.println("<h2>Request Actual Results <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
+        + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
+        + "\">Back</a></h2>");
+    out.println("  <form method=\"POST\" action=\"testCases\">");
+    out.println("<table>");
+    out.println("  <tr>");
+    out.println("    <th>CDSi Engine</th>");
+    out.println("    <td>");
+    List<Software> softwareList = SoftwareManager.getListOfUnrestrictedSoftware(user, dataSession);
+    for (Software softwareSelected : softwareList) {
+      if (softwareSelected.getServiceUrl() != null && softwareSelected.getServiceUrl().length() > 0) {
+        out.println("          <input type=\"checkbox\" name=\"" + PARAM_SOFTWARE_ID_SELECTED
+            + softwareSelected.getSoftwareId() + "\" value=\"true\">" + softwareSelected.getLabel() + "<br/>");
+      }
+    }
+    out.println("    </td>");
+    out.println("  </tr>");
+    out.println("        <tr>");
+    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
+        + "\" size=\"15\" value=\"" + ACTION_REQUEST_ACTUAL_RESULTS + "\"/></td>");
+    out.println("        </tr>");
+    out.println("</table>");
+    out.println("  </form>");
+
+    out.println("</div>");
+  }
+
+  public void printActualVsExpected(PrintWriter out, Session dataSession, User user) {
+    TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
+    Set<VaccineGroup> vaccineGroupDisplayedSet = new HashSet<VaccineGroup>();
+    {
+      HashMap<VaccineGroup, ForecastActualExpectedCompare> forecastCompareMap = new HashMap<VaccineGroup, ForecastActualExpectedCompare>();
+      if (forecastCompareMap.size() > 0) {
+        for (VaccineGroup vg : forecastCompareMap.keySet()) {
+          vaccineGroupDisplayedSet.add(vg);
+        }
+      }
+    }
+    out.println("<div class=\"centerColumn\">");
+    out.println("<h2>Add Actual vs Expected <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
+        + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
+        + "\">Back</a></h2>");
+    out.println("  <form method=\"POST\" action=\"testCases\">");
+    out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
+        + testPanelCase.getTestPanelCaseId() + "\"/>");
+    out.println("    <input type=\"hidden\" name=\"" + PARAM_SHOW + "\" value=\"" + SHOW_EDIT_EXPECTATIONS + "\"/>");
+    out.println("  <table>");
+    out.println("        <tr>");
+    out.println("          <th>Vaccine Group</th>");
+    out.println("          <td>");
+    out.println("            <select type=\"text\" name=\"" + PARAM_VACCINE_GROUP_ID + "\">");
+    out.println("              <option value=\"0\">--select--</option>");
+    Query query = dataSession.createQuery("from VaccineGroup order by label");
+    List<VaccineGroup> vaccineGroupList = query.list();
+    for (VaccineGroup vg : vaccineGroupList) {
+      if (!vaccineGroupDisplayedSet.contains(vg)) {
+        out.println("              <option value=\"" + vg.getVaccineGroupId() + "\">" + vg.getLabel() + "</option>");
+      }
+    }
+    out.println("            </select>");
+    out.println("          </td>");
+    out.println("        </tr>");
+    out.println("        <tr>");
+    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
+        + "\" size=\"15\" value=\"" + ACTION_ADD_EXPECTATIONS + "\"/></td>");
+    out.println("        </tr>");
+    out.println("  </table>");
+    out.println("  </form>");
+
+    out.println("</div>");
   }
 
   private void printEditExpectations(HttpServletRequest req, PrintWriter out, Session dataSession, User user,
@@ -2294,7 +2427,6 @@ public class TestCasesServlet extends MainServlet
     TaskGroup taskGroup = user.getSelectedTaskGroup();
     if (testPanelCase != null || taskGroup != null) {
       user.setCanEditTestCase(false);
-      user.setCanEditTestPanelCase(false);
       Query query = dataSession.createQuery("from Expert where user = ? and taskGroup = ?");
       query.setParameter(0, user);
       query.setParameter(1, taskGroup);
@@ -2304,7 +2436,6 @@ public class TestCasesServlet extends MainServlet
       } else {
         Expert expert = expertList.get(0);
         user.setSelectedExpert(expert);
-        user.setCanEditTestPanelCase(true);
         if (testPanelCase != null && expert.getRole().canEdit()) {
           query = dataSession.createQuery("from TestPanelCase where testCase = ?");
           query.setParameter(0, testPanelCase.getTestCase());
@@ -2386,7 +2517,7 @@ public class TestCasesServlet extends MainServlet
       evalRule = notNull(req.getParameter(PARAM_EVAL_RULE));
     }
 
-    if (testCaseNumber.equals("")) {
+    if (testCaseNumber == null || testCaseNumber.equals("")) {
       testCaseNumber = getNextTestCaseNumber(dataSession);
     }
 
@@ -3399,7 +3530,7 @@ public class TestCasesServlet extends MainServlet
     out.println("      <td>" + testPanelCase.getInclude().getLabel() + "</td>");
     out.println("    </tr>");
     String styleClass = "";
-    if (user.isCanEditTestPanelCase()) {
+    if (user.isExpertOrAdmin(user.getSelectedTaskGroup())) {
       Result result = testPanelCase.getResult();
       if (result == Result.ACCEPT || result == Result.PASS) {
         styleClass = "pass";
@@ -3519,16 +3650,32 @@ public class TestCasesServlet extends MainServlet
       printEventViewTable(out, testCase, testEventList, EventType.CONDITION_IMPLICATION, "Condition");
     }
 
-    if (false && testCase.getDateSet() == DateSet.RELATIVE) {
-      try {
-        final String link1 = "testCases?" + PARAM_ACTION + "="
-            + URLEncoder.encode(ACTION_UPDATE_RELATIVE_DATES, "UTF-8") + "&" + PARAM_TEST_PANEL_CASE_ID + "="
-            + testPanelCase.getTestPanelCaseId();
-        out.println("  <p><a href=\"" + link1 + "\">" + ACTION_UPDATE_RELATIVE_DATES + "</a></p>");
-      } catch (UnsupportedEncodingException usce) {
-        usce.printStackTrace();
-      }
+    String editSoftwareSettings = "";
+    if (user.isExpertOrAdmin(user.getSelectedTaskGroup())) {
+      editSoftwareSettings = " <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
+          + SHOW_EDIT_TEST_CASE_SETTINGS + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId()
+          + "\">Edit</a>";
+    }
 
+    out.println("  <h3>Software Settings" + editSoftwareSettings + "</h3>");
+    query = applicationSession.getDataSession().createQuery("from TestCaseSetting where testCase = ?");
+    query.setParameter(0, testCase);
+    List<TestCaseSetting> testCaseSettingList = query.list();
+    if (testCaseSettingList.size() > 0) {
+      out.println("  <table width=\"100%\">");
+      out.println("    <tr>");
+      out.println("      <th>Software</th>");
+      out.println("      <th>Option</th>");
+      out.println("      <th>Value</th>");
+      out.println("    </tr>");
+      for (TestCaseSetting testCaseSetting : testCaseSettingList) {
+        out.println("    <tr>");
+        out.println("      <td>" + testCaseSetting.getServiceOption().getService().getLabel() + "</td>");
+        out.println("      <td>" + testCaseSetting.getServiceOption().getOptionName() + "</td>");
+        out.println("      <td>" + testCaseSetting.getOptionValue() + "</td>");
+        out.println("    </tr>");
+      }
+      out.println("  </table>");
     }
 
     printShowRowScript(out);
@@ -3545,7 +3692,7 @@ public class TestCasesServlet extends MainServlet
     out.println("          <textarea name=\"" + PARAM_NOTE_TEXT + "\" value=\"\" cols=\"30\" rows=\"5\"></textarea>");
     out.println("        </td>");
     out.println("      </tr>");
-    if (user.isCanEditTestPanelCase()) {
+    if (user.isExpertOrAdmin(user.getSelectedTaskGroup())) {
       out.println("      <tr>");
       out.println("        <th>Test Case Result Status</th>");
       out.println("        <td>");
@@ -3582,7 +3729,6 @@ public class TestCasesServlet extends MainServlet
       out.println("</blockquote>");
     }
 
-    out.println("<p></p>");
     out.println("</div>");
 
     return testEventList;
@@ -3734,7 +3880,7 @@ public class TestCasesServlet extends MainServlet
         }
       }
     }
-    if (user.isCanEditTestPanelCase()) {
+    if (user.isExpertOrAdmin(user.getSelectedTaskGroup())) {
       Result result = testPanelCase.getResult();
       if (result != null && result != Result.PASS) {
         if (result == Result.ACCEPT) {

@@ -24,7 +24,25 @@ public class ApplicationSession
   private Set<TestPanelCase> forecastCompareTestPanelCaseHasProblemSet = null;
   private List<ForecastActualExpectedCompare> forecastCompareList = null;
   private TestPanel forecastCompareTestPanel = null;
+  private ForecastActualExpectedCompare.CompareCriteria compareCriteria = new ForecastActualExpectedCompare.CompareCriteria();
+  private Set<TestPanelCase> forecastCompareTestPanelCaseUpdate = null;
   
+  public Set<TestPanelCase> getForecastCompareTestPanelCaseUpdate() {
+    return forecastCompareTestPanelCaseUpdate;
+  }
+
+  public void setForecastCompareTestPanelCaseUpdate(Set<TestPanelCase> forecastCompareTestPanelCaseUpdate) {
+    this.forecastCompareTestPanelCaseUpdate = forecastCompareTestPanelCaseUpdate;
+  }
+
+  public ForecastActualExpectedCompare.CompareCriteria getCompareCriteria() {
+    return compareCriteria;
+  }
+
+  public void setCompareCriteria(ForecastActualExpectedCompare.CompareCriteria compareCriteria) {
+    this.compareCriteria = compareCriteria;
+  }
+
   public Set<String> getForecastCompareCategoryNameSet() {
     return forecastCompareCategoryNameSet;
   }

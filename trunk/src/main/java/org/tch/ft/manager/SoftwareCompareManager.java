@@ -12,6 +12,7 @@ import org.hibernate.Transaction;
 import org.tch.fc.model.ForecastActual;
 import org.tch.fc.model.Software;
 import org.tch.ft.CentralControl;
+import org.tch.ft.manager.ForecastActualExpectedCompare.CompareCriteria;
 import org.tch.ft.model.ForecastCompare;
 import org.tch.ft.model.ForecastTarget;
 import org.tch.ft.model.SoftwareCompare;
@@ -142,8 +143,10 @@ public class SoftwareCompareManager extends Thread
             } else {
               boolean matchAll = true;
               int matchCount = 0;
+              ForecastActualExpectedCompare.CompareCriteria compareCriteria = new ForecastActualExpectedCompare.CompareCriteria();
+              compareCriteria.setVerifyForecastOverdueDate(false);
               for (ForecastActualExpectedCompare forecastActualExcpectedCompare : forecastActualExpectedCompareList) {
-                if (forecastActualExcpectedCompare.matchExactlyExcludeOverdue()) {
+                if (forecastActualExcpectedCompare.matchExactly(compareCriteria)) {
                   matchCount++;
                 } else {
                   matchAll = false;
@@ -161,7 +164,7 @@ public class SoftwareCompareManager extends Thread
                     ForecastActualExpectedCompare forecastActualExcpectedCompare = new ForecastActualExpectedCompare();
                     forecastActualExcpectedCompare.setForecastResultA(compareWithList.get(j));
                     forecastActualExcpectedCompare.setForecastResultB(compareWithList.get(i));
-                    if (forecastActualExcpectedCompare.matchExactlyExcludeOverdue()) {
+                    if (forecastActualExcpectedCompare.matchExactly(compareCriteria)) {
                       completelyDisagree = false;
                     } else {
                       completelyAgree = false;

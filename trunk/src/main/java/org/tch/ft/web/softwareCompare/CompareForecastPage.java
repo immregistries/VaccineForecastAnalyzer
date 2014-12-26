@@ -95,6 +95,10 @@ public class CompareForecastPage extends TestCaseDetail implements SecurePage
     add(new Label("actualDoseNumber", actualDoseNumber));
     add(new Label("actualValidDate", actualValidDateString));
     add(new Label("actualDueDate", actualDueDateString));
+    
+    final ForecastActualExpectedCompare.CompareCriteria compareCriteria = new ForecastActualExpectedCompare.CompareCriteria();
+    compareCriteria.setVerifyForecastOverdueDate(false);
+
 
     List<ForecastTarget> otherActualList;
     query = webSession.getDataSession().createQuery("from ForecastTarget where forecastCompare = ?");
@@ -116,7 +120,7 @@ public class CompareForecastPage extends TestCaseDetail implements SecurePage
         final String compareDueDateString = compareForecastActual.getDueDate() != null ? sdf
             .format(compareForecastActual.getDueDate()) : "-";
 
-        String styleClass = forecastActualExpectedCompare.matchExactlyExcludeOverdue() ? "pass" : "fail";
+        String styleClass = forecastActualExpectedCompare.matchExactly(compareCriteria) ? "pass" : "fail";
         item.add(new StyleClassLabel("actualLabel", (compareForecastActual != null ? compareForecastActual
             .getSoftwareResult().getSoftware().getLabel() : ""), styleClass));
 

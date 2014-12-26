@@ -2,6 +2,7 @@ package org.tch.ft.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +26,6 @@ public class User implements Serializable
   private boolean admin = false;
   private boolean memberOfGroup = false;
   private boolean canEditTestCase = false;
-  private boolean canEditTestPanelCase = false;
   private Agreement agreement = null;
   private Date agreementDate = null;
   private TaskGroup selectedTaskGroup = null;
@@ -37,12 +37,23 @@ public class User implements Serializable
   private String selectedCategoryName = null;
   private boolean agreedToAgreement = false;
   private Expert selectedExpert = null;
-  public boolean isCanEditTestPanelCase() {
-    return canEditTestPanelCase;
+  private List<Expert> expertList = null;
+
+  public boolean isExpertOrAdmin(TaskGroup taskGroup) {
+    for (Expert expert : expertList) {
+      if (expert.getTaskGroup().equals(taskGroup)) {
+        return expert.getRole() == Role.ADMIN || expert.getRole() == Role.EXPERT;
+      }
+    }
+    return false;
   }
 
-  public void setCanEditTestPanelCase(boolean canEditTestPanelCase) {
-    this.canEditTestPanelCase = canEditTestPanelCase;
+  public List<Expert> getExpertList() {
+    return expertList;
+  }
+
+  public void setExpertList(List<Expert> expertList) {
+    this.expertList = expertList;
   }
 
   public Expert getSelectedExpert() {

@@ -11,7 +11,8 @@ import org.tch.ft.model.Expert;
 import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.User;
 
-public class SoftwareManager {
+public class SoftwareManager
+{
 
   public static boolean isSoftwareAccessRestricted(Software software, User user, Session session) {
     boolean restricted = software.isVisibleStatusRestricted();
@@ -58,14 +59,20 @@ public class SoftwareManager {
   }
 
   public static List<Software> getListOfUnrestrictedSoftware(User user, Session dataSession) {
-    Query query1 = dataSession.createQuery("from Software order by label");
-    List<Software> softwareList = query1.list();
+    Query query = dataSession.createQuery("from Software order by label");
+    List<Software> softwareList = query.list();
     for (Iterator<Software> it = softwareList.iterator(); it.hasNext();) {
       Software softwareSelected = it.next();
       if (isSoftwareAccessRestricted(softwareSelected, user, dataSession)) {
         it.remove();
       }
     }
+    return softwareList;
+  }
+
+  public static List<Software> getListOfSoftware(Session dataSession) {
+    Query query = dataSession.createQuery("from Software order by label");
+    List<Software> softwareList = query.list();
     return softwareList;
   }
 }

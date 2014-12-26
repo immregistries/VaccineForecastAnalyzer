@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -12,8 +13,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.fc.model.Software;
 import org.tch.ft.manager.UserManager;
+import org.tch.ft.model.Expert;
 import org.tch.ft.model.LoginAttempt;
+import org.tch.ft.model.Role;
+import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.User;
 
 public class HomeServlet extends MainServlet
@@ -29,7 +34,8 @@ public class HomeServlet extends MainServlet
   public static final String PARAM_PASSWORD = "password";
 
   @Override
-  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show) throws IOException {
+  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show)
+      throws IOException {
     if (action != null) {
       if (action.equals(ACTION_LOGIN)) {
         name = req.getParameter(PARAM_NAME);
@@ -60,6 +66,12 @@ public class HomeServlet extends MainServlet
           user.setAdmin(user.getName().equals("Nathan Bunker"));
           applicationSession.setUser(user);
 
+          Query query = dataSession.createQuery("from Expert where user = ?");
+          query.setParameter(0, user);
+          List<Expert> expertList = query.list();
+          user.setExpertList(expertList);
+          user.setMemberOfGroup(expertList.size() > 0);
+
           boolean signedAgreement = false;
           if (user.getAgreement() != null && user.getAgreementDate() != null) {
             Calendar calendar = Calendar.getInstance();
@@ -67,10 +79,6 @@ public class HomeServlet extends MainServlet
             signedAgreement = user.getAgreementDate().after(calendar.getTime());
           }
           user.setAgreedToAgreement(signedAgreement);
-
-          Query query = dataSession.createQuery("from Expert where user = ?");
-          query.setParameter(0, user);
-          user.setMemberOfGroup(query.list().size() > 0);
 
           applicationSession.setAlertInformation("Welcome!");
           name = "";

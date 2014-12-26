@@ -3,6 +3,8 @@ package org.tch.ft.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -29,12 +31,67 @@ public abstract class MainServlet extends HttpServlet
     this.servletProtection = servletProtection;
   }
 
+  protected static class HoverText
+  {
+    private String text;
+    private String hoverTitle;
+    private StringBuilder hoverText = new StringBuilder();
+
+    public HoverText(String text) {
+      this.text = text;
+      this.hoverTitle = text;
+    }
+
+    public HoverText setHoverTitle(String hoverTitle) {
+      this.hoverTitle = hoverTitle;
+      return this;
+    }
+
+    public HoverText add(String hoverText) {
+      this.hoverText.append(hoverText);
+      return this;
+    }
+
+    @Override
+    public String toString() {
+      return "<span class=\"dropt\">" + text + " <span style=\"width:500px;\"><h4>" + hoverTitle + "</h4>" + hoverText
+          + "</span></span>";
+    }
+  }
+
+  private static final Set<HttpSession> sessionLock = new HashSet<HttpSession>();
+
+  private static void lockSession(HttpSession session) {
+    synchronized (sessionLock) {
+      while (sessionLock.contains(session)) {
+        try {
+          sessionLock.wait();
+        } catch (InterruptedException ie) {
+          // continue
+        }
+      }
+      sessionLock.add(session);
+    }
+  }
+
+  private static void releaseSession(HttpSession session) {
+    synchronized (sessionLock) {
+      sessionLock.remove(session);
+      sessionLock.notifyAll();
+    }
+  }
+
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     setup(req);
     if (verifyOkayToExecute()) {
-      String show = execute(req, resp);
-      printPage(req, resp, show);
+      try {
+        lockSession(webSession);
+        String show = execute(req, resp);
+        printPage(req, resp, show);
+      } finally {
+        releaseSession(webSession);
+      }
     } else {
       RequestDispatcher requestDispatcher = req.getRequestDispatcher("/s/home");
       requestDispatcher.forward(req, resp);
@@ -68,8 +125,13 @@ public abstract class MainServlet extends HttpServlet
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     setup(req);
     if (verifyOkayToExecute()) {
-      String show = execute(req, resp);
-      printPage(req, resp, show);
+      try {
+        lockSession(webSession);
+        String show = execute(req, resp);
+        printPage(req, resp, show);
+      } finally {
+        releaseSession(webSession);
+      }
     } else {
       RequestDispatcher requestDispatcher = req.getRequestDispatcher("/s/home");
       requestDispatcher.forward(req, resp);
@@ -78,9 +140,11 @@ public abstract class MainServlet extends HttpServlet
 
   public String execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     return execute(req, resp, req.getParameter(PARAM_ACTION), req.getParameter(PARAM_SHOW));
+
   }
 
-  public abstract String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show) throws IOException;
+  public abstract String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show)
+      throws IOException;
 
   public void printPage(HttpServletRequest req, HttpServletResponse resp, String show) throws IOException {
     resp.setContentType("text/html");
@@ -125,7 +189,7 @@ public abstract class MainServlet extends HttpServlet
         out.println("          <a href=\"testCases\" class=\"menuLink\">Test Cases</a>");
         out.println("        </td>");
         out.println("        <td class=\"menuCell\">");
-        out.println("          <a href=\"software\" class=\"menuLink\">CDSi Services</a>");
+        out.println("          <a href=\"software\" class=\"menuLink\">Software</a>");
         out.println("        </td>");
         out.println("        <td class=\"menuCell\">");
         out.println("          <a href=\"home\" class=\"menuLink\">Concepts</a>");
@@ -143,18 +207,15 @@ public abstract class MainServlet extends HttpServlet
       out.println("    <h1>TCH Forecast Tester</h1>");
     }
     out.println("    <div class=\"content\">");
-    if (applicationSession.getAlertError() != null)
-    {
+    if (applicationSession.getAlertError() != null) {
       out.println("      <p class=\"alertError\">Error: " + applicationSession.getAlertError() + "</p>");
       applicationSession.setAlertError(null);
     }
-    if (applicationSession.getAlertWarning() != null)
-    {
+    if (applicationSession.getAlertWarning() != null) {
       out.println("      <p class=\"alertWarning\">Warning: " + applicationSession.getAlertWarning() + "</p>");
       applicationSession.setAlertWarning(null);
     }
-    if (applicationSession.getAlertInformation() != null)
-    {
+    if (applicationSession.getAlertInformation() != null) {
       out.println("      <p class=\"alertInformation\">" + applicationSession.getAlertInformation() + "</p>");
       applicationSession.setAlertInformation(null);
     }
@@ -179,18 +240,25 @@ public abstract class MainServlet extends HttpServlet
     }
     return s;
   }
-  
+
+  protected static boolean notNull(String s, boolean defaultValue) {
+    if (s == null) {
+      return defaultValue;
+    }
+    return true;
+  }
+
   protected static int notNull(String s, int defaultValue) {
     if (s == null) {
       return defaultValue;
     }
     return Integer.parseInt(s);
   }
-  
-  protected static SimpleDateFormat createSimpleDateFormat()
-  {
+
+  protected static SimpleDateFormat createSimpleDateFormat() {
     return new SimpleDateFormat("MM/dd/yyyy");
   }
+
   protected SimpleDateFormat sdf = createSimpleDateFormat();
 
 }
