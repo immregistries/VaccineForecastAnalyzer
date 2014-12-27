@@ -155,7 +155,6 @@ public class TestCasesServlet extends MainServlet
   public static final String PARAM_RESULT_STATUS = "resultStatus";
   public final static String PARAM_OPTION_VALUE = "optionValue";
 
-
   public static final String RULE_BEFORE_OR_AFTER = "BeforeOrAfter";
   public static final String RULE_TEST_EVENT_ID = "TestEventId";
 
@@ -276,8 +275,9 @@ public class TestCasesServlet extends MainServlet
         Software software = (Software) dataSession.get(Software.class, softwareId);
         user.setSelectedSoftware(software);
         TestCase testCase = user.getSelectedTestCase();
-        
-        Query query = applicationSession.getDataSession().createQuery("from TestCaseSetting where testCase = ? and serviceOption.serviceType = ?");
+
+        Query query = applicationSession.getDataSession().createQuery(
+            "from TestCaseSetting where testCase = ? and serviceOption.serviceType = ?");
         query.setParameter(0, testCase);
         query.setParameter(1, software.getServiceType());
         List<TestCaseSetting> testCaseSettingList = query.list();
@@ -1232,6 +1232,7 @@ public class TestCasesServlet extends MainServlet
       user.setSelectedTestCase(testCase);
       user.setSelectedTestPanelCase(testPanelCase);
       user.setSelectedCategoryName(categoryName);
+
       dataSession.update(user);
       transaction.commit();
 
@@ -1284,9 +1285,9 @@ public class TestCasesServlet extends MainServlet
     Session dataSession = applicationSession.getDataSession();
 
     User user = applicationSession.getUser();
-    setupForPrinting(dataSession, user);
+    setupForPrinting(dataSession, user, req);
 
-    printTree(out, dataSession, user, req.getParameter(PARAM_SHOW_EXCLUDED_TEST_CASES) != null);
+    printTree(out, dataSession, user);
 
     if (SHOW_TEST_CASE.equals(show)) {
       if (user.getSelectedTaskGroup() != null && user.getSelectedTestPanel() != null
@@ -1358,7 +1359,8 @@ public class TestCasesServlet extends MainServlet
     TestCase testCase = user.getSelectedTestCase();
     out.println("<div class=\"centerColumn\">");
     out.println("<h2>Edit Software Settings for " + software.getService().getServiceType() + "</h2>");
-    Query query = applicationSession.getDataSession().createQuery("from TestCaseSetting where testCase = ? and serviceOption.serviceType = ?");
+    Query query = applicationSession.getDataSession().createQuery(
+        "from TestCaseSetting where testCase = ? and serviceOption.serviceType = ?");
     query.setParameter(0, testCase);
     query.setParameter(1, software.getServiceType());
     List<TestCaseSetting> testCaseSettingList = query.list();
@@ -1371,10 +1373,10 @@ public class TestCasesServlet extends MainServlet
     List<ServiceOption> serviceOptionList = query.list();
     out.println("  <table width=\"100%\">");
     out.println("  <form method=\"POST\" action=\"testCases\">");
-    out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID_SELECTED + "\" value=\"" + software.getSoftwareId()
-        + "\"/>");
-    out.println("  <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\"" + user.getSelectedTestPanelCase().getTestPanelCaseId()
-        + "\"/>");
+    out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID_SELECTED + "\" value=\""
+        + software.getSoftwareId() + "\"/>");
+    out.println("  <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
+        + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\"/>");
     for (ServiceOption serviceOption : serviceOptionList) {
       out.println("    <tr>");
       out.println("      <th>" + serviceOption.getOptionLabel() + "</th>");
@@ -2416,8 +2418,11 @@ public class TestCasesServlet extends MainServlet
     }
   }
 
-  public void setupForPrinting(Session dataSession, User user) {
+  public void setupForPrinting(Session dataSession, User user, HttpServletRequest req) {
     TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
+    boolean showExcludedTestCases = req.getParameter(PARAM_SHOW_EXCLUDED_TEST_CASES) != null;
+    user.setSelectedCategoryNameExcluded(showExcludedTestCases);
+
     if (testPanelCase != null) {
       if (user.getSelectedCategoryName() == null) {
         user.setSelectedCategoryName(testPanelCase.getCategoryName());
@@ -2746,8 +2751,7 @@ public class TestCasesServlet extends MainServlet
     out.println("</div>");
   }
 
-  public void printTree(PrintWriter out, Session dataSession, User user, boolean showExcludedTestCases)
-      throws UnsupportedEncodingException {
+  public void printTree(PrintWriter out, Session dataSession, User user) throws UnsupportedEncodingException {
     Query query = dataSession.createQuery("from TaskGroup order by label");
     List<TaskGroup> taskGroupList = query.list();
 
@@ -2762,11 +2766,11 @@ public class TestCasesServlet extends MainServlet
       query1.setParameter(0, taskGroup1);
       List<TestPanel> testPanelList = query1.list();
       if (user.getSelectedTestPanel() != null) {
-        printTestPanel(out, dataSession, user, user.getSelectedTestPanel(), showExcludedTestCases);
+        printTestPanel(out, dataSession, user, user.getSelectedTestPanel());
       }
       for (TestPanel testPanel : testPanelList) {
         if (user.getSelectedTestPanel() == null || !user.getSelectedTestPanel().equals(testPanel)) {
-          printTestPanel(out, dataSession, user, testPanel, false);
+          printTestPanel(out, dataSession, user, testPanel);
         }
       }
       if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
@@ -3760,12 +3764,8 @@ public class TestCasesServlet extends MainServlet
     out.println("  </table>");
   }
 
-  public void printTestPanel(PrintWriter out, Session dataSession, User user, TestPanel testPanel,
-      boolean showExcludedTestCases) throws UnsupportedEncodingException {
-    if (!showExcludedTestCases && user.getSelectedTestPanelCase() != null
-        && user.getSelectedTestPanelCase().getInclude() == Include.EXCLUDED) {
-      showExcludedTestCases = true;
-    }
+  public void printTestPanel(PrintWriter out, Session dataSession, User user, TestPanel testPanel)
+      throws UnsupportedEncodingException {
     Query query;
     final String link1 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_TEST_PANEL, "UTF-8") + "&"
         + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId();
@@ -3809,8 +3809,7 @@ public class TestCasesServlet extends MainServlet
                 classStyle = categoryHasProblemSet.contains(categoryName) ? "selectLevelFail" : "selectLevelPass";
               }
             }
-            if (!showExcludedTestCases && user.getSelectedCategoryName() != null
-                && categoryName.equals(user.getSelectedCategoryName())) {
+            if (user.getSelectedCategoryName() != null && categoryName.equals(user.getSelectedCategoryName())) {
               out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName
                   + "</a>");
               out.println("            <ul class=\"selectLevel3\">");
@@ -3837,11 +3836,13 @@ public class TestCasesServlet extends MainServlet
         selectedCategoryOpened = false;
       }
       if (testPanelCaseListExcluded.size() > 0) {
-        String link = "testCases?" + PARAM_SHOW + "=" + URLEncoder.encode(SHOW_TEST_CASE, "UTF-8") + "&"
-            + PARAM_SHOW_EXCLUDED_TEST_CASES + "=true";
+        String link = "testCases?" + PARAM_SHOW + "=" + URLEncoder.encode(SHOW_TEST_CASE, "UTF-8");
+        if (!user.isSelectedCategoryNameExcluded()) {
+          link += "&" + PARAM_SHOW_EXCLUDED_TEST_CASES + "=true";
+        }
 
         out.println("      <li class=\"selectLevel2\"><a href=\"" + link + "\"><em>Excluded</em></a>");
-        if (showExcludedTestCases) {
+        if (user.isSelectedCategoryNameExcluded()) {
           out.println("        <ul class=\"selectLevel3\">");
           for (TestPanelCase testPanelCase : testPanelCaseListExcluded) {
             printTestCaseLine(out, user, false, testPanelCase, "");

@@ -35,9 +35,18 @@ public class User implements Serializable
   private TestCase selectedTestCase = null;
   private SoftwareCompare selectedSoftwareCompare = null;
   private String selectedCategoryName = null;
+  private boolean selectedCategoryNameExcluded = false;
   private boolean agreedToAgreement = false;
   private Expert selectedExpert = null;
   private List<Expert> expertList = null;
+
+  public boolean isSelectedCategoryNameExcluded() {
+    return selectedCategoryNameExcluded;
+  }
+
+  public void setSelectedCategoryNameExcluded(boolean selectedCategoryNameExcluded) {
+    this.selectedCategoryNameExcluded = selectedCategoryNameExcluded;
+  }
 
   public boolean isExpertOrAdmin(TaskGroup taskGroup) {
     for (Expert expert : expertList) {

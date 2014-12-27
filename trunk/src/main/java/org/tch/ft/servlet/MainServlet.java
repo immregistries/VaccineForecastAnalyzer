@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.tch.fc.SoftwareVersion;
 import org.tch.ft.model.User;
 
 public abstract class MainServlet extends HttpServlet
@@ -20,6 +21,7 @@ public abstract class MainServlet extends HttpServlet
 
   public static final String PARAM_ACTION = "action";
   public static final String PARAM_SHOW = "show";
+  public static final String SHOW_NOTHING = "nothing";
 
   private String title;
   private ServletProtection servletProtection = null;
@@ -147,27 +149,29 @@ public abstract class MainServlet extends HttpServlet
       throws IOException;
 
   public void printPage(HttpServletRequest req, HttpServletResponse resp, String show) throws IOException {
-    resp.setContentType("text/html");
-    PrintWriter out = new PrintWriter(resp.getWriter());
-    try {
-      printHeader(out);
-      printPage(req, resp, out, show);
-      printFooter(out);
-    } catch (Exception e) {
-      out.println("<div class=\"oops\">");
-      out.println("<h1>Oops!</h1>");
-      out.println("<p>The TCH Forecast Tester has encountered an unexpected problem and is unable to proccess your "
-          + "request. We apologize for the inconvience. You should not be seeing this issue. </p>");
-      out.println("<p><a href=\"home\">Return to Home</a></p>");
-      out.println("<h3>Technical Details</h3>");
-      out.println("<p>Problem encountered: " + e.getMessage() + "</p>");
-      out.println("<pre>");
-      e.printStackTrace(out);
-      out.println("</pre>");
-      out.println("</div>");
-      e.printStackTrace();
+    if (show == null || !show.equals(SHOW_NOTHING)) {
+      resp.setContentType("text/html");
+      PrintWriter out = new PrintWriter(resp.getWriter());
+      try {
+        printHeader(out);
+        printPage(req, resp, out, show);
+        printFooter(out);
+      } catch (Exception e) {
+        out.println("<div class=\"oops\">");
+        out.println("<h1>Oops!</h1>");
+        out.println("<p>The TCH Forecast Tester has encountered an unexpected problem and is unable to proccess your "
+            + "request. We apologize for the inconvience. You should not be seeing this issue. </p>");
+        out.println("<p><a href=\"home\">Return to Home</a></p>");
+        out.println("<h3>Technical Details</h3>");
+        out.println("<p>Problem encountered: " + e.getMessage() + "</p>");
+        out.println("<pre>");
+        e.printStackTrace(out);
+        out.println("</pre>");
+        out.println("</div>");
+        e.printStackTrace();
+      }
+      out.close();
     }
-    out.close();
   }
 
   public void printHeader(PrintWriter out) {
@@ -192,13 +196,13 @@ public abstract class MainServlet extends HttpServlet
         out.println("          <a href=\"software\" class=\"menuLink\">Software</a>");
         out.println("        </td>");
         out.println("        <td class=\"menuCell\">");
-        out.println("          <a href=\"home\" class=\"menuLink\">Concepts</a>");
+        out.println("          <a href=\"concepts\" class=\"menuLink\">Concepts</a>");
         out.println("        </td>");
         out.println("        <td class=\"menuCell\">");
-        out.println("          <a href=\"home\" class=\"menuLink\">Reports</a>");
+        out.println("          <a href=\"reports\" class=\"menuLink\">Reports</a>");
         out.println("        </td>");
         out.println("        <td class=\"menuCell\">");
-        out.println("          <a href=\"home\" class=\"menuLink\">Tools</a>");
+        out.println("          <a href=\"tools\" class=\"menuLink\">Tools</a>");
         out.println("        </td>");
         out.println("      </tr>");
         out.println("    </table>");
@@ -223,6 +227,7 @@ public abstract class MainServlet extends HttpServlet
 
   public void printFooter(PrintWriter out) {
     out.println("    </div>");
+    out.println("   <br/><span class=\"version\">TCH Forecast Tester version " + org.tch.ft.SoftwareVersion.VERSION + "</span>");
     out.println("  </body>");
     out.println("</html>");
   }
