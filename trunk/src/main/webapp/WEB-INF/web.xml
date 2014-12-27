@@ -22,6 +22,18 @@
 	  <servlet-name>SoftwareServlet</servlet-name>
 	  <servlet-class>org.tch.ft.servlet.SoftwareServlet</servlet-class>
 	</servlet>
+	<servlet>
+	  <servlet-name>ConceptsServlet</servlet-name>
+	  <servlet-class>org.tch.ft.servlet.ConceptsServlet</servlet-class>
+	</servlet>
+	<servlet>
+	  <servlet-name>ReportsServlet</servlet-name>
+	  <servlet-class>org.tch.ft.servlet.ReportsServlet</servlet-class>
+	</servlet>
+	<servlet>
+	  <servlet-name>ToolsServlet</servlet-name>
+	  <servlet-class>org.tch.ft.servlet.ToolsServlet</servlet-class>
+	</servlet>
 
   <servlet-mapping>
     <servlet-name>HomeServlet</servlet-name>
@@ -37,6 +49,22 @@
     <servlet-name>SoftwareServlet</servlet-name>
     <url-pattern>/s/software</url-pattern>
   </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>ConceptsServlet</servlet-name>
+    <url-pattern>/s/concepts</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>ReportsServlet</servlet-name>
+    <url-pattern>/s/reports</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>ToolsServlet</servlet-name>
+    <url-pattern>/s/tools</url-pattern>
+  </servlet-mapping>
+
 
   <servlet-mapping>
     <servlet-name>ExternalTestServlet</servlet-name>
