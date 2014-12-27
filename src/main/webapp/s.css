@@ -3,6 +3,23 @@ p {color:#2B3E42;}
 .menu {position: absolute; top: 0px; left: 5px; padding:0px; margin-left: 0px; margin-right: 0px; margin-top: 10px; margin-bottom: 5px; border-width: 0px; border-style: none; border-collapse:separate; text-align: center;}
 .menuCell {width: 208px; background: #002144; color: #FFF; border-color: #002144; border-style: solid; border-width: 1px;}
 
+.version {
+	text-align: center; 
+	position: fixed; 
+	bottom: 0px; 
+	left: 0px; 
+	width: 1340px; 
+	background-color: #002144; 
+	border-style: solid; 
+	border-width: 1px; 
+	border-color: #002144; 
+	font-size: 12px;
+	font-weight: bold;
+	margin: 0px; 
+	padding: 2px;
+	color: #FFF
+}
+
 a:link.menuLink {color: #FFF; text-decoration:none; font-weight: bold; padding:3px; font-size: 12pt;}
 a:visited.menuLink {color: #FFF; text-decoration:none; font-weight: bold; padding:3px; font-size: 12pt;}
 a:hover.menuLink {color: #FFF; text-decoration:underline; font-weight: bold; padding:3px; font-size: 12pt; background: #002144;}
@@ -222,3 +239,4 @@ span.dropt span {
 span.dropt:hover span {
 	left: 450px;
 	background: #F4BFBC; } 
+
