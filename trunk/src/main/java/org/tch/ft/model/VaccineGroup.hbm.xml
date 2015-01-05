@@ -6,5 +6,6 @@
       <generator class="native"/>
     </id>
     <property name="label" column="label" type="string"/>
+    <property name="mapToCdsiCode" column="map_to_cdsi_code" type="string"/>
   </class>
 </hibernate-mapping>
