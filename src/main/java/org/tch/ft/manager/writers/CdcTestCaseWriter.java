@@ -214,7 +214,11 @@ public class CdcTestCaseWriter implements TestCaseWriter
       out.print(f(forecastExpected.getValidDate()));
       out.print(f(forecastExpected.getDueDate()));
       out.print(f(forecastExpected.getOverdueDate()));
-      out.print(f(forecastExpected.getVaccineGroup().getLabel()));
+      if (forecastExpected.getVaccineGroup().getMapToCdsiCode() == null) {
+        out.print(f(forecastExpected.getVaccineGroup().getLabel()));
+      } else {
+        out.print(f(forecastExpected.getVaccineGroup().getMapToCdsiCode()));
+      }
       out.print(f(testCase.getEvalDate()));
       if (testCase.getEvaluationType() == null) {
         out.print(f(""));
