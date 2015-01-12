@@ -45,7 +45,8 @@ public class ForecastActualGenerator
 
     List<TestPanelForecast> testPanelForecastList;
     {
-      Query query = session.createQuery("from TestPanelForecast where testPanelCase.testPanel = ? and testPanelCase.resultStatus <> 'E'");
+      Query query = session
+          .createQuery("from TestPanelForecast where testPanelCase.testPanel = ? and testPanelCase.resultStatus <> 'E'");
       query.setParameter(0, testPanel);
       if (categoryNameSet == null) {
         testPanelForecastList = query.list();
@@ -101,11 +102,14 @@ public class ForecastActualGenerator
       forecastExpectedList.add(testPanelForecast);
 
     }
-    Transaction trans = session.beginTransaction();
     List<ForecastActualExpectedCompare> forecastCompareList = new ArrayList<ForecastActualExpectedCompare>();
     String errorLog = null;
-    try {
-      for (TestCase testCase : testCaseMap.keySet()) {
+    for (TestCase testCase : testCaseMap.keySet()) {
+      RelativeRuleManager.updateFixedDatesForRelativeRules(testCase, session, false);
+      Transaction trans = session.beginTransaction();
+      try {
+        
+        
         query = session.createQuery("from TestEvent where testCase = ?");
         query.setParameter(0, testCase);
         testCase.setTestEventList(query.list());
@@ -211,13 +215,13 @@ public class ForecastActualGenerator
           }
         }
 
-        // TODO record evaluation actuals
-
+      } finally {
+        trans.commit();
       }
+      // TODO record evaluation actuals
 
-    } finally {
-      trans.commit();
     }
+
   }
 
   public static List<ForecastActualExpectedCompare> createForecastComparison(TestPanel testPanel, Software software,
@@ -256,11 +260,11 @@ public class ForecastActualGenerator
       forecastCompareList.add(forecastCompare);
     }
 
- 
     return forecastCompareList;
   }
 
-  public static Set<TestPanelCase> updateStatusOfTestPanel(Session session, List<ForecastActualExpectedCompare> forecastCompareList) {
+  public static Set<TestPanelCase> updateStatusOfTestPanel(Session session,
+      List<ForecastActualExpectedCompare> forecastCompareList) {
     Set<TestPanelCase> testPanelCaseList = new HashSet<TestPanelCase>();
     Transaction transaction = session.beginTransaction();
     Set<TestPanelCase> testPanelCaseSetPass = new HashSet<TestPanelCase>();
