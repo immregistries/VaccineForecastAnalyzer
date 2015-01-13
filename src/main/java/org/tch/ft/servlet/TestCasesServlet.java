@@ -48,7 +48,6 @@ import org.tch.fc.model.Service;
 import org.tch.fc.model.ServiceOption;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.SoftwareResult;
-import org.tch.fc.model.SoftwareSetting;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestCaseSetting;
 import org.tch.fc.model.TestEvent;
@@ -96,6 +95,7 @@ public class TestCasesServlet extends MainServlet
   public static final String ACTION_ADD_VACCINATION = "Add Vaccination";
   public static final String ACTION_ADD_EVENT = "Add Event";
   public static final String ACTION_ADD_COMMENT = "Add Comment";
+  public static final String ACTION_UPDATE_COMMENT = "Update Comment";
   public static final String ACTION_SAVE_EXPECTATIONS = "Save Expectations";
   public static final String ACTION_SAVE_TEST_CASE_SETTINGS = "Save Test Case Settings";
   public static final String ACTION_UPDATE_RELATIVE_DATES = "Update Relative Dates";
@@ -153,7 +153,9 @@ public class TestCasesServlet extends MainServlet
   public static final String PARAM_SOFTWARE_ID_SELECTED = "softwareIdSelected";
   public static final String PARAM_NOTE_TEXT = "noteText";
   public static final String PARAM_RESULT_STATUS = "resultStatus";
-  public final static String PARAM_OPTION_VALUE = "optionValue";
+  public static final String PARAM_OPTION_VALUE = "optionValue";
+  public static final String PARAM_TEST_NOTE_ID = "testNoteId";
+  public static final String PARAM_TEST_NOTE_EDIT = "testNoteEdit";
 
   public static final String RULE_BEFORE_OR_AFTER = "BeforeOrAfter";
   public static final String RULE_TEST_EVENT_ID = "TestEventId";
@@ -270,6 +272,8 @@ public class TestCasesServlet extends MainServlet
         return SHOW_TEST_CASE;
       } else if (action.equals(ACTION_ADD_COMMENT)) {
         doAddComment(req, user, dataSession);
+      } else if (action.equals(ACTION_UPDATE_COMMENT)) {
+        doUpdateComment(req, user, dataSession);
       } else if (action.equals(ACTION_SAVE_TEST_CASE_SETTINGS)) {
         int softwareId = Integer.parseInt(req.getParameter(PARAM_SOFTWARE_ID_SELECTED));
         Software software = (Software) dataSession.get(Software.class, softwareId);
@@ -366,8 +370,22 @@ public class TestCasesServlet extends MainServlet
     }
   }
 
+  public void doUpdateComment(HttpServletRequest req, User user, Session dataSession) {
+    int testNoteId = Integer.parseInt(req.getParameter(PARAM_TEST_NOTE_ID));
+    TestNote testNote = (TestNote) dataSession.get(TestNote.class, testNoteId);
+    Transaction transaction = dataSession.beginTransaction();
+    String noteText = req.getParameter(PARAM_NOTE_TEXT).trim();
+    if (noteText.equals("")) {
+      dataSession.delete(testNote);
+    } else {
+      testNote.setNoteText(noteText);
+      testNote.setNoteDate(new Date());
+      dataSession.update(testNote);
+    }
+    transaction.commit();
+  }
+
   private void doRequestActualResults(HttpServletRequest req, User user, Session dataSession) {
-    Software software = user.getSelectedSoftware();
     TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
     List<Software> softwareList = SoftwareManager.getListOfUnrestrictedSoftware(user, dataSession);
     for (Software softwareSelected : softwareList) {
@@ -1294,7 +1312,7 @@ public class TestCasesServlet extends MainServlet
           && user.getSelectedTestPanelCase() != null) {
         TestCase testCase = user.getSelectedTestPanelCase().getTestCase();
         RelativeRuleManager.updateFixedDatesForRelativeRules(testCase, dataSession, false);
-        printTestCase(out, user);
+        printTestCase(out, user, req, dataSession);
         printActualsVsExpected(out, user);
       }
     } else if (SHOW_TEST_PANEL.equals(show)) {
@@ -1319,7 +1337,7 @@ public class TestCasesServlet extends MainServlet
         VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class,
             Integer.parseInt(req.getParameter(PARAM_VACCINE_GROUP_ID)));
         TestCase testCase = user.getSelectedTestPanelCase().getTestCase();
-        printTestCase(out, user);
+        printTestCase(out, user, req, dataSession);
         printPreview(out, user, vaccineGroup);
       }
     } else if (SHOW_ADD_TEST_CASE.equals(show)) {
@@ -2569,7 +2587,7 @@ public class TestCasesServlet extends MainServlet
     out.println("          <td><input type=\"text\" name=\"" + PARAM_CATEGORY_NAME + "\" size=\"50\" value=\""
         + categoryName + "\"/></td>");
     out.println("        </tr>");
-    if (testPanelCase == null || applicationSession.getUser().isCanEditTestCase()) {
+    if (testPanelCase == null || applicationSession.getUser().isCanEditTestCase() || show.equals(SHOW_COPY_TEST_CASE)) {
       out.println("        <tr>");
       out.println("          <th>Label</th>");
       out.println("          <td><input type=\"text\" name=\"" + PARAM_LABEL + "\" size=\"50\" value=\"" + label
@@ -2624,7 +2642,7 @@ public class TestCasesServlet extends MainServlet
       out.println("        </tr>");
     }
     out.println("        <tr>");
-    if (testPanelCase == null || applicationSession.getUser().isCanEditTestCase()) {
+    if (testPanelCase == null || applicationSession.getUser().isCanEditTestCase()|| show.equals(SHOW_COPY_TEST_CASE)) {
 
       out.println("          <th>Patient First</th>");
       out.println("          <td><input type=\"text\" name=\"" + PARAM_PATIENT_FIRST + "\" size=\"15\" value=\""
@@ -3496,7 +3514,7 @@ public class TestCasesServlet extends MainServlet
     return expectedDoseNumber.equals(actualDoseNumber);
   }
 
-  public List<TestEvent> printTestCase(PrintWriter out, User user) {
+  public List<TestEvent> printTestCase(PrintWriter out, User user, HttpServletRequest req, Session dataSession) {
     TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
     TestCase testCase = testPanelCase.getTestCase();
     String editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "="
@@ -3682,21 +3700,37 @@ public class TestCasesServlet extends MainServlet
       out.println("  </table>");
     }
 
-    printShowRowScript(out);
-    String addCommentButton = " <a class=\"fauxbutton\" href=\"javascript: showRow('commentForm')\">Add Comment</a>";
+    TestNote testNoteToEdit = null;
+    if (req.getParameter(PARAM_TEST_NOTE_ID) != null && req.getParameter(PARAM_TEST_NOTE_EDIT) != null) {
+      int testNoteId = Integer.parseInt(req.getParameter(PARAM_TEST_NOTE_ID));
+      testNoteToEdit = (TestNote) dataSession.get(TestNote.class, testNoteId);
+    }
+    if (testNoteToEdit == null) {
+      printShowRowScript(out);
+    }
+    String addCommentButton = "";
+    if (testNoteToEdit == null) {
+      addCommentButton = " <a class=\"fauxbutton\" href=\"javascript: showRow('commentForm')\">Add Comment</a>";
+    }
     out.println("  <h2>Comments" + addCommentButton + "</h2>");
 
-    out.println("  <form method=\"POST\" action=\"testCases\" id=\"commentForm\" style=\"display: none;\">");
+    out.println("  <form method=\"POST\" action=\"testCases\" id=\"commentForm\" style=\""
+        + (testNoteToEdit == null ? "display: none;" : "") + "\">");
     out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
         + testPanelCase.getTestPanelCaseId() + "\"/>");
+    if (testNoteToEdit != null) {
+      out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_NOTE_ID + "\" value=\""
+          + testNoteToEdit.getTestNoteId() + "\"/>");
+    }
     out.println("    <table width=\"100%\">");
     out.println("      <tr>");
     out.println("        <th>Commment</th>");
     out.println("        <td>");
-    out.println("          <textarea name=\"" + PARAM_NOTE_TEXT + "\" value=\"\" cols=\"30\" rows=\"5\"></textarea>");
+    out.println("          <textarea name=\"" + PARAM_NOTE_TEXT + "\" value=\"\" cols=\"30\" rows=\"5\">"
+        + (testNoteToEdit == null ? "" : testNoteToEdit.getNoteText()) + "</textarea>");
     out.println("        </td>");
     out.println("      </tr>");
-    if (user.isExpertOrAdmin(user.getSelectedTaskGroup())) {
+    if (testNoteToEdit == null && user.isExpertOrAdmin(user.getSelectedTaskGroup())) {
       out.println("      <tr>");
       out.println("        <th>Test Case Result Status</th>");
       out.println("        <td>");
@@ -3717,7 +3751,8 @@ public class TestCasesServlet extends MainServlet
     }
     out.println("      <tr>");
     out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-        + "\" size=\"15\" value=\"" + ACTION_ADD_COMMENT + "\"/></td>");
+        + "\" size=\"15\" value=\"" + (testNoteToEdit == null ? ACTION_ADD_COMMENT : ACTION_UPDATE_COMMENT)
+        + "\"/></td>");
     out.println("      </tr>");
     out.println("    </table>");
     out.println("  </form>");
@@ -3726,11 +3761,18 @@ public class TestCasesServlet extends MainServlet
     query.setParameter(0, testCase);
     List<TestNote> testNoteList = query.list();
     for (TestNote testNote : testNoteList) {
-      out.println("<p>" + testNote.getUser().getName() + " from " + testNote.getUser().getOrganization()
-          + " writes on " + sdf.format(testNote.getNoteDate()) + ":</p>");
-      out.println("<blockquote>");
-      out.println(testNote.getNoteText());
-      out.println("</blockquote>");
+      if (!testNote.getNoteText().equals("")) {
+        out.println("<p>" + testNote.getUser().getName() + " from " + testNote.getUser().getOrganization()
+            + " writes on " + sdf.format(testNote.getNoteDate()) + ":</p>");
+        out.println("<blockquote>");
+        out.println(testNote.getNoteText());
+        if (testNote.getUser().equals(user)) {
+          String link = "testCases?" + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId() + "&"
+              + PARAM_TEST_NOTE_ID + "=" + testNote.getTestNoteId() + "&" + PARAM_TEST_NOTE_EDIT + "=true";
+          out.println("<a class=\"add\" href=\"" + link + "\">Edit</a>");
+        }
+        out.println("</blockquote>");
+      }
     }
 
     out.println("</div>");

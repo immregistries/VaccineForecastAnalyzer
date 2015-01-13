@@ -219,8 +219,8 @@ public class ToolsServlet extends MainServlet
     out.println("<div class=\"leftColumn\">");
     out.println("<h2>Tools</h2>");
     out.println("<ul class=\"selectLevel1\">");
-    out.println("  <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW + "=" + SHOW_IMPORT_TEST_CASES
-        + "\">Import Test Cases</a></li>");
+//    out.println("  <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW + "=" + SHOW_IMPORT_TEST_CASES
+//        + "\">Import Test Cases</a></li>");
     out.println("  <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW + "=" + SHOW_EXPORT_TEST_CASES
         + "\">Export Test Cases</a></li>");
     out.println("</ul>");
