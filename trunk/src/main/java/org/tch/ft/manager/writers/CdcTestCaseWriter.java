@@ -193,8 +193,12 @@ public class CdcTestCaseWriter implements TestCaseWriter
         query.setParameter(0, testPanelCase);
         query.setParameter(1, testEvent);
         List<TestPanelEvaluation> testPanelEvaluationList = query.list();
-        if (testPanelEvaluationList.size() > 0) {
-          out.print(f(testPanelEvaluationList.get(0).getEvaluationExpected().getEvaluation().getLabel()));
+        if (testPanelEvaluationList.size() > 0 && testPanelEvaluationList.get(0).getEvaluationExpected() != null) {
+          if (testPanelEvaluationList.get(0).getEvaluationExpected().getEvaluation() != null) {
+            out.print(f(testPanelEvaluationList.get(0).getEvaluationExpected().getEvaluation().getLabel()));
+          } else {
+            out.print(",");
+          }
           out.print(f(testPanelEvaluationList.get(0).getEvaluationExpected().getEvaluationReason()));
         } else {
           out.print(",,");
