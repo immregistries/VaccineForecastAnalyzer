@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.tch.fc.model.Admin;
+import org.tch.fc.model.DateSet;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.ForecastResult;
@@ -19,23 +20,24 @@ import org.tch.ft.model.TestCaseWithExpectations;
 
 import static org.tch.fc.model.VaccineGroup.*;
 
-public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseReader {
+public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseReader
+{
 
   private static final String FIELD_CDC_TEST_ID = "CDC_Test_ID";
   private static final String FIELD_TEST_CASE_NAME = "Test_Case_Name";
   private static final String FIELD_DOB = "DOB";
   private static final String FIELD_GENDER = "Gender";
-//  private static final String FIELD_MED_HISTORY_TEXT = "Med_History_Text";
-//  private static final String FIELD_MED_HISTORY_CODE = "Med_History_Code";
-//  private static final String FIELD_MED_HISTORY_CODE_SYS = "Med_History_Code_Sys";
+  //  private static final String FIELD_MED_HISTORY_TEXT = "Med_History_Text";
+  //  private static final String FIELD_MED_HISTORY_CODE = "Med_History_Code";
+  //  private static final String FIELD_MED_HISTORY_CODE_SYS = "Med_History_Code_Sys";
   private static final String FIELD_SERIES_STATUS = "Series_Status";
 
   private static final String FIELD_DATE_ADMINISTERED_ = "Date_Administered_";
-//   private static final String FIELD_VACCINE_NAME_ = "Vaccine_Name_";
+  //   private static final String FIELD_VACCINE_NAME_ = "Vaccine_Name_";
   private static final String FIELD_CVX_ = "CVX_";
   private static final String FIELD_MVX_ = "MVX_";
-//  private static final String FIELD_EVALUATION_STATUS_ = "Evaluation_Status_";
-//  private static final String FIELD_EVALUATION_REASON_ = "Evaluation_Reason_";
+  //  private static final String FIELD_EVALUATION_STATUS_ = "Evaluation_Status_";
+  //  private static final String FIELD_EVALUATION_REASON_ = "Evaluation_Reason_";
 
   private static final String FIELD_FORECAST_NUM = "Forecast_#";
   private static final String FIELD_EARLIEST_DATE = "Earliest_Date";
@@ -44,9 +46,9 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
   private static final String FIELD_VACCINE_GROUP = "Vaccine_Group";
   private static final String FIELD_ASSESSMENT_DATE = "Assessment_Date";
   private static final String FIELD_EVALUATION_TEST_TYPE = "Evaluation_Test_Type";
-//  private static final String FIELD_DATE_ADDED = "Date_added";
-//  private static final String FIELD_DATE_UPDATED = "Date_updated";
-//  private static final String FIELD_FORECAST_TEST_TYPE = "Forecast_Test_Type";
+  //  private static final String FIELD_DATE_ADDED = "Date_added";
+  //  private static final String FIELD_DATE_UPDATED = "Date_updated";
+  //  private static final String FIELD_FORECAST_TEST_TYPE = "Forecast_Test_Type";
 
   private Map<String, VaccineGroup> vaccineGroupMap = new HashMap<String, VaccineGroup>();
 
@@ -76,7 +78,7 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     vaccineGroupMap.put("Yellow Fever".toUpperCase(), vaccineGroupListMap.get(ID_YELLOW_FEVER));
   }
 
-  private String[] ignoredItems = { };
+  private String[] ignoredItems = {};
 
   public void read(InputStream in) throws IOException {
     readInputStream(in);
@@ -106,81 +108,82 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     int assessmentDatePos = findFieldPos(FIELD_ASSESSMENT_DATE);
     int evaluationTestTypePos = findFieldPos(FIELD_EVALUATION_TEST_TYPE);
     int seriesStatusPos = findFieldPos(FIELD_SERIES_STATUS);
-    
+
     Date referenceDate = null;
     for (List<String> testCaseFieldList : testCaseFieldListList) {
-      TestCaseWithExpectations testCaseWithExpectations = new TestCaseWithExpectations();
-      TestCase testCase = testCaseWithExpectations.getTestCase();
-      testCaseList.add(testCaseWithExpectations);
-      testCase.setTestCaseNumber(readField(testIdPosition, testCaseFieldList));
-      testCase.setCategoryName(readField(vaccineGroupPos, testCaseFieldList));
-      testCase.setLabel(testCase.getTestCaseNumber() + " " + testCase.getCategoryName() + " "
-          + readField(evaluationTestTypePos, testCaseFieldList));
-      testCase.setDescription(readField(testCaseNamePosition, testCaseFieldList));
-      testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCaseWithExpectations));
-      testCase.setPatientSex(readField(genderPos, testCaseFieldList).toUpperCase().startsWith("M") ? "M" : "F");
-      if (referenceDate == null) {
-        referenceDate = readDateField(assessmentDatePos, testCaseFieldList, testCaseWithExpectations);
-      }
-      testCase.setEvalDate(referenceDate);
-      List<TestEvent> testEventList = new ArrayList<TestEvent>();
-      testCase.setTestEventList(testEventList);
-      for (int i = 1; i <= 7; i++) {
-        String cvxCode = readField(shotCvxPos[i], testCaseFieldList);
-        if (cvxCode.length() == 1) {
-          cvxCode = "0" + cvxCode;
+      String categoryName = readField(vaccineGroupPos, testCaseFieldList);
+      if (!categoryName.equals("")) {
+        TestCaseWithExpectations testCaseWithExpectations = new TestCaseWithExpectations();
+        TestCase testCase = testCaseWithExpectations.getTestCase();
+        testCase.setDateSet(DateSet.FIXED);
+        testCaseList.add(testCaseWithExpectations);
+        testCase.setTestCaseNumber(readField(testIdPosition, testCaseFieldList));
+        testCase.setCategoryName(categoryName);
+        testCase.setLabel(testCase.getTestCaseNumber() + " " + testCase.getCategoryName() + " "
+            + readField(evaluationTestTypePos, testCaseFieldList));
+        testCase.setDescription(readField(testCaseNamePosition, testCaseFieldList));
+        testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCaseWithExpectations));
+        testCase.setPatientSex(readField(genderPos, testCaseFieldList).toUpperCase().startsWith("M") ? "M" : "F");
+        if (referenceDate == null) {
+          referenceDate = readDateField(assessmentDatePos, testCaseFieldList, testCaseWithExpectations);
         }
-
-        Date shotDate = readDateField(shotDatePos[i], testCaseFieldList, testCaseWithExpectations);
-        if (!cvxCode.equals("") && shotDate != null) {
-          TestEvent testEvent = new TestEvent();
-          Event event = cvxToEventMap.get(cvxCode);
-          if (event == null) {
-            throw new IllegalArgumentException("Unrecognized CVX code '" + cvxCode + "' for Shot" + i + " test case "
-                + testCase.getTestCaseNumber() + "");
+        testCase.setEvalDate(referenceDate);
+        List<TestEvent> testEventList = new ArrayList<TestEvent>();
+        testCase.setTestEventList(testEventList);
+        for (int i = 1; i <= 7; i++) {
+          String cvxCode = readField(shotCvxPos[i], testCaseFieldList);
+          if (cvxCode.length() == 1) {
+            cvxCode = "0" + cvxCode;
           }
-          testEvent.setEvent(event);
-          testEvent.setEventDate(shotDate);
-          testEvent.setTestCase(testCase);
-          testEventList.add(testEvent);
-        }
-      }
-      VaccineGroup vaccineGroup = vaccineGroupMap.get(testCase.getCategoryName().toUpperCase());
-      if (vaccineGroup == null) {
-        boolean found = false;
-        for (String ignoredItem : ignoredItems) {
-          if (testCase.getCategoryName().equals(ignoredItem)) {
-            found = true;
-            continue;
+
+          Date shotDate = readDateField(shotDatePos[i], testCaseFieldList, testCaseWithExpectations);
+          if (!cvxCode.equals("") && shotDate != null) {
+            TestEvent testEvent = new TestEvent();
+            Event event = cvxToEventMap.get(cvxCode);
+            if (event == null) {
+              throw new IllegalArgumentException("Unrecognized CVX code '" + cvxCode + "' for Shot" + i + " test case "
+                  + testCase.getTestCaseNumber() + "");
+            }
+            testEvent.setEvent(event);
+            testEvent.setEventDate(shotDate);
+            testEvent.setTestCase(testCase);
+            testEventList.add(testEvent);
           }
         }
-        if (!found) {
-          throw new IllegalArgumentException("Unrecognized category name '" + testCase.getCategoryName() + "'");
+        VaccineGroup vaccineGroup = vaccineGroupMap.get(testCase.getCategoryName().toUpperCase());
+        if (vaccineGroup == null) {
+          boolean found = false;
+          for (String ignoredItem : ignoredItems) {
+            if (testCase.getCategoryName().equals(ignoredItem)) {
+              found = true;
+              continue;
+            }
+          }
+          if (!found) {
+            throw new IllegalArgumentException("Unrecognized category name '" + testCase.getCategoryName() + "'");
+          }
+        } else {
+          ForecastExpected forecastExpected = new ForecastExpected();
+          forecastExpected.setUpdatedDate(new Date());
+          forecastExpected.setTestCase(testCase);
+          forecastExpected.setAuthor(user);
+          forecastExpected.setVaccineGroup(vaccineGroup);
+          String seriesStatus = readField(seriesStatusPos, testCaseFieldList);
+          if (!seriesStatus.equals("Not Completed")) {
+            forecastExpected.setDoseNumber(readField(forecastNumPos, testCaseFieldList));
+            forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCaseWithExpectations));
+            forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCaseWithExpectations));
+            forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCaseWithExpectations));
+          } else {
+            forecastExpected.setAdmin(Admin.COMPLETE);
+          }
+          List<ForecastExpected> forecastExpectedList = testCaseWithExpectations.getForecastExpectedList();
+          if (forecastExpectedList == null) {
+            forecastExpectedList = new ArrayList<ForecastExpected>();
+            testCaseWithExpectations.setForecastExpectedList(forecastExpectedList);
+          }
+          forecastExpectedList.add(forecastExpected);
         }
-      } else {
-        ForecastExpected forecastExpected = new ForecastExpected();
-        forecastExpected.setTestCase(testCase);
-        forecastExpected.setAuthor(user);
-        forecastExpected.setVaccineGroup(vaccineGroup);
-        String seriesStatus = readField(seriesStatusPos, testCaseFieldList);
-        if (!seriesStatus.equals("Not Completed"))
-        {
-          forecastExpected.setDoseNumber(readField(forecastNumPos, testCaseFieldList));
-          forecastExpected.setValidDate(readDateField(earliestDatePos, testCaseFieldList, testCaseWithExpectations));
-          forecastExpected.setDueDate(readDateField(recDatePos, testCaseFieldList, testCaseWithExpectations));
-          forecastExpected.setOverdueDate(readDateField(overdueDatePos, testCaseFieldList, testCaseWithExpectations));
-        }
-        else
-        {
-          forecastExpected.setAdmin(Admin.COMPLETE);
-        }
-        List<ForecastExpected> forecastExpectedList = testCaseWithExpectations.getForecastExpectedList();
-        if (forecastExpectedList == null) {
-          forecastExpectedList = new ArrayList<ForecastExpected>();
-          testCaseWithExpectations.setForecastExpectedList(forecastExpectedList);
-        }
-        forecastExpectedList.add(forecastExpected);
-
       }
     }
   }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.tch.fc.model.DateSet;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.manager.readers.TestCaseReader;
 import org.tch.ft.model.ForecastExpected;
@@ -38,6 +39,7 @@ public class TestCaseImporter {
         testCase.setPatientLast(testCaseImported.getPatientLast());
         testCase.setPatientSex(testCaseImported.getPatientSex());
         testCase.setPatientDob(testCaseImported.getPatientDob());
+        testCase.setDateSet(DateSet.FIXED);
         dataSession.update(testCase);
         List<ForecastExpected> forecastExpectedImportedList = testCaseWithExpectations.getForecastExpectedList();
         if (forecastExpectedImportedList != null) {
