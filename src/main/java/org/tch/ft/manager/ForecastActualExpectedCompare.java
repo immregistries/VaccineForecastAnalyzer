@@ -12,8 +12,8 @@ import org.tch.ft.model.TestPanelCase;
 
 public class ForecastActualExpectedCompare implements Serializable
 {
-  
-    public static class CompareCriteria
+
+  public static class CompareCriteria
   {
     private boolean verifyEvaluationStatus = false;
     private boolean verifyForecastStatus = true;
@@ -271,6 +271,113 @@ public class ForecastActualExpectedCompare implements Serializable
 
   public String getMatchStatus() {
     return getMatchStatus(compareCriteria);
+  }
+
+  public AdverseOutcome getAdverseOutcomeForDue() {
+    if (forecastResultA == null || forecastResultB == null) {
+      return null;
+    }
+
+    Date evaluationDate = testCase.getEvalDate();
+    Date validDate = forecastResultA.getValidDate();
+    Date dueDate = forecastResultA.getDueDate();
+    Date recommendedDate = forecastResultB.getDueDate();
+
+    if (same(dueDate, recommendedDate)) {
+      return null;
+    }
+    if (recommendedDate == null) {
+      return AdverseOutcome.DOES_NOT_COMPLETE; // A
+    }
+    if (dueDate == null) {
+      return AdverseOutcome.TOO_MANY_DOSES; // D
+    }
+    boolean dueLater = recommendedDate.after(evaluationDate);
+    boolean dueToday = !dueLater;
+    boolean notValid = recommendedDate.before(validDate);
+    boolean isEarly = recommendedDate.before(dueDate);
+    boolean isLate = recommendedDate.after(dueDate);
+    boolean validToday = !validDate.before(evaluationDate);
+    boolean earlyToday = evaluationDate.before(dueDate);
+
+    if (validToday && isEarly) {
+      if (earlyToday) {
+        return AdverseOutcome.GIVEN_EARLY; // E
+      }
+      return null;
+    }
+
+    if (notValid) {
+      if (dueToday) {
+        return AdverseOutcome.GIVEN_INVALID;
+      }
+      if (dueLater) {
+        return AdverseOutcome.SCHEDULED_FOR_INVALID;
+      }
+    }
+    if (isEarly && dueLater) {
+      return AdverseOutcome.SCHEDULED_FOR_EARLY;
+    }
+    if (isLate && dueLater) {
+      return AdverseOutcome.SCHEDULED_FOR_LATE;
+    }
+    return null;
+  }
+
+  public AdverseOutcome getAdverseOutcomeForValid() {
+    if (forecastResultA == null || forecastResultB == null) {
+      return null;
+    }
+
+    Date evaluationDate = testCase.getEvalDate();
+    Date validDate = forecastResultA.getValidDate();
+    Date dueDate = forecastResultA.getDueDate();
+    Date recommendedDate = forecastResultB.getValidDate();
+
+    if (same(validDate, recommendedDate)) {
+      return null;
+    }
+    if (recommendedDate == null) {
+      return AdverseOutcome.DOES_NOT_COMPLETE; // A
+    }
+    if (validDate == null) {
+      return AdverseOutcome.TOO_MANY_DOSES; // D
+    }
+    boolean dueLater = recommendedDate.after(evaluationDate);
+    boolean dueToday = !dueLater;
+    boolean notValid = recommendedDate.before(validDate);
+    boolean isEarly = recommendedDate.before(dueDate);
+    boolean isLate = recommendedDate.after(dueDate);
+    boolean validToday = !validDate.before(evaluationDate);
+    boolean earlyToday = evaluationDate.before(dueDate);
+
+    if (validToday && isEarly) {
+      if (earlyToday) {
+        return AdverseOutcome.GIVEN_EARLY; // E
+      }
+      return null;
+    }
+    if (notValid) {
+      if (dueToday) {
+        return AdverseOutcome.GIVEN_INVALID;
+      }
+      if (dueLater) {
+        return AdverseOutcome.SCHEDULED_FOR_INVALID;
+      }
+    }
+    if (isLate)
+    {
+      if (dueToday)
+      {
+        return null;
+      }
+      if (dueLater)
+      {
+        return AdverseOutcome.SCHEDULED_FOR_LATE;
+      }
+      return AdverseOutcome.NOT_GIVEN_VALID;
+    }
+    return null;
   }
 
   public String getMatchStatus(CompareCriteria compareCriteria) {
