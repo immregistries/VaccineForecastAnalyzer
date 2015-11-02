@@ -25,6 +25,7 @@ import org.tch.fc.model.Service;
 import org.tch.fc.model.ServiceOption;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.SoftwareSetting;
+import org.tch.ft.manager.AdverseOutcome;
 import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.manager.ForecastActualGenerator;
 import org.tch.ft.manager.SoftwareManager;
@@ -68,6 +69,7 @@ public class SoftwareServlet extends MainServlet
   private final static String PARAM_REPORT_VIEW = "reportView";
   private final static String PARAM_REPORT_VIEW_SUMMARY = "reportViewSummary";
   private final static String PARAM_REPORT_VIEW_DETAILS = "reportViewDetails";
+  private final static String PARAM_REPORT_VIEW_ADDVERSE_OUTCOMES = "reportViewAdverseOutcomes";
   private final static String PARAM_LABEL = "label";
   private final static String PARAM_SERVICE_URL = "serviceUrl";
   private final static String PARAM_SERVICE_TYPE = "serviceType";
@@ -155,6 +157,10 @@ public class SoftwareServlet extends MainServlet
       .add("<p>The first date when no more vaccines need to be administered. </p>");
   private final static HoverText HOVER_TEXT_DETAILS_PASS_FAIL = new HoverText("Pass/Fail")
       .add("<p>Whether test passed or not. </p>");
+  private final static HoverText HOVER_TEXT_ADERSE_OUTCOME_EARLIEST = new HoverText("Earliest Date")
+      .add("<p>Adverse outcome that would occur if patient was immunized following earliest date. </p>");
+  private final static HoverText HOVER_TEXT_ADERSE_OUTCOME_RECOMMENDED = new HoverText("Recommended Date")
+      .add("<p>Adverse outcome that would occur if patient was immunized following recommended date. </p>");
 
   @Override
   public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show)
@@ -703,6 +709,15 @@ public class SoftwareServlet extends MainServlet
             out.println("      <th>" + HOVER_TEXT_DETAILS_FINISHED_DATE + "</th>");
           }
           out.println("      <th>" + HOVER_TEXT_DETAILS_PASS_FAIL + "</th>");
+        } else if (reportView.equals(PARAM_REPORT_VIEW_ADDVERSE_OUTCOMES)) {
+          out.println("      <th>" + HOVER_TEXT_TEST_CASE + "</th>");
+          out.println("      <th>" + HOVER_TEXT_VACCINE_GROUP + "</th>");
+          if (compareCriteria.isVerifyForecastValidDate()) {
+            out.println("      <th>" + HOVER_TEXT_ADERSE_OUTCOME_EARLIEST + "</th>");
+          }
+          if (compareCriteria.isVerifyForecastDueDate()) {
+            out.println("      <th>" + HOVER_TEXT_ADERSE_OUTCOME_RECOMMENDED + "</th>");
+          }
         }
         out.println("    </tr>");
       }
@@ -858,6 +873,29 @@ public class SoftwareServlet extends MainServlet
           out.println("      <td class=\"" + sc + "\">" + (passFail ? "Pass" : "Fail") + "</td>");
         }
         out.println("    </tr>");
+      } else if (reportView.equals(PARAM_REPORT_VIEW_ADDVERSE_OUTCOMES)) {
+        out.println("    <tr>");
+        out.println("      <td class=\"" + styleClass + "\"><a href=\"" + link + "\">"
+            + forecastCompare.getForecastResultA().getTestCase().getLabel() + updateLabel + "</a></td>");
+        out.println("      <td class=\"" + styleClass + "\"><a href=\"" + link + "\">"
+            + forecastCompare.getForecastResultA().getVaccineGroup().getLabel() + "</a></td>");
+        if (compareCriteria.isVerifyForecastValidDate()) {
+          AdverseOutcome adverseOutcome = forecastCompare.getAdverseOutcomeForValid();
+          if (adverseOutcome == null) {
+            out.println("      <td class=\"pass\">&nbsp;</td>");
+          } else {
+            out.println("      <td class=\"fail\">" + adverseOutcome + "</td>");
+          }
+        }
+        if (compareCriteria.isVerifyForecastDueDate()) {
+          AdverseOutcome adverseOutcome = forecastCompare.getAdverseOutcomeForDue();
+          if (adverseOutcome == null) {
+            out.println("      <td class=\"pass\">&nbsp;</td>");
+          } else {
+            out.println("      <td class=\"fail\">" + adverseOutcome + "</td>");
+          }
+        }
+        out.println("    </tr>");
       }
     }
     if (!categoryName.equals("")) {
@@ -967,6 +1005,10 @@ public class SoftwareServlet extends MainServlet
     out.println("        <input type=\"radio\" name=\"" + PARAM_REPORT_VIEW + "\" value=\"" + PARAM_REPORT_VIEW_DETAILS
         + "\"" + (compareCriteria.getReportView().equals(PARAM_REPORT_VIEW_DETAILS) ? " checked=\"true\"" : "")
         + "/> Details <br/>");
+    out.println("        <input type=\"radio\" name=\"" + PARAM_REPORT_VIEW + "\" value=\""
+        + PARAM_REPORT_VIEW_ADDVERSE_OUTCOMES + "\""
+        + (compareCriteria.getReportView().equals(PARAM_REPORT_VIEW_ADDVERSE_OUTCOMES) ? " checked=\"true\"" : "")
+        + "/> Adverse Outcomes <br/>");
     out.println("      </td>");
     out.println("    </tr>");
     out.println("  <tr>");
