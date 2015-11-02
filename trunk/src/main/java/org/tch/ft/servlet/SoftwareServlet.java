@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -63,6 +65,9 @@ public class SoftwareServlet extends MainServlet
   private final static String PARAM_VERIFY_FORECAST_DUE_DATE = "verifyForecastDueDate";
   private final static String PARAM_VERIFY_FORECAST_OVERDUE_DATE = "verifyForecastOverdueDate";
   private final static String PARAM_VERIFY_FORECAST_FINISHED_DATE = "verifyForecastFinishedDate";
+  private final static String PARAM_REPORT_VIEW = "reportView";
+  private final static String PARAM_REPORT_VIEW_SUMMARY = "reportViewSummary";
+  private final static String PARAM_REPORT_VIEW_DETAILS = "reportViewDetails";
   private final static String PARAM_LABEL = "label";
   private final static String PARAM_SERVICE_URL = "serviceUrl";
   private final static String PARAM_SERVICE_TYPE = "serviceType";
@@ -109,6 +114,8 @@ public class SoftwareServlet extends MainServlet
       .add("<p>Select which categories to run now. </p>");
   private final static HoverText HOVER_TEXT_FORECAST_COMPARISON = new HoverText("Forecast Comparison")
       .add("<p>Attributes of the forecast to compare. </p>");
+  private final static HoverText HOVER_TEXT_REPORT_VIEW = new HoverText("Report View")
+      .add("<p>What type of output to show when report is done running. </p>");
   private final static HoverText HOVER_TEXT_UPDATE = new HoverText("Update").setHoverTitle("Update Test Case Status")
       .add("<p>There are two different concepts of pass/fail for test cases. ")
       .add("  The first concept, Result Status, can only be set by the task group ")
@@ -135,6 +142,19 @@ public class SoftwareServlet extends MainServlet
       .add("  so the status and comparison may or may not align in these cases. </p>");
   private final static HoverText HOVER_TEXT_COMPARISON = new HoverText("Comparison")
       .add("<p>The comparison of the expected and actual results for the fields selected when making the request to Run Tests. </p>");
+  private final static HoverText HOVER_TEXT_DETAILS_STATUS = new HoverText("Status")
+      .add("<p>The status of the vaccination indicating if and when the vaccination should be given. </p>");
+  private final static HoverText HOVER_TEXT_DETAILS_DOSE = new HoverText("Dose").add("<p>The dose number due.  </p>");
+  private final static HoverText HOVER_TEXT_DETAILS_EARLIEST_DATE = new HoverText("Earliest Date")
+      .add("<p>The first date the next dose could be administered.  </p>");
+  private final static HoverText HOVER_TEXT_DETAILS_RECOMMEND_DATE = new HoverText("Recommend Date")
+      .add("<p>The first date when the vaccination should be administered.  </p>");
+  private final static HoverText HOVER_TEXT_DETAILS_PAST_DUE_DATE = new HoverText("Past Due Date")
+      .add("<p>The first date when the vaccination should have already been administered. </p>");
+  private final static HoverText HOVER_TEXT_DETAILS_FINISHED_DATE = new HoverText("Finished Date")
+      .add("<p>The first date when no more vaccines need to be administered. </p>");
+  private final static HoverText HOVER_TEXT_DETAILS_PASS_FAIL = new HoverText("Pass/Fail")
+      .add("<p>Whether test passed or not. </p>");
 
   @Override
   public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show)
@@ -196,6 +216,7 @@ public class SoftwareServlet extends MainServlet
         compareCriteria.setVerifyForecastDueDate(req.getParameter(PARAM_VERIFY_FORECAST_DUE_DATE) != null);
         compareCriteria.setVerifyForecastOverdueDate(req.getParameter(PARAM_VERIFY_FORECAST_OVERDUE_DATE) != null);
         compareCriteria.setVerifyForecastFinishedDate(req.getParameter(PARAM_VERIFY_FORECAST_FINISHED_DATE) != null);
+        compareCriteria.setReportView(req.getParameter(PARAM_REPORT_VIEW));
 
         if (categoryNameSet != null && categoryNameSet.size() == 0) {
           problem = "Unable to run tests, no categories selected. ";
@@ -339,7 +360,7 @@ public class SoftwareServlet extends MainServlet
       if (testPanel != null) {
         if (applicationSession.getForecastCompareList() != null
             && applicationSession.getForecastCompareTestPanel().equals(testPanel)) {
-          printRunTestResults(out, user, testPanel);
+          printRunTestResults(out, user, testPanel, software);
         }
       }
     } else if (show.equals(SHOW_EDIT_SOFTWARE) || show.equals(SHOW_ADD_SOFTWARE)) {
@@ -557,7 +578,8 @@ public class SoftwareServlet extends MainServlet
     out.println("  </table>");
   }
 
-  public void printRunTestResults(PrintWriter out, User user, TestPanel testPanel) throws UnsupportedEncodingException {
+  public void printRunTestResults(PrintWriter out, User user, TestPanel testPanel, Software software)
+      throws UnsupportedEncodingException {
     out.println("<div class=\"centerRightColumn\">");
     out.println("<h2>Test Results</h2>");
     out.println("  <table>");
@@ -622,7 +644,7 @@ public class SoftwareServlet extends MainServlet
     if (compareCriteria.isVerifyForecastStatus()) {
       out.println("        Status <br/>");
     }
-    if (compareCriteria.isVerifyForecastStatus()) {
+    if (compareCriteria.isVerifyForecastDose()) {
       out.println("        Dose <br/>");
     }
     if (compareCriteria.isVerifyForecastValidDate()) {
@@ -640,7 +662,12 @@ public class SoftwareServlet extends MainServlet
     out.println("      </td>");
     out.println("    </tr>");
     out.println("  </table>");
+    String reportView = compareCriteria.getReportView();
+    if (reportView == null || reportView.equals("")) {
+      reportView = PARAM_REPORT_VIEW_SUMMARY;
+    }
     String categoryName = "";
+    SimpleDateFormat sdf = createSimpleDateFormat();
     for (ForecastActualExpectedCompare forecastCompare : applicationSession.getForecastCompareList()) {
       if (!categoryName.equals(forecastCompare.getTestPanelCase().getCategoryName())) {
         if (!categoryName.equals("")) {
@@ -649,10 +676,34 @@ public class SoftwareServlet extends MainServlet
         out.println("  <h3>" + forecastCompare.getTestPanelCase().getCategoryName() + "</h3>");
         out.println("  <table width=\"100%\">");
         out.println("    <tr>");
-        out.println("      <th width=\"50%\">" + HOVER_TEXT_TEST_CASE + "</th>");
-        out.println("      <th width=\"20%\">" + HOVER_TEXT_VACCINE_GROUP + "</th>");
-        out.println("      <th width=\"15%\">" + HOVER_TEXT_STATUS + "</th>");
-        out.println("      <th width=\"15%\">" + HOVER_TEXT_COMPARISON + "</th>");
+        if (reportView.equals(PARAM_REPORT_VIEW_SUMMARY)) {
+          out.println("      <th width=\"50%\">" + HOVER_TEXT_TEST_CASE + "</th>");
+          out.println("      <th width=\"20%\">" + HOVER_TEXT_VACCINE_GROUP + "</th>");
+          out.println("      <th width=\"15%\">" + HOVER_TEXT_STATUS + "</th>");
+          out.println("      <th width=\"15%\">" + HOVER_TEXT_COMPARISON + "</th>");
+        } else if (reportView.equals(PARAM_REPORT_VIEW_DETAILS)) {
+          out.println("      <th>" + HOVER_TEXT_TEST_CASE + "</th>");
+          out.println("      <th>" + HOVER_TEXT_VACCINE_GROUP + "</th>");
+          if (compareCriteria.isVerifyForecastStatus()) {
+            out.println("      <th>" + HOVER_TEXT_DETAILS_STATUS + "</th>");
+          }
+          if (compareCriteria.isVerifyForecastDose()) {
+            out.println("      <th>" + HOVER_TEXT_DETAILS_DOSE + "</th>");
+          }
+          if (compareCriteria.isVerifyForecastValidDate()) {
+            out.println("      <th>" + HOVER_TEXT_DETAILS_EARLIEST_DATE + "</th>");
+          }
+          if (compareCriteria.isVerifyForecastDueDate()) {
+            out.println("      <th>" + HOVER_TEXT_DETAILS_RECOMMEND_DATE + "</th>");
+          }
+          if (compareCriteria.isVerifyForecastOverdueDate()) {
+            out.println("      <th>" + HOVER_TEXT_DETAILS_PAST_DUE_DATE + "</th>");
+          }
+          if (compareCriteria.isVerifyForecastFinishedDate()) {
+            out.println("      <th>" + HOVER_TEXT_DETAILS_FINISHED_DATE + "</th>");
+          }
+          out.println("      <th>" + HOVER_TEXT_DETAILS_PASS_FAIL + "</th>");
+        }
         out.println("    </tr>");
       }
       categoryName = forecastCompare.getTestPanelCase().getCategoryName();
@@ -660,7 +711,6 @@ public class SoftwareServlet extends MainServlet
       String link = "testCases?" + PARAM_ACTION + "="
           + URLEncoder.encode(TestCasesServlet.ACTION_SELECT_TEST_PANEL_CASE, "UTF-8") + "&"
           + TestCasesServlet.PARAM_TEST_PANEL_CASE_ID + "=" + forecastCompare.getTestPanelCase().getTestPanelCaseId();
-      out.println("    <tr>");
       if (user.getSelectedTestPanelCase() != null
           && user.getSelectedTestPanelCase().equals(forecastCompare.getTestPanelCase())) {
         styleClass = "highlight";
@@ -669,31 +719,146 @@ public class SoftwareServlet extends MainServlet
       if (updateSet != null && updateSet.contains(forecastCompare.getTestPanelCase())) {
         updateLabel = " <span class=\"passBox\">Updated</span>";
       }
-      out.println("      <td class=\"" + styleClass + "\"><a href=\"" + link + "\">"
-          + forecastCompare.getForecastResultA().getTestCase().getLabel() + updateLabel + "</a></td>");
-      out.println("      <td class=\"" + styleClass + "\"><a href=\"" + link + "\">"
-          + forecastCompare.getForecastResultA().getVaccineGroup().getLabel() + "</a></td>");
-      Result result = forecastCompare.getTestPanelCase().getResult();
-      if (result != null) {
-        if (result == Result.ACCEPT || result == Result.PASS) {
-          styleClass = "pass";
-        } else if (result == Result.RESEARCH || result == Result.FIXED) {
-          styleClass = "research";
-        } else {
-          styleClass = "fail";
+      if (reportView.equals(PARAM_REPORT_VIEW_SUMMARY)) {
+        out.println("    <tr>");
+        out.println("      <td class=\"" + styleClass + "\"><a href=\"" + link + "\">"
+            + forecastCompare.getForecastResultA().getTestCase().getLabel() + updateLabel + "</a></td>");
+        out.println("      <td class=\"" + styleClass + "\"><a href=\"" + link + "\">"
+            + forecastCompare.getForecastResultA().getVaccineGroup().getLabel() + "</a></td>");
+        Result result = forecastCompare.getTestPanelCase().getResult();
+        if (result != null) {
+          if (result == Result.ACCEPT || result == Result.PASS) {
+            styleClass = "pass";
+          } else if (result == Result.RESEARCH || result == Result.FIXED) {
+            styleClass = "research";
+          } else {
+            styleClass = "fail";
+          }
         }
-      }
+        out.println("      <td class=\"" + styleClass + "\">" + (result == null ? "-" : result.getLabel()) + "</td>");
+        styleClass = forecastCompare.matchExactly() ? "pass" : "fail";
+        if (forecastCompare.matchExactly()) {
+          out.println("      <td class=\"" + styleClass + "\">" + forecastCompare.getMatchStatus() + "</td>");
+        } else {
+          out.println("      <td class=\"" + styleClass + "\">" + forecastCompare.getMatchStatus() + " ("
+              + forecastCompare.getMatchDifference() + ")</td>");
 
-      out.println("      <td class=\"" + styleClass + "\">" + (result == null ? "-" : result.getLabel()) + "</td>");
-      styleClass = forecastCompare.matchExactly() ? "pass" : "fail";
-      if (forecastCompare.matchExactly()) {
-        out.println("      <td class=\"" + styleClass + "\">" + forecastCompare.getMatchStatus() + "</td>");
-      } else {
-        out.println("      <td class=\"" + styleClass + "\">" + forecastCompare.getMatchStatus() + " ("
-            + forecastCompare.getMatchDifference() + ")</td>");
+        }
+        out.println("    </tr>");
+      } else if (reportView.equals(PARAM_REPORT_VIEW_DETAILS)) {
+        boolean passStatus = true;
+        boolean passDose = true;
+        boolean passValidDate = true;
+        boolean passDueDate = true;
+        boolean passOverdueDate = true;
+        boolean passFinishedDate = true;
+        if (compareCriteria.isVerifyForecastStatus()) {
+          passStatus = ForecastActualExpectedCompare.same(forecastCompare.getForecastResultA().getAdminStatus(),
+              forecastCompare.getForecastResultB().getAdminStatus());
+        }
+        if (compareCriteria.isVerifyForecastDose()) {
+          passDose = ForecastActualExpectedCompare.same(forecastCompare.getForecastResultA().getDoseNumber(),
+              forecastCompare.getForecastResultB().getDoseNumber());
+        }
+        if (compareCriteria.isVerifyForecastValidDate()) {
+          passValidDate = ForecastActualExpectedCompare.same(forecastCompare.getForecastResultA().getValidDate(),
+              forecastCompare.getForecastResultB().getValidDate());
+        }
+        if (compareCriteria.isVerifyForecastDueDate()) {
+          passDueDate = ForecastActualExpectedCompare.same(forecastCompare.getForecastResultA().getDueDate(),
+              forecastCompare.getForecastResultB().getDueDate());
+        }
+        if (compareCriteria.isVerifyForecastOverdueDate()) {
+          passOverdueDate = ForecastActualExpectedCompare.same(forecastCompare.getForecastResultA().getOverdueDate(),
+              forecastCompare.getForecastResultB().getOverdueDate());
+        }
+        if (compareCriteria.isVerifyForecastFinishedDate()) {
+          passFinishedDate = ForecastActualExpectedCompare.same(forecastCompare.getForecastResultA().getFinishedDate(),
+              forecastCompare.getForecastResultB().getFinishedDate());
+        }
+        boolean passFail = passStatus && passDose && passValidDate && passDueDate && passOverdueDate
+            && passFinishedDate;
 
+        out.println("    <tr>");
+        out.println("      <td class=\"" + styleClass + "\"><a href=\"" + link + "\">"
+            + forecastCompare.getForecastResultA().getTestCase().getLabel() + updateLabel + "</a></td>");
+        out.println("      <td class=\"" + styleClass + "\"><a href=\"" + link + "\">"
+            + forecastCompare.getForecastResultA().getVaccineGroup().getLabel() + "</a></td>");
+        if (compareCriteria.isVerifyForecastStatus()) {
+          String sc = passStatus ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + forecastCompare.getForecastResultA().getAdminStatus()
+              + "</td>");
+        }
+        if (compareCriteria.isVerifyForecastDose()) {
+          String sc = passDose ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + forecastCompare.getForecastResultA().getDoseNumber()
+              + "</td>");
+        }
+        if (compareCriteria.isVerifyForecastValidDate()) {
+          String sc = passValidDate ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + n(forecastCompare.getForecastResultA().getValidDate(), sdf)
+              + "</td>");
+        }
+        if (compareCriteria.isVerifyForecastDueDate()) {
+          String sc = passDueDate ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + n(forecastCompare.getForecastResultA().getDueDate(), sdf)
+              + "</td>");
+        }
+        if (compareCriteria.isVerifyForecastOverdueDate()) {
+          String sc = passOverdueDate ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + n(forecastCompare.getForecastResultA().getOverdueDate(), sdf)
+              + "</td>");
+        }
+        if (compareCriteria.isVerifyForecastFinishedDate()) {
+          String sc = passFinishedDate ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">"
+              + n(forecastCompare.getForecastResultA().getFinishedDate(), sdf) + "</td>");
+        }
+        {
+          String sc = passFail ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + (passFail ? "Pass" : "Fail") + "</td>");
+        }
+
+        out.println("    </tr>");
+        out.println("    <tr>");
+        out.println("      <td class=\"" + styleClass + "\">" + software.getLabel() + "</td>");
+        out.println("      <td class=\"" + styleClass + "\"></td>");
+        if (compareCriteria.isVerifyForecastStatus()) {
+          String sc = passStatus ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + forecastCompare.getForecastResultB().getAdminStatus()
+              + "</td>");
+        }
+        if (compareCriteria.isVerifyForecastDose()) {
+          String sc = passDose ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + forecastCompare.getForecastResultB().getDoseNumber()
+              + "</td>");
+        }
+        if (compareCriteria.isVerifyForecastValidDate()) {
+          String sc = passValidDate ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + n(forecastCompare.getForecastResultB().getValidDate(), sdf)
+              + "</td>");
+        }
+        if (compareCriteria.isVerifyForecastDueDate()) {
+          String sc = passDueDate ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + n(forecastCompare.getForecastResultB().getDueDate(), sdf)
+              + "</td>");
+        }
+        if (compareCriteria.isVerifyForecastOverdueDate()) {
+          String sc = passOverdueDate ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + n(forecastCompare.getForecastResultB().getOverdueDate(), sdf)
+              + "</td>");
+        }
+        if (compareCriteria.isVerifyForecastFinishedDate()) {
+          String sc = passFinishedDate ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">"
+              + n(forecastCompare.getForecastResultB().getFinishedDate(), sdf) + "</td>");
+        }
+        {
+          String sc = passFail ? "pass" : "fail";
+          out.println("      <td class=\"" + sc + "\">" + (passFail ? "Pass" : "Fail") + "</td>");
+        }
+        out.println("    </tr>");
       }
-      out.println("    </tr>");
     }
     if (!categoryName.equals("")) {
       out.println("  </table>");
@@ -788,6 +953,20 @@ public class SoftwareServlet extends MainServlet
         + (compareCriteria.isVerifyForecastOverdueDate() ? " checked=\"true\"" : "") + "/> Past Due Date <br/>");
     out.println("        <input type=\"checkbox\" name=\"" + PARAM_VERIFY_FORECAST_FINISHED_DATE + "\" value=\"true\""
         + (compareCriteria.isVerifyForecastFinishedDate() ? " checked=\"true\"" : "") + "/> Finished Date <br/>");
+    out.println("      </td>");
+    out.println("    </tr>");
+    if (compareCriteria.getReportView().equals("")) {
+      compareCriteria.setReportView(PARAM_REPORT_VIEW_SUMMARY);
+    }
+    out.println("    <tr>");
+    out.println("      <th>" + HOVER_TEXT_REPORT_VIEW + "</th>");
+    out.println("      <td>");
+    out.println("        <input type=\"radio\" name=\"" + PARAM_REPORT_VIEW + "\" value=\"" + PARAM_REPORT_VIEW_SUMMARY
+        + "\"" + (compareCriteria.getReportView().equals(PARAM_REPORT_VIEW_SUMMARY) ? " checked=\"true\"" : "")
+        + "/> Summary <br/>");
+    out.println("        <input type=\"radio\" name=\"" + PARAM_REPORT_VIEW + "\" value=\"" + PARAM_REPORT_VIEW_DETAILS
+        + "\"" + (compareCriteria.getReportView().equals(PARAM_REPORT_VIEW_DETAILS) ? " checked=\"true\"" : "")
+        + "/> Details <br/>");
     out.println("      </td>");
     out.println("    </tr>");
     out.println("  <tr>");
@@ -887,4 +1066,10 @@ public class SoftwareServlet extends MainServlet
     }
   }
 
+  private String n(Date date, SimpleDateFormat sdf) {
+    if (date == null) {
+      return "";
+    }
+    return sdf.format(date);
+  }
 }

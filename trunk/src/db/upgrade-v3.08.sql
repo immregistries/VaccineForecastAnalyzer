@@ -45,3 +45,14 @@ UPDATE vaccine_group SET map_to_cdsi_code = 'Var' WHERE label = 'Varicella';
 -- UPDATE vaccine_group SET map_to_cdsi_code = '' WHERE label = 'Japanese Encephalitis';
 -- UPDATE vaccine_group SET map_to_cdsi_code = '' WHERE label = 'Rabies';
 -- UPDATE vaccine_group SET map_to_cdsi_code = '' WHERE label = 'Yellow Fever';
+
+
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (160, 'Influenza A monovalent (H5N1), ADJUVANTED-2013', 'V', '160', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (161, 'Influenza, injectable,quadrivalent, preservative free, pediatric', 'V', '161', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (162, 'meningococcal B, recombinant', 'V', '162', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (163, 'meningococcal B, OMV	', 'V', '163', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (164, 'meningococcal B, unspecified', 'V', '164', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (165, 'HPV9', 'V', '165', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (166, 'influenza, intradermal, quadrivalent, preservative free', 'V', '166', '');
+INSERT INTO event (event_id, label, event_type_code, vaccine_cvx, vaccine_mvx) VALUES (801, 'AS03 Adjuvant', 'V', '801', '');
+

@@ -192,7 +192,7 @@ public class TestCasesServlet extends MainServlet
   private static Admin[] ADMIN_STANDARD_LIST = { Admin.NOT_COMPLETE, Admin.COMPLETE, Admin.IMMUNE,
       Admin.CONTRAINDICATED, Admin.AGED_OUT };
   private static Admin[] ADMIN_NON_STANDARD_LIST = { Admin.OVERDUE, Admin.DUE, Admin.DUE_LATER, Admin.FINISHED,
-      Admin.COMPLETE_FOR_SEASON, Admin.ASSUMED_COMPLETE_OR_IMMUNE, Admin.CONTRAINDICATED };
+      Admin.COMPLETE_FOR_SEASON, Admin.ASSUMED_COMPLETE_OR_IMMUNE, Admin.CONTRAINDICATED, Admin.NO_RESULTS };
 
   private static synchronized String getNextTestCaseNumber() {
     SimpleDateFormat sdfShort = new SimpleDateFormat("yyMMdd");
@@ -2394,7 +2394,8 @@ public class TestCasesServlet extends MainServlet
             }
           }
         } else {
-          if (relativeRule.getTestEvent() != null) {
+          if (relativeRule.getTestEvent() != null && relativeRule.getTestEvent().getTestEventId() != -1
+              && testEvent != null && testEvent.getTestEventId() != -1) {
             selected = relativeRule.getTestEvent().equals(testEvent);
           }
         }
@@ -2642,7 +2643,7 @@ public class TestCasesServlet extends MainServlet
       out.println("        </tr>");
     }
     out.println("        <tr>");
-    if (testPanelCase == null || applicationSession.getUser().isCanEditTestCase()|| show.equals(SHOW_COPY_TEST_CASE)) {
+    if (testPanelCase == null || applicationSession.getUser().isCanEditTestCase() || show.equals(SHOW_COPY_TEST_CASE)) {
 
       out.println("          <th>Patient First</th>");
       out.println("          <td><input type=\"text\" name=\"" + PARAM_PATIENT_FIRST + "\" size=\"15\" value=\""
@@ -3459,13 +3460,16 @@ public class TestCasesServlet extends MainServlet
     String styleClassOverdue = "";
 
     if (forecastActual != null) {
-      styleClassLabel = forecastCompare.matchExactly() ? "pass" : "fail";
-      styleClassAdmin = (hasActual && expectedAdmin != null && actualAdmin != null && expectedAdmin.equals(actualAdmin)) ? "pass"
-          : "fail";
+      styleClassAdmin = (hasActual && ForecastActualExpectedCompare.same(forecastExpected.getAdmin(),
+          forecastActual == null ? null : forecastActual.getAdmin())) ? "pass" : "fail";
       styleClassDoseNumber = hasActual && compareDoseNumbers(expectedDoseNumber, actualDoseNumber) ? "pass" : "fail";
       styleClassValid = hasActual && compareDoseNumbers(expectedValidDate, actualValidDate) ? "pass" : "fail";
       styleClassDue = hasActual && compareDoseNumbers(expectedDueDate, actualDueDate) ? "pass" : "fail";
       styleClassOverdue = hasActual && compareDoseNumbers(expectedOverdueDate, actualOverdueDate) ? "pass" : "fail";
+      styleClassLabel = styleClassAdmin.equals("pass") && styleClassDoseNumber.equals("pass")
+          && styleClassValid.equals("pass") && styleClassDue.equals("pass") && styleClassOverdue.equals("pass") ? "pass"
+          : "fail";
+
     }
 
     {

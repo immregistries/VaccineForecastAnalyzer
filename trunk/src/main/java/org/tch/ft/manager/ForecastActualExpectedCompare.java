@@ -12,8 +12,8 @@ import org.tch.ft.model.TestPanelCase;
 
 public class ForecastActualExpectedCompare implements Serializable
 {
-
-  public static class CompareCriteria
+  
+    public static class CompareCriteria
   {
     private boolean verifyEvaluationStatus = false;
     private boolean verifyForecastStatus = true;
@@ -22,6 +22,15 @@ public class ForecastActualExpectedCompare implements Serializable
     private boolean verifyForecastDueDate = true;
     private boolean verifyForecastOverdueDate = true;
     private boolean verifyForecastFinishedDate = false;
+    private String reportView = "";
+
+    public String getReportView() {
+      return reportView;
+    }
+
+    public void setReportView(String reportView) {
+      this.reportView = reportView;
+    }
 
     public boolean isVerifyEvaluationStatus() {
       return verifyEvaluationStatus;
@@ -345,6 +354,15 @@ public class ForecastActualExpectedCompare implements Serializable
   public static boolean same(Admin a, Admin b) {
     if (a == null || b == null) {
       return false;
+    }
+    if (a == Admin.NO_RESULTS) {
+      return b == Admin.NO_RESULTS || b == Admin.COMPLETE || b == Admin.COMPLETE_FOR_SEASON;
+    }
+    if (a == Admin.COMPLETE) {
+      return b == Admin.NO_RESULTS || b == Admin.COMPLETE;
+    }
+    if (a == Admin.COMPLETE_FOR_SEASON) {
+      return b == Admin.NO_RESULTS || b == Admin.COMPLETE_FOR_SEASON;
     }
     if (a == Admin.NOT_COMPLETE) {
       return b == Admin.NOT_COMPLETE || b == Admin.DUE || b == Admin.DUE_LATER || b == Admin.OVERDUE;
