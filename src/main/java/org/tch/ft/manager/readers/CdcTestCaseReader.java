@@ -109,7 +109,6 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
     int evaluationTestTypePos = findFieldPos(FIELD_EVALUATION_TEST_TYPE);
     int seriesStatusPos = findFieldPos(FIELD_SERIES_STATUS);
 
-    Date referenceDate = null;
     for (List<String> testCaseFieldList : testCaseFieldListList) {
       String categoryName = readField(vaccineGroupPos, testCaseFieldList);
       if (!categoryName.equals("")) {
@@ -124,9 +123,7 @@ public class CdcTestCaseReader extends CsvTestCaseReader implements TestCaseRead
         testCase.setDescription(readField(testCaseNamePosition, testCaseFieldList));
         testCase.setPatientDob(readDateField(birthdatePos, testCaseFieldList, testCaseWithExpectations));
         testCase.setPatientSex(readField(genderPos, testCaseFieldList).toUpperCase().startsWith("M") ? "M" : "F");
-        if (referenceDate == null) {
-          referenceDate = readDateField(assessmentDatePos, testCaseFieldList, testCaseWithExpectations);
-        }
+        Date referenceDate = readDateField(assessmentDatePos, testCaseFieldList, testCaseWithExpectations);
         testCase.setEvalDate(referenceDate);
         List<TestEvent> testEventList = new ArrayList<TestEvent>();
         testCase.setTestEventList(testEventList);
