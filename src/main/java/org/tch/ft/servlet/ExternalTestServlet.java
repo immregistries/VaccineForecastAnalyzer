@@ -5,9 +5,7 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,8 +17,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.classic.Session;
 import org.tch.fc.model.ForecastActual;
-import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.Software;
+import org.tch.fc.model.SoftwareResult;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.CentralControl;
@@ -121,6 +119,7 @@ public class ExternalTestServlet extends HttpServlet
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     PrintWriter out = new PrintWriter(resp.getOutputStream());
     resp.setContentType("text/plain");
+    Session dataSession = null;
     try {
       SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 
@@ -129,7 +128,7 @@ public class ExternalTestServlet extends HttpServlet
       String forecastCvxString = req.getParameter(POST_FORECAST_CVX);
 
       SessionFactory factory = CentralControl.getSessionFactory();
-      Session dataSession = factory.openSession();
+      dataSession = factory.openSession();
 
       Transaction transaction = dataSession.beginTransaction();
 
@@ -156,7 +155,10 @@ public class ExternalTestServlet extends HttpServlet
           forecastActual = new ForecastActual();
           forecastActual.setTestCase(testCase);
           forecastActual.setVaccineGroup(forecastCvx.getVaccineGroup());
-          forecastActual.getSoftwareResult().setSoftware(software);
+          SoftwareResult softwareResult = new SoftwareResult();
+          forecastActual.setSoftwareResult(softwareResult);
+          softwareResult.setSoftware(software);
+          softwareResult.setTestCase(testCase);
         }
         forecastActual.setVaccineCvx(forecastCvxString);
         if (req.getParameter(POST_SCHEDULE_NAME) != null) {
@@ -191,17 +193,23 @@ public class ExternalTestServlet extends HttpServlet
         } else {
           forecastActual.setFinishedDate(null);
         }
+        dataSession.saveOrUpdate(forecastActual.getSoftwareResult());
         dataSession.saveOrUpdate(forecastActual);
       }
 
       transaction.commit();
 
       dataSession.close();
+      dataSession = null;
       out.println("OK");
     } catch (ParseException pe) {
       throw new ServletException("Unable to parse input data", pe);
     } finally {
       out.close();
+      if (dataSession != null)
+      {
+        dataSession.close();
+      }
     }
 
   };

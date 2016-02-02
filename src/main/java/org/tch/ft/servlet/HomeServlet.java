@@ -15,27 +15,28 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.tch.fc.model.Software;
 import org.tch.ft.manager.UserManager;
+import org.tch.ft.model.Agreement;
 import org.tch.ft.model.Expert;
 import org.tch.ft.model.LoginAttempt;
 import org.tch.ft.model.Role;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.User;
+import org.tch.ft.web.unsecure.RegisterUserPage;
 
-public class HomeServlet extends MainServlet
-{
+public class HomeServlet extends MainServlet {
   public HomeServlet() {
     super("Home", ServletProtection.NONE);
   }
 
   public static final String ACTION_LOGIN = "Login";
   public static final String ACTION_LOGOUT = "Logout";
+  public static final String ACTION_AGREE = "Agree";
 
   public static final String PARAM_NAME = "name";
   public static final String PARAM_PASSWORD = "password";
 
   @Override
-  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show)
-      throws IOException {
+  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show) throws IOException {
     if (action != null) {
       if (action.equals(ACTION_LOGIN)) {
         name = req.getParameter(PARAM_NAME);
@@ -87,12 +88,19 @@ public class HomeServlet extends MainServlet
           applicationSession.setAlertError("Unrecognized name or password, unable to login. ");
           password = "";
         }
-
       } else if (action.equals(ACTION_LOGOUT)) {
         applicationSession.getDataSession().disconnect();
         applicationSession.getDataSession().close();
         applicationSession.setDataSession(null);
         applicationSession = new ApplicationSession();
+      } else if (action.equals(ACTION_AGREE)) {
+        Agreement agreement = RegisterUserPage.getCurrentAgreement(applicationSession.getDataSession());
+        Transaction trans = applicationSession.getDataSession().beginTransaction();
+        applicationSession.getUser().setAgreementDate(new Date());
+        applicationSession.getUser().setAgreement(agreement);
+        applicationSession.getDataSession().update(applicationSession.getUser());
+        applicationSession.getUser().setAgreedToAgreement(true);
+        trans.commit();
       }
     }
 
@@ -103,8 +111,7 @@ public class HomeServlet extends MainServlet
   private String password = "";
 
   @Override
-  protected void printPage(HttpServletRequest req, HttpServletResponse resp, PrintWriter out, String show)
-      throws ServletException, IOException {
+  protected void printPage(HttpServletRequest req, HttpServletResponse resp, PrintWriter out, String show) throws ServletException, IOException {
     out.println("<div class=\"leftColumn\">");
     if (applicationSession.getUser() == null || !applicationSession.getUser().isLoggedIn()) {
       out.println("<p>Welcome, please login to continue. </p>");
@@ -128,11 +135,28 @@ public class HomeServlet extends MainServlet
       out.println("    </tr>");
       out.println("  </table> ");
       out.println("</form>");
-    } else if (!applicationSession.getUser().isAgreedToAgreement()) {
-      out.println("<p>User agreement not signed yet</p>");
-    } else if (!applicationSession.getUser().isMemberOfGroup()) {
-      out.println("<p>Not yet assigned to expert group</p>");
     } else {
+      if (!applicationSession.getUser().isAgreedToAgreement()) {
+        out.println("<form method=\"POST\" action=\"home\"> ");
+        out.println("Access to this system is controlled by the terms of this agreement. "
+            + "Please review and accept the agreement before continuing.");
+        Agreement agreement = RegisterUserPage.getCurrentAgreement(applicationSession.getDataSession());
+        out.println("<div style=\"margin: 5px; background-color: #eee; border-style: solid; padding: 5px;\">");
+        out.println(agreement.getAgreementText());
+        out.println("</div>");
+        out.println("<input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\"" + ACTION_AGREE + "\"/>");
+        out.println("</form>");
+        
+        
+//        <a wicket:id="acceptLink" href="" class="fauxbutton">I have
+//            read and accepted</a>
+//    </p>
+        
+        out.println("<p>User agreement not signed yet</p>");
+        
+      } else if (!applicationSession.getUser().isMemberOfGroup()) {
+        out.println("<p>Not yet assigned to expert group</p>");
+      }
       out.println("<h2>Logout</h2>");
       out.println("<form method=\"POST\" action=\"home\"> ");
       out.println("  <table> ");

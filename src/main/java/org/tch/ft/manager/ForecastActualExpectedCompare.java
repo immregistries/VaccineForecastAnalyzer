@@ -420,7 +420,7 @@ public class ForecastActualExpectedCompare implements Serializable
     }
     if (compareCriteria.isVerifyForecastStatus()) {
       if (!same(forecastResultA.getAdmin(), forecastResultB.getAdmin())) {
-        matchExactly = false;
+        matchExactly = false; 
         return false;
       }
     }
@@ -459,8 +459,13 @@ public class ForecastActualExpectedCompare implements Serializable
   }
 
   public static boolean same(Admin a, Admin b) {
-    if (a == null || b == null) {
-      return false;
+    if (a == null)
+    {
+      a = Admin.UNKNOWN;
+    }
+    if (b == null)
+    {
+      b = Admin.UNKNOWN;
     }
     if (a == Admin.NO_RESULTS) {
       return b == Admin.NO_RESULTS || b == Admin.COMPLETE || b == Admin.COMPLETE_FOR_SEASON;
