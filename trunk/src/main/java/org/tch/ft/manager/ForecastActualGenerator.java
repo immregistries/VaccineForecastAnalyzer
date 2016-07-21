@@ -105,7 +105,6 @@ public class ForecastActualGenerator
     List<ForecastActualExpectedCompare> forecastCompareList = new ArrayList<ForecastActualExpectedCompare>();
     String errorLog = null;
     for (TestCase testCase : testCaseMap.keySet()) {
-      RelativeRuleManager.updateFixedDatesForRelativeRules(testCase, session, false);
       Transaction trans = session.beginTransaction();
       try {
         

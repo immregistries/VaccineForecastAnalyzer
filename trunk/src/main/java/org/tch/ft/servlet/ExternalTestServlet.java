@@ -31,6 +31,13 @@ import org.tch.ft.model.TestPanelForecast;
 public class ExternalTestServlet extends HttpServlet
 
 {
+  private static final String POST_SOFTWARE_ID = "softwareId";
+  private static final String POST_TEST_CASE_ID = "testCaseId";
+  private static final String POS_LOG_TEXT = "logText";
+
+  private static final String POST_PATIENT_SEX = "patientSex";
+  private static final String POST_PATIENT_DOB = "patientDob";
+
   private static final String POST_FINISHED_DATE = "finishedDate";
   private static final String POST_OVERDUE_DATE = "overdueDate";
   private static final String POST_DUE_DATE = "dueDate";
@@ -39,8 +46,6 @@ public class ExternalTestServlet extends HttpServlet
   private static final String POST_LOG = "log";
   private static final String POST_SCHEDULE_NAME = "scheduleName";
   private static final String POST_FORECAST_CVX = "forecastCvx";
-  private static final String POST_SOFTWARE_ID = "softwareId";
-  private static final String POST_TEST_CASE_ID = "testCaseId";
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -117,6 +122,7 @@ public class ExternalTestServlet extends HttpServlet
   }
 
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    System.out.println("--> Reporting results");
     PrintWriter out = new PrintWriter(resp.getOutputStream());
     resp.setContentType("text/plain");
     Session dataSession = null;
@@ -125,7 +131,6 @@ public class ExternalTestServlet extends HttpServlet
 
       int testCaseId = Integer.parseInt(req.getParameter(POST_TEST_CASE_ID));
       int softwareId = Integer.parseInt(req.getParameter(POST_SOFTWARE_ID));
-      String forecastCvxString = req.getParameter(POST_FORECAST_CVX);
 
       SessionFactory factory = CentralControl.getSessionFactory();
       dataSession = factory.openSession();
@@ -135,70 +140,95 @@ public class ExternalTestServlet extends HttpServlet
       TestCase testCase = (TestCase) dataSession.get(TestCase.class, testCaseId);
       Software software = (Software) dataSession.get(Software.class, softwareId);
 
-      Query query = dataSession.createQuery("from ForecastCvx where vaccineCvx = ?");
-      query.setParameter(0, forecastCvxString);
-      List<ForecastCvx> forecastCvxList = query.list();
-      
-
-      for (ForecastCvx forecastCvx : forecastCvxList) {
-
-
-        query = dataSession.createQuery("from ForecastActual where softwareResult.testCase = ? and softwareResult.software = ? and vaccineGroup = ?");
+      SoftwareResult softwareResult;
+      {
+        Query query = dataSession.createQuery("from SoftwareResult where testCase = ? and software = ?");
         query.setParameter(0, testCase);
         query.setParameter(1, software);
-        query.setParameter(2, forecastCvx.getVaccineGroup());
-        List<ForecastActual> forecastActualList = query.list();
-        ForecastActual forecastActual = null;
-        if (forecastActualList.size() > 0) {
-          forecastActual = forecastActualList.get(0);
+        List<SoftwareResult> softwareResultList = query.list();
+        if (softwareResultList.size() > 0) {
+          softwareResult = softwareResultList.get(0);
+          {
+            query = dataSession.createQuery("delete ForecastActual where softwareResult = ?");
+            query.setParameter(0, softwareResult);
+            query.executeUpdate();
+          }
+          {
+            query = dataSession.createQuery("delete EvaluationActual where softwareResult = ?");
+            query.setParameter(0, softwareResult);
+            query.executeUpdate();
+          }
         } else {
-          forecastActual = new ForecastActual();
-          forecastActual.setTestCase(testCase);
-          forecastActual.setVaccineGroup(forecastCvx.getVaccineGroup());
-          SoftwareResult softwareResult = new SoftwareResult();
-          forecastActual.setSoftwareResult(softwareResult);
+          softwareResult = new SoftwareResult();
           softwareResult.setSoftware(software);
           softwareResult.setTestCase(testCase);
         }
-        forecastActual.setVaccineCvx(forecastCvxString);
-        if (req.getParameter(POST_SCHEDULE_NAME) != null) {
-          forecastActual.setScheduleName(req.getParameter(POST_SCHEDULE_NAME));
-        } else {
-          forecastActual.setScheduleName("");
+      }
+      {
+        String logText = req.getParameter(POS_LOG_TEXT);
+        if (logText == null) {
+          logText = "";
         }
-        forecastActual.getSoftwareResult().setRunDate(new Date());
-        forecastActual.getSoftwareResult().setLogText(req.getParameter(POST_LOG));
-        if (req.getParameter(POST_DOSE_NUMBER) != null) {
-          forecastActual.setDoseNumber(req.getParameter(POST_DOSE_NUMBER));
-        } else {
-          forecastActual.setDoseNumber("*");
+        softwareResult.setRunDate(new Date());
+        softwareResult.setLogText("");
+        dataSession.saveOrUpdate(softwareResult);
+      }
+
+      int pos = 1;
+      String forecastCvxString;
+      while ((forecastCvxString = req.getParameter(POST_FORECAST_CVX + pos)) != null) {
+        Query query = dataSession.createQuery("from ForecastCvx where vaccineCvx = ?");
+        query.setParameter(0, forecastCvxString);
+        List<ForecastCvx> forecastCvxList = query.list();
+
+        for (ForecastCvx forecastCvx : forecastCvxList) {
+          ForecastActual forecastActual = new ForecastActual();
+          forecastActual.setSoftwareResult(softwareResult);
+          forecastActual.setTestCase(testCase);
+          forecastActual.setVaccineGroup(forecastCvx.getVaccineGroup());
+          forecastActual.setVaccineCvx(forecastCvxString);
+          if (req.getParameter(POST_SCHEDULE_NAME + pos) != null) {
+            forecastActual.setScheduleName(req.getParameter(POST_SCHEDULE_NAME + pos));
+          } else {
+            forecastActual.setScheduleName("");
+          }
+          forecastActual.getSoftwareResult().setRunDate(new Date());
+          forecastActual.getSoftwareResult().setLogText(req.getParameter(POST_LOG));
+          if (req.getParameter(POST_DOSE_NUMBER + pos) != null) {
+            forecastActual.setDoseNumber(req.getParameter(POST_DOSE_NUMBER + pos));
+          } else {
+            forecastActual.setDoseNumber("*");
+          }
+          if (req.getParameter(POST_VALID_DATE + pos) != null && !req.getParameter(POST_VALID_DATE + pos).equals("")) {
+            forecastActual.setValidDate(sdf.parse(req.getParameter(POST_VALID_DATE + pos)));
+          } else {
+            forecastActual.setValidDate(null);
+          }
+          if (req.getParameter(POST_DUE_DATE + pos) != null && !req.getParameter(POST_DUE_DATE + pos).equals("")) {
+            forecastActual.setDueDate(sdf.parse(req.getParameter(POST_DUE_DATE + pos)));
+          } else {
+            forecastActual.setDueDate(null);
+          }
+          if (req.getParameter(POST_OVERDUE_DATE + pos) != null
+              && !req.getParameter(POST_OVERDUE_DATE + pos).equals("")) {
+            forecastActual.setOverdueDate(sdf.parse(req.getParameter(POST_OVERDUE_DATE + pos)));
+          } else {
+            forecastActual.setOverdueDate(null);
+          }
+          if (req.getParameter(POST_FINISHED_DATE + pos) != null
+              && !req.getParameter(POST_FINISHED_DATE + pos).equals("")) {
+            forecastActual.setFinishedDate(sdf.parse(req.getParameter(POST_FINISHED_DATE + pos)));
+          } else {
+            forecastActual.setFinishedDate(null);
+          }
+          dataSession.saveOrUpdate(forecastActual);
         }
-        if (req.getParameter(POST_VALID_DATE) != null && !req.getParameter(POST_VALID_DATE).equals("")) {
-          forecastActual.setValidDate(sdf.parse(req.getParameter(POST_VALID_DATE)));
-        } else {
-          forecastActual.setValidDate(null);
-        }
-        if (req.getParameter(POST_DUE_DATE) != null && !req.getParameter(POST_DUE_DATE).equals("")) {
-          forecastActual.setDueDate(sdf.parse(req.getParameter(POST_DUE_DATE)));
-        } else {
-          forecastActual.setDueDate(null);
-        }
-        if (req.getParameter(POST_OVERDUE_DATE) != null && !req.getParameter(POST_OVERDUE_DATE).equals("")) {
-          forecastActual.setOverdueDate(sdf.parse(req.getParameter(POST_OVERDUE_DATE)));
-        } else {
-          forecastActual.setOverdueDate(null);
-        }
-        if (req.getParameter(POST_FINISHED_DATE) != null && !req.getParameter(POST_FINISHED_DATE).equals("")) {
-          forecastActual.setFinishedDate(sdf.parse(req.getParameter(POST_FINISHED_DATE)));
-        } else {
-          forecastActual.setFinishedDate(null);
-        }
-        dataSession.saveOrUpdate(forecastActual.getSoftwareResult());
-        dataSession.saveOrUpdate(forecastActual);
+        pos++;
       }
 
       transaction.commit();
 
+      System.out.println("--> Saved " + (pos - 1) + " results");
       dataSession.close();
       dataSession = null;
       out.println("OK");
@@ -206,11 +236,11 @@ public class ExternalTestServlet extends HttpServlet
       throw new ServletException("Unable to parse input data", pe);
     } finally {
       out.close();
-      if (dataSession != null)
-      {
+      if (dataSession != null) {
         dataSession.close();
       }
     }
 
-  };
+  }
+
 }
