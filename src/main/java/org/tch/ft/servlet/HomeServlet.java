@@ -112,8 +112,8 @@ public class HomeServlet extends MainServlet {
 
   @Override
   protected void printPage(HttpServletRequest req, HttpServletResponse resp, PrintWriter out, String show) throws ServletException, IOException {
-    out.println("<div class=\"leftColumn\">");
     if (applicationSession.getUser() == null || !applicationSession.getUser().isLoggedIn()) {
+      out.println("<div class=\"leftColumn\">");
       out.println("<p>Welcome, please login to continue. </p>");
       out.println("<h2>Login</h2>");
       out.println("<form method=\"POST\" action=\"home\"> ");
@@ -135,28 +135,9 @@ public class HomeServlet extends MainServlet {
       out.println("    </tr>");
       out.println("  </table> ");
       out.println("</form>");
+      out.println("</div>");
     } else {
-      if (!applicationSession.getUser().isAgreedToAgreement()) {
-        out.println("<form method=\"POST\" action=\"home\"> ");
-        out.println("Access to this system is controlled by the terms of this agreement. "
-            + "Please review and accept the agreement before continuing.");
-        Agreement agreement = RegisterUserPage.getCurrentAgreement(applicationSession.getDataSession());
-        out.println("<div style=\"margin: 5px; background-color: #eee; border-style: solid; padding: 5px;\">");
-        out.println(agreement.getAgreementText());
-        out.println("</div>");
-        out.println("<input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\"" + ACTION_AGREE + "\"/>");
-        out.println("</form>");
-        
-        
-//        <a wicket:id="acceptLink" href="" class="fauxbutton">I have
-//            read and accepted</a>
-//    </p>
-        
-        out.println("<p>User agreement not signed yet</p>");
-        
-      } else if (!applicationSession.getUser().isMemberOfGroup()) {
-        out.println("<p>Not yet assigned to expert group</p>");
-      }
+      out.println("<div class=\"leftColumn\">");
       out.println("<h2>Logout</h2>");
       out.println("<form method=\"POST\" action=\"home\"> ");
       out.println("  <table> ");
@@ -172,8 +153,26 @@ public class HomeServlet extends MainServlet {
       out.println("    </tr>");
       out.println("  </table> ");
       out.println("</form>");
+      out.println("</div>");
+      if (!applicationSession.getUser().isAgreedToAgreement()) {
+        out.println("<div class=\"centerColumn\">");
+        out.println("<form method=\"POST\" action=\"home\"> ");
+        out.println("Access to this system is controlled by the terms of this agreement. "
+            + "Please review and accept the agreement before continuing.");
+        Agreement agreement = RegisterUserPage.getCurrentAgreement(applicationSession.getDataSession());
+        out.println("<div style=\"margin: 5px; background-color: #eee; border-style: solid; padding: 5px;\">");
+        out.println(agreement.getAgreementText());
+        out.println("</div>");
+        out.println("<input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\"" + ACTION_AGREE + "\"/>");
+        out.println("</form>");
+        out.println("<p>User agreement not signed yet</p>");
+        out.println("</div>");
+      } else if (!applicationSession.getUser().isMemberOfGroup()) {
+        out.println("<div class=\"centerColumn\">");
+        out.println("<p>Not yet assigned to expert group. You must await until you are approved before you can continue. </p>");
+        out.println("</div>");
+      }
     }
-    out.println("</div>");
     name = "";
     password = "";
 
