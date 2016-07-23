@@ -1383,7 +1383,7 @@ public class TestCasesServlet extends MainServlet
       printRequestActualResults(out, dataSession, user);
     } else if (SHOW_DEBUGGING_TOOLS.equals(show)) {
       printDebuggingTools(out, dataSession, user);
-    } else if (SHOW_DEBUGGING_TOOLS.equals(show)) {
+    } else if (SHOW_SOFTWARE_RESULT.equals(show)) {
       int softwareResultId = Integer.parseInt(req.getParameter(PARAM_SOFTWARE_RESULT_ID));
       SoftwareResult softwareResult = (SoftwareResult) dataSession.get(SoftwareResult.class, softwareResultId);
       printSoftwareResult(out, dataSession, user, softwareResult);
@@ -1484,13 +1484,14 @@ public class TestCasesServlet extends MainServlet
       SoftwareResult sr = it.next();
       if (SoftwareManager.isSoftwareAccessRestricted(sr.getSoftware(), user, dataSession)) {
         it.remove();
-      } 
+      }
     }
     if (softwareResultList.size() > 0) {
       out.println("<h3>Actual Results</h3>");
       out.println("<ul>");
       for (SoftwareResult softwareResult : softwareResultList) {
-        String link = "testCases?" + PARAM_SHOW + "=" + SHOW_SOFTWARE_RESULT + "&" + PARAM_SOFTWARE_RESULT_ID;
+        String link = "testCases?" + PARAM_SHOW + "=" + SHOW_SOFTWARE_RESULT + "&" + PARAM_SOFTWARE_RESULT_ID + "="
+            + softwareResult.getSoftwareResultId();
         out.println("<li><a href=\"" + link + "\">" + softwareResult.getSoftware().getLabel() + "</a></li>");
       }
       out.println("</ul>");
@@ -1500,10 +1501,67 @@ public class TestCasesServlet extends MainServlet
   }
 
   public void printSoftwareResult(PrintWriter out, Session dataSession, User user, SoftwareResult softwareResult) {
-    out.println("<h2>Actual Results from " + softwareResult.getSoftware().getLabel() + "</h2>");
+    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+    out.println("<div class=\"centerColumn\">");
+    out.println("<h2>Actual Results <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_DEBUGGING_TOOLS
+        + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
+        + "\">Back</a></h2>");
     out.println("<table>");
-    
+    out.println("  <tr>");
+    out.println("    <th>Software</th>");
+    out.println("    <td>" + softwareResult.getSoftware().getLabel() + "</td>");
+    out.println("  </tr>");
+    out.println("  <tr>");
+    out.println("    <th>Run Date</th>");
+    out.println("    <td>" + sdf.format(softwareResult.getRunDate()) + "</td>");
+    out.println("  </tr>");
     out.println("</table>");
+
+    {
+      Query query = dataSession.createQuery("from ForecastActual where softwareResult = ? order by vaccineGroup.label");
+      query.setParameter(0, softwareResult);
+      List<ForecastActual> forecastActualList = query.list();
+      if (forecastActualList.size() > 0) {
+        out.println("<h3>Forecast</h3>");
+        out.println("<table>");
+        out.println("  <tr>");
+        out.println("    <th>Schedule</th>");
+        out.println("    <th>Vaccine Group</th>");
+        out.println("    <th>Status</th>");
+        out.println("    <th>Dose</th>");
+        out.println("    <th>Earliest</th>");
+        out.println("    <th>Recommend</th>");
+        out.println("    <th>Past Due</th>");
+        out.println("    <th>Finished</th>");
+        out.println("    <th>CVX</th>");
+        out.println("    <th>Reason</th>");
+        out.println("  </tr>");
+        for (ForecastActual fa : forecastActualList) {
+          out.println("  <tr>");
+          out.println("    <td>" + n(fa.getScheduleName()) + "</td>");
+          out.println("    <td>" + fa.getVaccineGroup().getLabel() + "</td>");
+          out.println("    <td>" + (fa.getAdmin() == null ? "" : fa.getAdmin().getLabel()) + "</td>");
+          out.println("    <td>" + n(fa.getDoseNumber()) + "</td>");
+          out.println("    <td>" + (fa.getValidDate() == null ? "" : sdf.format(fa.getValidDate())) + "</td>");
+          out.println("    <td>" + (fa.getDueDate() == null ? "" : sdf.format(fa.getDueDate())) + "</td>");
+          out.println("    <td>" + (fa.getOverdueDate() == null ? "" : sdf.format(fa.getOverdueDate())) + "</td>");
+          out.println("    <td>" + (fa.getFinishedDate() == null ? "" : sdf.format(fa.getFinishedDate())) + "</td>");
+          out.println("    <td>" + n(fa.getVaccineCvx()) + "</td>");
+          out.println("    <td>" + n(fa.getForecastReason()) + "</td>");
+          out.println("  </tr>");
+        }
+        out.println("</table>");
+      }
+    }
+
+    if (softwareResult.getLogText() != null && !softwareResult.getLogText().equals("")) {
+      out.println("<h3>Original Text</h3>");
+      out.println("<pre>");
+      out.println(softwareResult.getLogText().replaceAll("\\<", "&lt;").replaceAll("\\>", "&gt;"));
+      out.println("</pre>");
+    }
+
+    out.println("</div>");
   }
 
   public void printRequestActualResults(PrintWriter out, Session dataSession, User user) {
