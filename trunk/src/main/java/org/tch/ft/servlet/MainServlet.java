@@ -227,7 +227,8 @@ public abstract class MainServlet extends HttpServlet
 
   public void printFooter(PrintWriter out) {
     out.println("    </div>");
-    out.println("   <br/><span class=\"version\">TCH Forecast Tester version " + org.tch.ft.SoftwareVersion.VERSION + "</span>");
+    out.println("   <br/><span class=\"version\">TCH Forecast Tester version " + org.tch.ft.SoftwareVersion.VERSION
+        + "</span>");
     out.println("  </body>");
     out.println("</html>");
   }
@@ -266,4 +267,10 @@ public abstract class MainServlet extends HttpServlet
 
   protected SimpleDateFormat sdf = createSimpleDateFormat();
 
+  protected String n(String s) {
+    if (s == null) {
+      return "";
+    }
+    return s;
+  }
 }
