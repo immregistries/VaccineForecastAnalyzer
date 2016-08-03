@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -153,8 +152,13 @@ public class ExternalTestServlet extends HttpServlet
     }
   }
 
+  private class InputException extends Exception {
+    public InputException(String message) {
+      super(message);
+    }
+  }
+
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    System.out.println("--> Reporting results");
     PrintWriter out = new PrintWriter(resp.getOutputStream());
     resp.setContentType("text/plain");
     Session dataSession = null;
@@ -223,10 +227,9 @@ public class ExternalTestServlet extends HttpServlet
       SoftwareResult softwareResult = loadOrCreateSoftwareResult(dataSession, testCase, software);
       updateSoftwareResult(req, dataSession, softwareResult);
       User author = readAuthor(req, dataSession);
-
-      if (createTestCaseAndExpectations && author == null) {
-        resp.setStatus(503);
-        return;
+      if (createTestCaseAndExpectations && author == null)
+      {
+        throw new InputException("Username is required to create test case");
       }
 
       if (createTestCaseAndExpectations) {
@@ -234,7 +237,12 @@ public class ExternalTestServlet extends HttpServlet
         String vaccinationCvxString;
         while ((vaccinationCvxString = req.getParameter(POST_VACCINATION_CVX + pos)) != null) {
           if (!vaccinationCvxString.equals("") && !vaccinationCvxString.equals("998")) {
-            Date eventDate = sdf.parse(req.getParameter(POST_VACCINATION_DATE + pos));
+            Date eventDate;
+            try {
+              eventDate = sdf.parse(req.getParameter(POST_VACCINATION_DATE + pos));
+            } catch (ParseException pe) {
+              throw new InputException(POST_VACCINATION_DATE + pos + " has invalid value of '" + req.getParameter(POST_VACCINATION_DATE + pos) + "'");
+            }
             Event event = getVaccinationEvent(dataSession, vaccinationCvxString);
             if (event == null) {
               event = getVaccinationEvent(dataSession, "999");
@@ -271,7 +279,8 @@ public class ExternalTestServlet extends HttpServlet
       dataSession.close();
       dataSession = null;
       out.println("OK");
-    } catch (ParseException pe) {
+    } catch (InputException pe) {
+      out.println("TCH Forecast Tester Problem: Unable to parse input: " + pe.getMessage());
       throw new ServletException("Unable to parse input data", pe);
     } finally {
       out.close();
@@ -294,7 +303,7 @@ public class ExternalTestServlet extends HttpServlet
     return event;
   }
 
-  private User readAuthor(HttpServletRequest req, Session dataSession) {
+  private User readAuthor(HttpServletRequest req, Session dataSession) throws InputException {
     User author = null;
     if (req.getParameter(POST_USER_NAME) != null) {
       User user = new User();
@@ -303,6 +312,10 @@ public class ExternalTestServlet extends HttpServlet
       user = UserManager.login(user, dataSession);
       if (user.isLoggedIn()) {
         return user;
+      }
+      else
+      {
+        throw new InputException("Username and password are not recognized");
       }
     }
     return author;
@@ -332,7 +345,7 @@ public class ExternalTestServlet extends HttpServlet
 
   private ForecastActual saveForecastActual(HttpServletRequest req, Session dataSession, SimpleDateFormat sdf, boolean createTestCaseAndExpectations,
       TestCase testCase, SoftwareResult softwareResult, User author, int pos, String forecastCvxString, ForecastCvx forecastCvx)
-          throws ParseException {
+          throws InputException {
     ForecastActual forecastActual = new ForecastActual();
     forecastActual.setSoftwareResult(softwareResult);
     forecastActual.setTestCase(testCase);
@@ -350,22 +363,38 @@ public class ExternalTestServlet extends HttpServlet
     }
     forecastActual.setDoseNumber(doseNumber);
     if (req.getParameter(POST_VALID_DATE + pos) != null && !req.getParameter(POST_VALID_DATE + pos).equals("")) {
-      forecastActual.setValidDate(sdf.parse(req.getParameter(POST_VALID_DATE + pos)));
+      try {
+        forecastActual.setValidDate(sdf.parse(req.getParameter(POST_VALID_DATE + pos)));
+      } catch (ParseException pe) {
+        throw new InputException(POST_VALID_DATE + pos + " has invalid value of '" + req.getParameter(POST_VALID_DATE + pos) + "'");
+      }
     } else {
       forecastActual.setValidDate(null);
     }
     if (req.getParameter(POST_DUE_DATE + pos) != null && !req.getParameter(POST_DUE_DATE + pos).equals("")) {
-      forecastActual.setDueDate(sdf.parse(req.getParameter(POST_DUE_DATE + pos)));
+      try {
+        forecastActual.setDueDate(sdf.parse(req.getParameter(POST_DUE_DATE + pos)));
+      } catch (ParseException pe) {
+        throw new InputException(POST_DUE_DATE + pos + " has invalid value of '" + req.getParameter(POST_DUE_DATE + pos) + "'");
+      }
     } else {
       forecastActual.setDueDate(null);
     }
     if (req.getParameter(POST_OVERDUE_DATE + pos) != null && !req.getParameter(POST_OVERDUE_DATE + pos).equals("")) {
-      forecastActual.setOverdueDate(sdf.parse(req.getParameter(POST_OVERDUE_DATE + pos)));
+      try {
+        forecastActual.setOverdueDate(sdf.parse(req.getParameter(POST_OVERDUE_DATE + pos)));
+      } catch (ParseException pe) {
+        throw new InputException(POST_OVERDUE_DATE + pos + " has invalid value of '" + req.getParameter(POST_OVERDUE_DATE + pos) + "'");
+      }
     } else {
       forecastActual.setOverdueDate(null);
     }
     if (req.getParameter(POST_FINISHED_DATE + pos) != null && !req.getParameter(POST_FINISHED_DATE + pos).equals("")) {
-      forecastActual.setFinishedDate(sdf.parse(req.getParameter(POST_FINISHED_DATE + pos)));
+      try {
+        forecastActual.setFinishedDate(sdf.parse(req.getParameter(POST_FINISHED_DATE + pos)));
+      } catch (ParseException pe) {
+        throw new InputException(POST_FINISHED_DATE + pos + " has invalid value of '" + req.getParameter(POST_FINISHED_DATE + pos) + "'");
+      }
     } else {
       forecastActual.setFinishedDate(null);
     }
@@ -431,10 +460,19 @@ public class ExternalTestServlet extends HttpServlet
     return testCase;
   }
 
-  private TestPanelCase createTestCase(HttpServletRequest req, Session dataSession, SimpleDateFormat sdf, TestCase testCase) throws ParseException {
-    int taskGroupId = Integer.parseInt(req.getParameter(POST_TASK_GROUP_ID));
+  private TestPanelCase createTestCase(HttpServletRequest req, Session dataSession, SimpleDateFormat sdf, TestCase testCase) throws InputException {
+    int taskGroupId;
+    try {
+    taskGroupId= Integer.parseInt(req.getParameter(POST_TASK_GROUP_ID));
+    } catch (NumberFormatException nfe) {
+      throw new InputException(POST_TASK_GROUP_ID + " has invalid value of '" + req.getParameter(POST_TASK_GROUP_ID) + "'");
+    }
+
     TaskGroup taskGroup = (TaskGroup) dataSession.get(TaskGroup.class, taskGroupId);
     String testPanelLabel = req.getParameter(POST_TEST_PANEL_LABEL);
+    if (testPanelLabel == null || testPanelLabel.equals("")) {
+      throw new InputException(POST_TEST_PANEL_LABEL + " is null or empty");
+    }
     TestPanel testPanel;
     {
       Query query = dataSession.createQuery("from TestPanel where taskGroup = ? and label = ?");
@@ -452,9 +490,21 @@ public class ExternalTestServlet extends HttpServlet
       }
     }
     String patientSex = req.getParameter(POST_PATIENT_SEX);
-    Date patientDob = sdf.parse(req.getParameter(POST_PATIENT_DOB));
+    if (patientSex == null || patientSex.equals("")) {
+      throw new InputException(POST_PATIENT_SEX + " is null or empty");
+    }
+    Date patientDob;
+    try {
+      patientDob = sdf.parse(req.getParameter(POST_PATIENT_DOB));
+    } catch (ParseException pe) {
+      throw new InputException(POST_PATIENT_DOB + " has invalid value of '" + req.getParameter(POST_PATIENT_DOB) + "'");
+    }
+
     String categoryName = determineCategoryName(patientDob);
     String testCaseNumber = req.getParameter(POST_TEST_CASE_NUMBER);
+    if (testCaseNumber == null || testCaseNumber.equals("")) {
+      throw new InputException(POST_TEST_CASE_NUMBER + " is null or empty");
+    }
 
     testCase.setCategoryName(categoryName);
     testCase.setPatientFirst(RandomNames.getRandomFirstName());
