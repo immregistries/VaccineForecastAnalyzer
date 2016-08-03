@@ -9,6 +9,25 @@ public class TestPanel implements Serializable {
   private int testPanelId = 0;
   private String label = "";
   private TaskGroup taskGroup = null;
+  private Available available = null;
+  
+  public String getAvailableCode()
+  {
+    return available.getAvailableCode();
+  }
+  
+  public void setAvailableCode(String availableCode)
+  {
+    available = Available.getAvailable(availableCode);
+  }
+
+  public Available getAvailable() {
+    return available;
+  }
+
+  public void setAvailable(Available available) {
+    this.available = available;
+  }
 
   public int getTestPanelId() {
     return testPanelId;

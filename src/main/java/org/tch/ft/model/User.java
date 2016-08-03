@@ -26,6 +26,7 @@ public class User implements Serializable
   private boolean admin = false;
   private boolean memberOfGroup = false;
   private boolean canEditTestCase = false;
+  private boolean canViewPrivate = false;
   private Agreement agreement = null;
   private Date agreementDate = null;
   private TaskGroup selectedTaskGroup = null;
@@ -40,6 +41,14 @@ public class User implements Serializable
   private Expert selectedExpert = null;
   private List<Expert> expertList = null;
 
+  public boolean isCanViewPrivate() {
+    return canViewPrivate;
+  }
+  
+  public void setCanViewPrivate(boolean canViewPrivate) {
+    this.canViewPrivate = canViewPrivate;
+  }
+  
   public boolean isSelectedCategoryNameExcluded() {
     return selectedCategoryNameExcluded;
   }

@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -27,6 +30,8 @@ import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.ft.CentralControl;
+import org.tch.ft.manager.UserManager;
+import org.tch.ft.model.Available;
 import org.tch.ft.model.ForecastCvx;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.Include;
@@ -41,17 +46,28 @@ import org.tch.ft.web.testCase.RandomNames;
 public class ExternalTestServlet extends HttpServlet
 
 {
+  protected static final String SENIOR = "Senior";
+  protected static final String ADULT = "Adult";
+  protected static final String YOUNG_ADULT = "Young Adult";
+  protected static final String TEENAGER = "Teenager";
+  protected static final String TWEEN = "Tween";
+  protected static final String CHILD = "Child";
+  protected static final String YOUNG_CHILD = "Young Child";
+  protected static final String TODDLER = "Toddler";
+  protected static final String BABY = "Baby";
+
   private static final String POST_TASK_GROUP_ID = "taskGroupId";
-  private static final String TEST_PANEL_LABEL = "testPanelLabel";
+  private static final String POST_TEST_PANEL_LABEL = "testPanelLabel";
 
   private static final String POST_SOFTWARE_ID = "softwareId";
   private static final String POST_TEST_CASE_ID = "testCaseId";
-  private static final String POS_LOG_TEXT = "logText";
+  private static final String POST_LOG_TEXT = "logText";
 
   private static final String POST_PATIENT_SEX = "patientSex";
   private static final String POST_PATIENT_DOB = "patientDob";
   private static final String POST_TEST_CASE_NUMBER = "testCaseNumber";
   private static final String POST_USER_NAME = "userName";
+  private static final String POST_PASSWORD = "password";
 
   private static final String POST_VACCINATION_DATE = "vaccinationDate";
   private static final String POST_VACCINATION_CVX = "vaccinationCvx";
@@ -76,8 +92,7 @@ public class ExternalTestServlet extends HttpServlet
 
       TestPanel testPanel = (TestPanel) dataSession.get(TestPanel.class, testPanelId);
 
-      Query query = dataSession
-          .createQuery("from TestPanelCase where testPanel = ? and includeStatus = 'I' order by categoryName");
+      Query query = dataSession.createQuery("from TestPanelCase where testPanel = ? and includeStatus = 'I' order by categoryName");
       query.setParameter(0, testPanel);
       List<TestPanelCase> testPanelCaseList = query.list();
       for (TestPanelCase testPanelCase : testPanelCaseList) {
@@ -150,10 +165,56 @@ public class ExternalTestServlet extends HttpServlet
       dataSession = factory.openSession();
       Transaction transaction = dataSession.beginTransaction();
 
+      Set<VaccineGroup> vaccineGroupSet = new HashSet<VaccineGroup>();
+      TestPanelCase testPanelCase = null;
       boolean createTestCaseAndExpectations = req.getParameter(POST_TASK_GROUP_ID) != null;
       TestCase testCase;
       if (createTestCaseAndExpectations) {
-        testCase = createTestCase(req, dataSession, sdf);
+        testCase = new TestCase();
+        testPanelCase = createTestCase(req, dataSession, sdf, testCase);
+        String cn = testCase.getCategoryName();
+        if (cn.equals(BABY) || cn.equals(TODDLER) || cn.equals(YOUNG_CHILD) || cn.equals(CHILD)) {
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_HEPB));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_ROTA));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_DTAP));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_HIB));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_PCV));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_POLIO));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_INFLUENZA));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_MMR));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_VAR));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_HEPA));
+        } else if (cn.equals(TWEEN) || cn.equals(TEENAGER)) {
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_INFLUENZA));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_TDAP_TD));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_HPV));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_MENING));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_PNEUMO));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_HEPB));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_HEPA));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_POLIO));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_MMR));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_VAR));
+        } else if (cn.equals(YOUNG_ADULT)) {
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_INFLUENZA));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_TDAP_TD));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_MMR));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_HPV));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_VAR));
+        } else if (cn.equals(ADULT)) {
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_INFLUENZA));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_TDAP_TD));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_MMR));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_VAR));
+        } else {
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_INFLUENZA));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_TDAP_TD));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_DTAP));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_PCV));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_PPSV));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_MENING));
+          vaccineGroupSet.add(VaccineGroup.getForecastItem(VaccineGroup.ID_VAR));
+        }
       } else {
         testCase = findTestCase(req, dataSession);
       }
@@ -163,17 +224,26 @@ public class ExternalTestServlet extends HttpServlet
       updateSoftwareResult(req, dataSession, softwareResult);
       User author = readAuthor(req, dataSession);
 
+      if (createTestCaseAndExpectations && author == null) {
+        resp.setStatus(503);
+        return;
+      }
+
       if (createTestCaseAndExpectations) {
         int pos = 1;
         String vaccinationCvxString;
         while ((vaccinationCvxString = req.getParameter(POST_VACCINATION_CVX + pos)) != null) {
           if (!vaccinationCvxString.equals("") && !vaccinationCvxString.equals("998")) {
+            Date eventDate = sdf.parse(req.getParameter(POST_VACCINATION_DATE + pos));
             Event event = getVaccinationEvent(dataSession, vaccinationCvxString);
-            if (event == null)
-            {
+            if (event == null) {
               event = getVaccinationEvent(dataSession, "999");
             }
-            
+            TestEvent testEvent = new TestEvent();
+            testEvent.setTestCase(testCase);
+            testEvent.setEvent(event);
+            testEvent.setEventDate(eventDate);
+            dataSession.save(testEvent);
             pos++;
           }
         }
@@ -186,8 +256,11 @@ public class ExternalTestServlet extends HttpServlet
           query.setParameter(0, forecastCvxString);
           List<ForecastCvx> forecastCvxList = query.list();
           for (ForecastCvx forecastCvx : forecastCvxList) {
-            saveForecastActual(req, dataSession, sdf, createTestCaseAndExpectations, testCase, softwareResult, author,
+            ForecastActual forecastActual = saveForecastActual(req, dataSession, sdf, createTestCaseAndExpectations, testCase, softwareResult, author,
                 pos, forecastCvxString, forecastCvx);
+            if (createTestCaseAndExpectations && vaccineGroupSet.contains(forecastCvx.getVaccineGroup())) {
+              saveForecastExpected(req, dataSession, testCase, author, forecastActual, testPanelCase);
+            }
           }
           pos++;
         }
@@ -195,7 +268,6 @@ public class ExternalTestServlet extends HttpServlet
 
       transaction.commit();
 
-      // System.out.println("--> Saved " + (pos - 1) + " results");
       dataSession.close();
       dataSession = null;
       out.println("OK");
@@ -225,19 +297,42 @@ public class ExternalTestServlet extends HttpServlet
   private User readAuthor(HttpServletRequest req, Session dataSession) {
     User author = null;
     if (req.getParameter(POST_USER_NAME) != null) {
-      Query query = dataSession.createQuery("from User where name = ?");
-      query.setParameter(0, req.getParameter(POST_USER_NAME));
-      List<User> userList = query.list();
-      if (userList.size() > 0) {
-        author = userList.get(0);
+      User user = new User();
+      user.setName(req.getParameter(POST_USER_NAME));
+      user.setPassword(req.getParameter(POST_PASSWORD));
+      user = UserManager.login(user, dataSession);
+      if (user.isLoggedIn()) {
+        return user;
       }
     }
     return author;
   }
 
-  private void saveForecastActual(HttpServletRequest req, Session dataSession, SimpleDateFormat sdf,
-      boolean createTestCaseAndExpectations, TestCase testCase, SoftwareResult softwareResult, User author, int pos,
-      String forecastCvxString, ForecastCvx forecastCvx) throws ParseException {
+  private void saveForecastExpected(HttpServletRequest req, Session dataSession, TestCase testCase, User author, ForecastActual forecastActual,
+      TestPanelCase testPanelCase) {
+    ForecastExpected forecastExpected = new ForecastExpected();
+    forecastExpected.setTestCase(testCase);
+    forecastExpected.setAuthor(author);
+    forecastExpected.setUpdatedDate(new Date());
+    forecastExpected.setVaccineGroup(forecastActual.getVaccineGroup());
+    forecastExpected.setAdmin(forecastActual.getAdmin());
+    forecastExpected.setDoseNumber(forecastActual.getDoseNumber());
+    forecastExpected.setValidDate(forecastActual.getValidDate());
+    forecastExpected.setDueDate(forecastActual.getDueDate());
+    forecastExpected.setOverdueDate(forecastActual.getOverdueDate());
+    forecastExpected.setFinishedDate(forecastActual.getFinishedDate());
+    forecastExpected.setVaccineCvx(forecastActual.getVaccineCvx());
+    forecastExpected.setForecastReason(forecastActual.getForecastReason());
+    dataSession.saveOrUpdate(forecastExpected);
+    TestPanelForecast testPanelForecast = new TestPanelForecast();
+    testPanelForecast.setTestPanelCase(testPanelCase);
+    testPanelForecast.setForecastExpected(forecastExpected);
+    dataSession.saveOrUpdate(testPanelForecast);
+  }
+
+  private ForecastActual saveForecastActual(HttpServletRequest req, Session dataSession, SimpleDateFormat sdf, boolean createTestCaseAndExpectations,
+      TestCase testCase, SoftwareResult softwareResult, User author, int pos, String forecastCvxString, ForecastCvx forecastCvx)
+          throws ParseException {
     ForecastActual forecastActual = new ForecastActual();
     forecastActual.setSoftwareResult(softwareResult);
     forecastActual.setTestCase(testCase);
@@ -275,25 +370,11 @@ public class ExternalTestServlet extends HttpServlet
       forecastActual.setFinishedDate(null);
     }
     dataSession.saveOrUpdate(forecastActual);
-    if (author != null && createTestCaseAndExpectations) {
-      ForecastExpected forecastExpected = new ForecastExpected();
-      forecastExpected.setTestCase(testCase);
-      forecastExpected.setAuthor(author);
-      forecastExpected.setUpdatedDate(new Date());
-      forecastExpected.setVaccineGroup(forecastCvx.getVaccineGroup());
-      forecastExpected.setDoseNumber(doseNumber);
-      forecastExpected.setValidDate(forecastActual.getValidDate());
-      forecastExpected.setDueDate(forecastActual.getDueDate());
-      forecastExpected.setOverdueDate(forecastActual.getOverdueDate());
-      forecastExpected.setFinishedDate(forecastActual.getFinishedDate());
-      forecastExpected.setVaccineCvx(forecastActual.getVaccineCvx());
-      forecastExpected.setForecastReason(forecastActual.getForecastReason());
-      dataSession.saveOrUpdate(forecastExpected);
-    }
+    return forecastActual;
   }
 
   private void updateSoftwareResult(HttpServletRequest req, Session dataSession, SoftwareResult softwareResult) {
-    String logText = req.getParameter(POS_LOG_TEXT);
+    String logText = req.getParameter(POST_LOG_TEXT);
     if (logText == null) {
       logText = "";
     }
@@ -350,12 +431,10 @@ public class ExternalTestServlet extends HttpServlet
     return testCase;
   }
 
-  private TestCase createTestCase(HttpServletRequest req, Session dataSession, SimpleDateFormat sdf)
-      throws ParseException {
-    TestCase testCase;
+  private TestPanelCase createTestCase(HttpServletRequest req, Session dataSession, SimpleDateFormat sdf, TestCase testCase) throws ParseException {
     int taskGroupId = Integer.parseInt(req.getParameter(POST_TASK_GROUP_ID));
     TaskGroup taskGroup = (TaskGroup) dataSession.get(TaskGroup.class, taskGroupId);
-    String testPanelLabel = req.getParameter(TEST_PANEL_LABEL);
+    String testPanelLabel = req.getParameter(POST_TEST_PANEL_LABEL);
     TestPanel testPanel;
     {
       Query query = dataSession.createQuery("from TestPanel where taskGroup = ? and label = ?");
@@ -366,6 +445,7 @@ public class ExternalTestServlet extends HttpServlet
         testPanel = new TestPanel();
         testPanel.setTaskGroup(taskGroup);
         testPanel.setLabel(testPanelLabel);
+        testPanel.setAvailable(Available.PRIVATE);
         dataSession.save(testPanel);
       } else {
         testPanel = testPanelList.get(0);
@@ -376,7 +456,7 @@ public class ExternalTestServlet extends HttpServlet
     String categoryName = determineCategoryName(patientDob);
     String testCaseNumber = req.getParameter(POST_TEST_CASE_NUMBER);
 
-    testCase = new TestCase();
+    testCase.setCategoryName(categoryName);
     testCase.setPatientFirst(RandomNames.getRandomFirstName());
     testCase.setPatientLast(RandomNames.getRandomLastName());
     testCase.setLabel(testCase.getPatientFirst() + " " + testCase.getPatientLast());
@@ -385,7 +465,7 @@ public class ExternalTestServlet extends HttpServlet
     testCase.setPatientSex(patientSex);
     testCase.setPatientDob(patientDob);
     testCase.setDateSet(DateSet.FIXED);
-    testCase.setVaccineGroup(VaccineGroup.getForecastItem(VaccineGroup.ID_DTAP_TDAP_TD));
+    testCase.setVaccineGroup(VaccineGroup.getForecastItem(VaccineGroup.ID_INFLUENZA));
     dataSession.save(testCase);
 
     TestPanelCase testPanelCase = new TestPanelCase();
@@ -395,63 +475,63 @@ public class ExternalTestServlet extends HttpServlet
     testPanelCase.setInclude(Include.INCLUDED);
     testPanelCase.setResult(Result.ACCEPT);
     testPanelCase.setTestCaseNumber(testCaseNumber);
-    dataSession.save(testCaseNumber);
-    return testCase;
+    dataSession.save(testPanelCase);
+    return testPanelCase;
   }
 
-  private String determineCategoryName(Date patientDob) {
+  protected static String determineCategoryName(Date patientDob) {
     String categoryLabel;
     {
       Calendar cal = Calendar.getInstance();
       cal.add(Calendar.MONTH, -18);
-      if (cal.before(patientDob)) {
+      if (cal.getTime().before(patientDob)) {
         // Baby 0-18 months
-        categoryLabel = "Baby";
+        categoryLabel = BABY;
       } else {
         cal = Calendar.getInstance();
         cal.add(Calendar.YEAR, -4);
-        if (cal.before(patientDob)) {
+        if (cal.getTime().before(patientDob)) {
           // Toddler 18 months - 4 years
-          categoryLabel = "Toddler";
+          categoryLabel = TODDLER;
         } else {
           cal = Calendar.getInstance();
           cal.add(Calendar.YEAR, -7);
-          if (cal.before(patientDob)) {
+          if (cal.getTime().before(patientDob)) {
             // Young Child 4 years - 7 years
-            categoryLabel = "Young Child";
+            categoryLabel = YOUNG_CHILD;
           } else {
             cal = Calendar.getInstance();
             cal.add(Calendar.YEAR, -10);
-            if (cal.before(patientDob)) {
+            if (cal.getTime().before(patientDob)) {
               // Child 7 years - 10 years
-              categoryLabel = "Child";
+              categoryLabel = CHILD;
             } else {
               cal = Calendar.getInstance();
               cal.add(Calendar.YEAR, -13);
-              if (cal.before(patientDob)) {
+              if (cal.getTime().before(patientDob)) {
                 // Tween 10 years - 13 years
-                categoryLabel = "Tween";
+                categoryLabel = TWEEN;
               } else {
                 cal = Calendar.getInstance();
                 cal.add(Calendar.YEAR, -20);
-                if (cal.before(patientDob)) {
+                if (cal.getTime().before(patientDob)) {
                   // Teenager 13 years - 20 years
-                  categoryLabel = "Teenager";
+                  categoryLabel = TEENAGER;
                 } else {
                   cal = Calendar.getInstance();
                   cal.add(Calendar.YEAR, -25);
-                  if (cal.before(patientDob)) {
-                    // Young Adult 19 years - 25 years
-                    categoryLabel = "Young Adult";
+                  if (cal.getTime().before(patientDob)) {
+                    // Young Adult 20 years - 25 years
+                    categoryLabel = YOUNG_ADULT;
                   } else {
                     cal = Calendar.getInstance();
                     cal.add(Calendar.YEAR, -55);
-                    if (cal.before(patientDob)) {
+                    if (cal.getTime().before(patientDob)) {
                       // Adult 25 years - 55
-                      categoryLabel = "Adult";
+                      categoryLabel = ADULT;
                     } else {
                       // Senior 55 years or older
-                      categoryLabel = "Senior";
+                      categoryLabel = SENIOR;
                     }
                   }
                 }

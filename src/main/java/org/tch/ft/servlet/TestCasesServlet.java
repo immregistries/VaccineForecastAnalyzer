@@ -59,6 +59,7 @@ import org.tch.ft.manager.ForecastActualExpectedCompare;
 import org.tch.ft.manager.ForecastActualGenerator;
 import org.tch.ft.manager.RelativeRuleManager;
 import org.tch.ft.manager.SoftwareManager;
+import org.tch.ft.model.Available;
 import org.tch.ft.model.EvaluationExpected;
 import org.tch.ft.model.Expert;
 import org.tch.ft.model.ForecastExpected;
@@ -76,8 +77,7 @@ import org.tch.ft.model.TestPanelGuidance;
 import org.tch.ft.model.User;
 import org.tch.ft.web.testCase.RandomNames;
 
-public class TestCasesServlet extends MainServlet
-{
+public class TestCasesServlet extends MainServlet {
   public TestCasesServlet() {
     super("Test Cases", ServletProtection.ALL_USERS);
   }
@@ -109,6 +109,7 @@ public class TestCasesServlet extends MainServlet
 
   public static final String PARAM_SHOW_EXCLUDED_TEST_CASES = "showExcludedTestCases";
   public static final String PARAM_LABEL = "label";
+  public static final String PARAM_AVAILABLE_CODE = "availableCode";
   public static final String PARAM_DESCRIPTION = "description";
   public static final String PARAM_VACCINE_GROUP_ID = "vaccineGroupId";
   public static final String PARAM_INCLUDE_STATUS = "includeStatus";
@@ -192,10 +193,9 @@ public class TestCasesServlet extends MainServlet
   private int countCondition = 0;
   private int countOther = 0;
 
-  private static Admin[] ADMIN_STANDARD_LIST = { Admin.NOT_COMPLETE, Admin.COMPLETE, Admin.IMMUNE,
-      Admin.CONTRAINDICATED, Admin.AGED_OUT };
-  private static Admin[] ADMIN_NON_STANDARD_LIST = { Admin.OVERDUE, Admin.DUE, Admin.DUE_LATER, Admin.FINISHED,
-      Admin.COMPLETE_FOR_SEASON, Admin.ASSUMED_COMPLETE_OR_IMMUNE, Admin.CONTRAINDICATED, Admin.NO_RESULTS };
+  private static Admin[] ADMIN_STANDARD_LIST = { Admin.NOT_COMPLETE, Admin.COMPLETE, Admin.IMMUNE, Admin.CONTRAINDICATED, Admin.AGED_OUT };
+  private static Admin[] ADMIN_NON_STANDARD_LIST = { Admin.OVERDUE, Admin.DUE, Admin.DUE_LATER, Admin.FINISHED, Admin.COMPLETE_FOR_SEASON,
+      Admin.ASSUMED_COMPLETE_OR_IMMUNE, Admin.CONTRAINDICATED, Admin.NO_RESULTS };
 
   private static synchronized String getNextTestCaseNumber() {
     SimpleDateFormat sdfShort = new SimpleDateFormat("yyMMdd");
@@ -226,8 +226,7 @@ public class TestCasesServlet extends MainServlet
   }
 
   @Override
-  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show)
-      throws IOException {
+  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show) throws IOException {
     User user = applicationSession.getUser();
     Session dataSession = applicationSession.getDataSession();
     switchToTestPanel(req, user, dataSession);
@@ -246,8 +245,7 @@ public class TestCasesServlet extends MainServlet
       } else if (action.equals(ACTION_SELECT_CATEGORY)) {
         applicationSession.getUser().setSelectedCategoryName(req.getParameter(PARAM_CATEGORY_NAME).trim());
         return SHOW_TEST_CASE;
-      } else if (action.equals(ACTION_ADD_TEST_CASE) || action.equals(ACTION_UPDATE_TEST_CASE)
-          || action.equals(ACTION_COPY_TEST_CASE)) {
+      } else if (action.equals(ACTION_ADD_TEST_CASE) || action.equals(ACTION_UPDATE_TEST_CASE) || action.equals(ACTION_COPY_TEST_CASE)) {
         return saveTestCase(req, action, show, user, dataSession);
       } else if (action.equals(ACTION_ADD_TEST_PANEL) || action.equals(ACTION_UPDATE_TEST_PANEL)) {
         return saveTestPanel(req, action, show, user, dataSession);
@@ -286,8 +284,7 @@ public class TestCasesServlet extends MainServlet
         user.setSelectedSoftware(software);
         TestCase testCase = user.getSelectedTestCase();
 
-        Query query = applicationSession.getDataSession().createQuery(
-            "from TestCaseSetting where testCase = ? and serviceOption.serviceType = ?");
+        Query query = applicationSession.getDataSession().createQuery("from TestCaseSetting where testCase = ? and serviceOption.serviceType = ?");
         query.setParameter(0, testCase);
         query.setParameter(1, software.getServiceType());
         List<TestCaseSetting> testCaseSettingList = query.list();
@@ -424,8 +421,7 @@ public class TestCasesServlet extends MainServlet
   }
 
   private String doSaveExpectations(HttpServletRequest req, User user, Session dataSession) {
-    VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class,
-        notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), 0));
+    VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class, notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), 0));
     TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
     TestCase testCase = testPanelCase.getTestCase();
 
@@ -453,15 +449,14 @@ public class TestCasesServlet extends MainServlet
       }
       Transaction transaction = dataSession.beginTransaction();
       for (TestEvent vaccinationEvent : expectationsManager.getVaccinationEvents()) {
-        EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(
-            vaccinationEvent);
+        EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(vaccinationEvent);
         evaluationExpected.setAuthor(user);
         evaluationExpected.setUpdatedDate(new Date());
         dataSession.saveOrUpdate(evaluationExpected);
         if (canSetTesPanelExpectations) {
           TestPanelEvaluation testPanelEvaluation = null;
-          Query query = dataSession
-              .createQuery("from TestPanelEvaluation where testPanelCase = ? and evaluationExpected.testCase = ? and evaluationExpected.vaccineGroup =  ? and evaluationExpected.testEvent = ?");
+          Query query = dataSession.createQuery(
+              "from TestPanelEvaluation where testPanelCase = ? and evaluationExpected.testCase = ? and evaluationExpected.vaccineGroup =  ? and evaluationExpected.testEvent = ?");
           query.setParameter(0, testPanelCase);
           query.setParameter(1, testCase);
           query.setParameter(2, vaccineGroup);
@@ -524,8 +519,8 @@ public class TestCasesServlet extends MainServlet
         Guidance guidance = guidanceExpected.getGuidance();
         if (canSetTesPanelExpectations) {
           TestPanelGuidance testPanelGuidance = null;
-          Query query = dataSession
-              .createQuery("from TestPanelGuidance where guidanceExpected.testCase = ? and testPanelCase = ? and guidanceExpected.guidance.vaccineGroup = ?");
+          Query query = dataSession.createQuery(
+              "from TestPanelGuidance where guidanceExpected.testCase = ? and testPanelCase = ? and guidanceExpected.guidance.vaccineGroup = ?");
           query.setParameter(0, testCase);
           query.setParameter(1, testPanelCase);
           query.setParameter(2, vaccineGroup);
@@ -604,8 +599,7 @@ public class TestCasesServlet extends MainServlet
     }
   }
 
-  public void readGuidanceExpectations(HttpServletRequest req, Session dataSession,
-      ExpectationsManager expectationsManager) {
+  public void readGuidanceExpectations(HttpServletRequest req, Session dataSession, ExpectationsManager expectationsManager) {
 
     expectationsManager.getRecommendGuidanceDeleteList().clear();
     expectationsManager.getRecommendGuidanceDeleteList().addAll(expectationsManager.getRecommendGuidanceList());
@@ -771,8 +765,7 @@ public class TestCasesServlet extends MainServlet
     }
   }
 
-  public String readForecastExpectations(HttpServletRequest req, Session dataSession, TestCase testCase,
-      ExpectationsManager expectationsManager) {
+  public String readForecastExpectations(HttpServletRequest req, Session dataSession, TestCase testCase, ExpectationsManager expectationsManager) {
     ForecastExpected forecastExpected = expectationsManager.getForecastExpected();
     String adminStatus = notNull(req.getParameter(PARAM_ADMIN_STATUS), forecastExpected.getAdminStatus());
     if (adminStatus.equals("")) {
@@ -834,8 +827,7 @@ public class TestCasesServlet extends MainServlet
         }
       }
       {
-        String overdueDateString = notNull(req.getParameter(PARAM_OVERDUE_DATE),
-            forecastExpected.getOverdueDateString());
+        String overdueDateString = notNull(req.getParameter(PARAM_OVERDUE_DATE), forecastExpected.getOverdueDateString());
         forecastExpected.setOverdueDateString(overdueDateString);
         if (overdueDateString.equals("")) {
           forecastExpected.setOverdueDate(null);
@@ -848,8 +840,7 @@ public class TestCasesServlet extends MainServlet
         }
       }
       {
-        String finishedDateString = notNull(req.getParameter(PARAM_FINISHED_DATE),
-            forecastExpected.getFinishedDateString());
+        String finishedDateString = notNull(req.getParameter(PARAM_FINISHED_DATE), forecastExpected.getFinishedDateString());
         forecastExpected.setFinishedDateString(finishedDateString);
         if (finishedDateString.equals("")) {
           forecastExpected.setFinishedDate(null);
@@ -862,14 +853,10 @@ public class TestCasesServlet extends MainServlet
         }
       }
     } else {
-      forecastExpected.setValidRule(updateRelativeRule(PARAM_VALID_RULE, req, dataSession, testCase,
-          forecastExpected.getValidRule()));
-      forecastExpected.setDueRule(updateRelativeRule(PARAM_DUE_RULE, req, dataSession, testCase,
-          forecastExpected.getDueRule()));
-      forecastExpected.setOverdueRule(updateRelativeRule(PARAM_OVERDUE_RULE, req, dataSession, testCase,
-          forecastExpected.getOverdueRule()));
-      forecastExpected.setFinishedRule(updateRelativeRule(PARAM_FINISHED_RULE, req, dataSession, testCase,
-          forecastExpected.getFinishedRule()));
+      forecastExpected.setValidRule(updateRelativeRule(PARAM_VALID_RULE, req, dataSession, testCase, forecastExpected.getValidRule()));
+      forecastExpected.setDueRule(updateRelativeRule(PARAM_DUE_RULE, req, dataSession, testCase, forecastExpected.getDueRule()));
+      forecastExpected.setOverdueRule(updateRelativeRule(PARAM_OVERDUE_RULE, req, dataSession, testCase, forecastExpected.getOverdueRule()));
+      forecastExpected.setFinishedRule(updateRelativeRule(PARAM_FINISHED_RULE, req, dataSession, testCase, forecastExpected.getFinishedRule()));
 
     }
     return null;
@@ -877,8 +864,7 @@ public class TestCasesServlet extends MainServlet
 
   public void readEvaluationExpectations(HttpServletRequest req, ExpectationsManager expectationsManager) {
     for (TestEvent vaccinationEvent : expectationsManager.getVaccinationEvents()) {
-      EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(
-          vaccinationEvent);
+      EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(vaccinationEvent);
       String evaluationStatus = notNull(req.getParameter(PARAM_EVALUATION_STATUS + vaccinationEvent.getTestEventId()),
           evaluationExpected.getEvaluationStatus());
       if (evaluationStatus == null || evaluationStatus.equals("")) {
@@ -890,8 +876,7 @@ public class TestCasesServlet extends MainServlet
 
   }
 
-  public RelativeRule updateRelativeRule(String paramRuleName, HttpServletRequest req, Session dataSession,
-      TestCase testCase, RelativeRule rrOld) {
+  public RelativeRule updateRelativeRule(String paramRuleName, HttpServletRequest req, Session dataSession, TestCase testCase, RelativeRule rrOld) {
     RelativeRule rrNew = readRelativeRules(paramRuleName, req, dataSession, testCase);
     if (rrOld == null) {
       rrOld = rrNew;
@@ -937,8 +922,8 @@ public class TestCasesServlet extends MainServlet
     boolean isVacc = action.equals(ACTION_ADD_VACCINATION);
     if (req.getParameter(PARAM_EVENT_ID) == null) {
       if (req.getParameter(PARAM_NEW_EVENT_LABEL).length() > 0) {
-        applicationSession
-            .setAlertError("If you would like to add a new ACIP-Defined Condition please review the list and select 'none of these, proposing a new label' ");
+        applicationSession.setAlertError(
+            "If you would like to add a new ACIP-Defined Condition please review the list and select 'none of these, proposing a new label' ");
       } else {
         applicationSession.setAlertError("Please indicate which ACIP-Defined Condition you want to add. ");
       }
@@ -961,8 +946,7 @@ public class TestCasesServlet extends MainServlet
       }
     }
     if (eventId == 0) {
-      applicationSession.setAlertError((isVacc ? "Vaccination" : "Condition")
-          + " is required, please select the appropriate vaccination. ");
+      applicationSession.setAlertError((isVacc ? "Vaccination" : "Condition") + " is required, please select the appropriate vaccination. ");
       return show;
     }
     TestCase testCase = user.getSelectedTestCase();
@@ -973,9 +957,8 @@ public class TestCasesServlet extends MainServlet
     if (testCase.getDateSet() == DateSet.FIXED) {
       String eventDateString = notNull(req.getParameter(PARAM_EVENT_DATE));
       if (eventDateString.equals("")) {
-        applicationSession
-            .setAlertError((isVacc ? "Administered date is required, please indicate date to create vaccination."
-                : "Observed date is required, please indicate date condition was observed.") + "  ");
+        applicationSession.setAlertError((isVacc ? "Administered date is required, please indicate date to create vaccination."
+            : "Observed date is required, please indicate date condition was observed.") + "  ");
         return show;
       }
       try {
@@ -987,9 +970,8 @@ public class TestCasesServlet extends MainServlet
     } else {
       RelativeRule relativeRule = readRelativeRules(PARAM_EVENT_RULE, req, dataSession, testCase);
       if (relativeRule == null || relativeRule.getTestEvent() == null) {
-        applicationSession
-            .setAlertError((isVacc ? "Administered" : "Observed")
-                + " needs to be set before or after a selected event. Please select event that this event is before or after. ");
+        applicationSession.setAlertError((isVacc ? "Administered" : "Observed")
+            + " needs to be set before or after a selected event. Please select event that this event is before or after. ");
         return show;
       }
       relativeRule.convertBeforeToAfter();
@@ -1044,22 +1026,22 @@ public class TestCasesServlet extends MainServlet
     Query query = dataSession.createQuery("from EvaluationActual where testEvent = ?");
     query.setParameter(0, testEvent);
     if (query.list().size() > 0) {
-      applicationSession
-          .setAlertError("Unable to delete vaccination, actual evaluation(s) have been stored from CDSi request(s). You can no longer edit this test case. Create a new one instead. ");
+      applicationSession.setAlertError(
+          "Unable to delete vaccination, actual evaluation(s) have been stored from CDSi request(s). You can no longer edit this test case. Create a new one instead. ");
       return SHOW_EDIT_VACCINATIONS;
     }
     query = dataSession.createQuery("from EvaluationExpected where testEvent = ?");
     query.setParameter(0, testEvent);
     if (query.list().size() > 0) {
-      applicationSession
-          .setAlertError("Unable to delete vaccination, evaluation expectation(s) have been set. You can no longer edit this test case. Create a new one instead.");
+      applicationSession.setAlertError(
+          "Unable to delete vaccination, evaluation expectation(s) have been set. You can no longer edit this test case. Create a new one instead.");
       return SHOW_EDIT_VACCINATIONS;
     }
     query = dataSession.createQuery("from RelativeRule where testEvent = ?");
     query.setParameter(0, testEvent);
     if (query.list().size() > 0) {
-      applicationSession
-          .setAlertError("Unable to delete event, another test event depends on this one to define its date. First delete that event before deleting this one. ");
+      applicationSession.setAlertError(
+          "Unable to delete event, another test event depends on this one to define its date. First delete that event before deleting this one. ");
       return SHOW_EDIT_VACCINATIONS;
     }
     Transaction transaction = dataSession.beginTransaction();
@@ -1150,8 +1132,7 @@ public class TestCasesServlet extends MainServlet
       }
     }
     if (action.equals(ACTION_COPY_TEST_CASE)) {
-      if (label.equals(user.getSelectedTestCase().getLabel())
-          && categoryName.equals(user.getSelectedTestCase().getCategoryName())) {
+      if (label.equals(user.getSelectedTestCase().getLabel()) && categoryName.equals(user.getSelectedTestCase().getCategoryName())) {
         problem = "Label and category name are the same as test case. To copy you must specify a new label and/or category name.";
       }
     }
@@ -1268,10 +1249,14 @@ public class TestCasesServlet extends MainServlet
 
   public String saveTestPanel(HttpServletRequest req, String action, String show, User user, Session dataSession) {
     String label = req.getParameter(PARAM_LABEL);
+    String availableCode = req.getParameter(PARAM_AVAILABLE_CODE);
 
     String problem = null;
     if (label.equals("")) {
       problem = "Label is required";
+    }
+    if (availableCode.equals("")) {
+      problem = "Available status is required";
     }
     if (problem != null) {
       applicationSession.setAlertError("Unable to save test panel: " + problem);
@@ -1286,6 +1271,7 @@ public class TestCasesServlet extends MainServlet
         testPanel = new TestPanel();
       }
       testPanel.setLabel(label);
+      testPanel.setAvailableCode(availableCode);
       testPanel.setTaskGroup(user.getSelectedTaskGroup());
 
       if (action.equals(ACTION_UPDATE_TEST_PANEL)) {
@@ -1304,8 +1290,7 @@ public class TestCasesServlet extends MainServlet
   }
 
   @Override
-  protected void printPage(HttpServletRequest req, HttpServletResponse resp, PrintWriter out, String show)
-      throws ServletException, IOException {
+  protected void printPage(HttpServletRequest req, HttpServletResponse resp, PrintWriter out, String show) throws ServletException, IOException {
     Session dataSession = applicationSession.getDataSession();
 
     User user = applicationSession.getUser();
@@ -1314,8 +1299,7 @@ public class TestCasesServlet extends MainServlet
     printTree(out, dataSession, user);
 
     if (SHOW_TEST_CASE.equals(show)) {
-      if (user.getSelectedTaskGroup() != null && user.getSelectedTestPanel() != null
-          && user.getSelectedTestPanelCase() != null) {
+      if (user.getSelectedTaskGroup() != null && user.getSelectedTestPanel() != null && user.getSelectedTestPanelCase() != null) {
         TestCase testCase = user.getSelectedTestPanelCase().getTestCase();
         printTestCase(out, user, req, dataSession);
         printActualsVsExpected(out, user);
@@ -1323,8 +1307,7 @@ public class TestCasesServlet extends MainServlet
     } else if (SHOW_TEST_PANEL.equals(show)) {
       boolean canEdit = user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit();
       TestPanel testPanel = user.getSelectedTestPanel();
-      String editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_TEST_PANEL + "&" + PARAM_TEST_PANEL_ID + "="
-          + testPanel.getTestPanelId();
+      String editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_TEST_PANEL + "&" + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId();
       String editButton = "";
       if (canEdit) {
         editButton = " <a class=\"fauxbutton\" href=\"" + editLink + "\">Edit</a>";
@@ -1337,21 +1320,22 @@ public class TestCasesServlet extends MainServlet
       out.println("      <th>Label</th>");
       out.println("      <td>" + testPanel.getLabel() + "</td>");
       out.println("    </tr>");
+      out.println("    <tr>");
+      out.println("      <th>Available</th>");
+      out.println("      <td>" + testPanel.getAvailable() + "</td>");
+      out.println("    </tr>");
       if (canEdit) {
         out.println("    <tr>");
-        out.println("      <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-            + "\" value=\"" + ACTION_UPDATE_RELATIVE_DATES + "\"/></td>");
-        out.println("  <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_ID + "\" value=\""
-            + testPanel.getTestPanelId() + "\"/>");
+        out.println("      <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\""
+            + ACTION_UPDATE_RELATIVE_DATES + "\"/></td>");
+        out.println("  <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_ID + "\" value=\"" + testPanel.getTestPanelId() + "\"/>");
         out.println("    </tr>");
       }
       out.println("  </table>");
       out.println("  </form>");
     } else if (SHOW_PREVIEW_TEST_CASE.equals(show)) {
-      if (user.getSelectedTaskGroup() != null && user.getSelectedTestPanel() != null
-          && user.getSelectedTestPanelCase() != null) {
-        VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class,
-            Integer.parseInt(req.getParameter(PARAM_VACCINE_GROUP_ID)));
+      if (user.getSelectedTaskGroup() != null && user.getSelectedTestPanel() != null && user.getSelectedTestPanelCase() != null) {
+        VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class, Integer.parseInt(req.getParameter(PARAM_VACCINE_GROUP_ID)));
         TestCase testCase = user.getSelectedTestPanelCase().getTestCase();
         printTestCase(out, user, req, dataSession);
         printPreview(out, user, vaccineGroup);
@@ -1374,8 +1358,7 @@ public class TestCasesServlet extends MainServlet
       EventType eventType = EventType.getEventType(req.getParameter(PARAM_EVENT_TYPE_CODE));
       printEditEvents(req, out, dataSession, user, eventType, show);
     } else if (SHOW_EDIT_EXPECTATIONS.equals(show)) {
-      VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class,
-          notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), 0));
+      VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class, notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), 0));
       printEditExpectations(req, out, dataSession, user, vaccineGroup);
     } else if (SHOW_ADD_ACTUAL_VS_EXPECTED.equals(show)) {
       printActualVsExpected(out, dataSession, user);
@@ -1397,8 +1380,7 @@ public class TestCasesServlet extends MainServlet
     TestCase testCase = user.getSelectedTestCase();
     out.println("<div class=\"centerColumn\">");
     out.println("<h2>Edit Software Settings for " + software.getService().getServiceType() + "</h2>");
-    Query query = applicationSession.getDataSession().createQuery(
-        "from TestCaseSetting where testCase = ? and serviceOption.serviceType = ?");
+    Query query = applicationSession.getDataSession().createQuery("from TestCaseSetting where testCase = ? and serviceOption.serviceType = ?");
     query.setParameter(0, testCase);
     query.setParameter(1, software.getServiceType());
     List<TestCaseSetting> testCaseSettingList = query.list();
@@ -1411,10 +1393,9 @@ public class TestCasesServlet extends MainServlet
     List<ServiceOption> serviceOptionList = query.list();
     out.println("  <table width=\"100%\">");
     out.println("  <form method=\"POST\" action=\"testCases\">");
-    out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID_SELECTED + "\" value=\""
-        + software.getSoftwareId() + "\"/>");
-    out.println("  <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
-        + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\"/>");
+    out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID_SELECTED + "\" value=\"" + software.getSoftwareId() + "\"/>");
+    out.println("  <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\"" + user.getSelectedTestPanelCase().getTestPanelCaseId()
+        + "\"/>");
     for (ServiceOption serviceOption : serviceOptionList) {
       out.println("    <tr>");
       out.println("      <th>" + serviceOption.getOptionLabel() + "</th>");
@@ -1423,12 +1404,11 @@ public class TestCasesServlet extends MainServlet
       if (testCaseSetting == null) {
         optionValue = notNull(req.getParameter(PARAM_OPTION_VALUE + serviceOption.getOptionId()), "");
       } else {
-        optionValue = notNull(req.getParameter(PARAM_OPTION_VALUE + serviceOption.getOptionId()),
-            testCaseSetting.getOptionValue());
+        optionValue = notNull(req.getParameter(PARAM_OPTION_VALUE + serviceOption.getOptionId()), testCaseSetting.getOptionValue());
       }
       if (serviceOption.getValidValues().equals("")) {
-        out.println("      <td><input type=\"text\" size=\"20\" name=\"" + PARAM_OPTION_VALUE
-            + serviceOption.getOptionId() + "\" value=\"" + optionValue + "\"/></td>");
+        out.println("      <td><input type=\"text\" size=\"20\" name=\"" + PARAM_OPTION_VALUE + serviceOption.getOptionId() + "\" value=\""
+            + optionValue + "\"/></td>");
       } else {
         out.println("      <td>");
         out.println("        <select name=\"" + PARAM_OPTION_VALUE + serviceOption.getOptionId() + "\">");
@@ -1436,8 +1416,7 @@ public class TestCasesServlet extends MainServlet
         for (String validValue : serviceOption.getValidValues().split("\\,")) {
           validValue = validValue.trim();
           if (optionValue.equalsIgnoreCase(validValue)) {
-            out.println("              <option value=\"" + validValue + "\" selected=\"selected\">" + validValue
-                + "</option>");
+            out.println("              <option value=\"" + validValue + "\" selected=\"selected\">" + validValue + "</option>");
           } else {
             out.println("              <option value=\"" + validValue + "\">" + validValue + "</option>");
           }
@@ -1448,8 +1427,8 @@ public class TestCasesServlet extends MainServlet
       out.println("    </tr>");
     }
     out.println("        <tr>");
-    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-        + "\" value=\"" + ACTION_SAVE_TEST_CASE_SETTINGS + "\"/></td>");
+    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\""
+        + ACTION_SAVE_TEST_CASE_SETTINGS + "\"/></td>");
     out.println("        </tr>");
     out.println("  </table>");
 
@@ -1461,9 +1440,8 @@ public class TestCasesServlet extends MainServlet
     TestCase testCase = user.getSelectedTestCase();
     out.println("<div class=\"centerColumn\">");
     Software tchSoftware = (Software) dataSession.get(Software.class, Software.TCH_SOFTWARE_ID);
-    out.println("<h2>Debugging Tools <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE
-        + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
-        + "\">Back</a></h2>");
+    out.println("<h2>Debugging Tools <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID
+        + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a></h2>");
     out.println("<ul>");
     String forecastLink = tchSoftware.getServiceUrl() + TCHConnector.createQueryString(testCase, tchSoftware, "html");
     out.println("  <li><a href=\"" + forecastLink + "\" target=\"_blank\">" + tchSoftware.getLabel() + "</a></li>");
@@ -1471,9 +1449,8 @@ public class TestCasesServlet extends MainServlet
       forecastLink = software.getServiceUrl() + TCHConnector.createQueryString(testCase, software, "html");
       out.println("  <li><a href=\"" + forecastLink + "\" target=\"_blank\">" + software.getLabel() + "</a></li>");
     }
-    String stepLink = tchSoftware.getServiceUrl().substring(0,
-        tchSoftware.getServiceUrl().length() - "forecast".length())
-        + "fv/step" + TCHConnector.createQueryString(testCase, tchSoftware, "text");
+    String stepLink = tchSoftware.getServiceUrl().substring(0, tchSoftware.getServiceUrl().length() - "forecast".length()) + "fv/step"
+        + TCHConnector.createQueryString(testCase, tchSoftware, "text");
     out.println("  <li><a href=\"" + stepLink + "\" target=\"_blank\">TCH Forecast Step Through</a></li>");
     out.println("</ul>");
 
@@ -1503,9 +1480,8 @@ public class TestCasesServlet extends MainServlet
   public void printSoftwareResult(PrintWriter out, Session dataSession, User user, SoftwareResult softwareResult) {
     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
     out.println("<div class=\"centerColumn\">");
-    out.println("<h2>Actual Results <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_DEBUGGING_TOOLS
-        + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
-        + "\">Back</a></h2>");
+    out.println("<h2>Actual Results <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_DEBUGGING_TOOLS + "&"
+        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a></h2>");
     out.println("<table>");
     out.println("  <tr>");
     out.println("    <th>Software</th>");
@@ -1567,9 +1543,8 @@ public class TestCasesServlet extends MainServlet
   public void printRequestActualResults(PrintWriter out, Session dataSession, User user) {
     Software software = user.getSelectedSoftware();
     out.println("<div class=\"centerColumn\">");
-    out.println("<h2>Request Actual Results <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
-        + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
-        + "\">Back</a></h2>");
+    out.println("<h2>Request Actual Results <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&"
+        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a></h2>");
     out.println("  <form method=\"POST\" action=\"testCases\">");
     out.println("<table>");
     out.println("  <tr>");
@@ -1578,15 +1553,15 @@ public class TestCasesServlet extends MainServlet
     List<Software> softwareList = SoftwareManager.getListOfUnrestrictedSoftware(user, dataSession);
     for (Software softwareSelected : softwareList) {
       if (softwareSelected.getServiceUrl() != null && softwareSelected.getServiceUrl().length() > 0) {
-        out.println("          <input type=\"checkbox\" name=\"" + PARAM_SOFTWARE_ID_SELECTED
-            + softwareSelected.getSoftwareId() + "\" value=\"true\">" + softwareSelected.getLabel() + "<br/>");
+        out.println("          <input type=\"checkbox\" name=\"" + PARAM_SOFTWARE_ID_SELECTED + softwareSelected.getSoftwareId()
+            + "\" value=\"true\">" + softwareSelected.getLabel() + "<br/>");
       }
     }
     out.println("    </td>");
     out.println("  </tr>");
     out.println("        <tr>");
-    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-        + "\" value=\"" + ACTION_REQUEST_ACTUAL_RESULTS + "\"/></td>");
+    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\""
+        + ACTION_REQUEST_ACTUAL_RESULTS + "\"/></td>");
     out.println("        </tr>");
     out.println("</table>");
     out.println("  </form>");
@@ -1606,12 +1581,10 @@ public class TestCasesServlet extends MainServlet
       }
     }
     out.println("<div class=\"centerColumn\">");
-    out.println("<h2>Add Actual vs Expected <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
-        + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
-        + "\">Back</a></h2>");
+    out.println("<h2>Add Actual vs Expected <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&"
+        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a></h2>");
     out.println("  <form method=\"POST\" action=\"testCases\">");
-    out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
-        + testPanelCase.getTestPanelCaseId() + "\"/>");
+    out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\"" + testPanelCase.getTestPanelCaseId() + "\"/>");
     out.println("    <input type=\"hidden\" name=\"" + PARAM_SHOW + "\" value=\"" + SHOW_EDIT_EXPECTATIONS + "\"/>");
     out.println("  <table>");
     out.println("        <tr>");
@@ -1630,8 +1603,8 @@ public class TestCasesServlet extends MainServlet
     out.println("          </td>");
     out.println("        </tr>");
     out.println("        <tr>");
-    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-        + "\" value=\"" + ACTION_ADD_EXPECTATIONS + "\"/></td>");
+    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\"" + ACTION_ADD_EXPECTATIONS
+        + "\"/></td>");
     out.println("        </tr>");
     out.println("  </table>");
     out.println("  </form>");
@@ -1639,8 +1612,7 @@ public class TestCasesServlet extends MainServlet
     out.println("</div>");
   }
 
-  private void printEditExpectations(HttpServletRequest req, PrintWriter out, Session dataSession, User user,
-      VaccineGroup vaccineGroup) {
+  private void printEditExpectations(HttpServletRequest req, PrintWriter out, Session dataSession, User user, VaccineGroup vaccineGroup) {
     TestPanelCase testPanelCase = user.getSelectedTestPanelCase();
     TestCase testCase = testPanelCase.getTestCase();
 
@@ -1656,17 +1628,15 @@ public class TestCasesServlet extends MainServlet
     printShowRowScript(out);
     out.println("<div class=\"centerColumn\">");
     out.println("  <h2>Expectations for " + vaccineGroup.getLabel());
-    out.println("    <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&"
-        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a>");
+    out.println("    <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "="
+        + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a>");
     out.println("  </h2>");
 
     setupTestEventList(user);
 
     out.println("  <form method=\"POST\" action=\"testCases\">");
-    out.println("    <input type=\"hidden\" name=\"" + PARAM_VACCINE_GROUP_ID + "\" value=\""
-        + vaccineGroup.getVaccineGroupId() + "\"/>");
-    out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
-        + testPanelCase.getTestPanelCaseId() + "\"/>");
+    out.println("    <input type=\"hidden\" name=\"" + PARAM_VACCINE_GROUP_ID + "\" value=\"" + vaccineGroup.getVaccineGroupId() + "\"/>");
+    out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\"" + testPanelCase.getTestPanelCaseId() + "\"/>");
     if (countVaccination > 0) {
       out.println("  <h3>Evaluation</h3>");
       out.println("  <table width=\"100%\">");
@@ -1693,20 +1663,17 @@ public class TestCasesServlet extends MainServlet
           printOutRelativeRule(out, vaccinationEvent.getEventRule());
           out.print("</td>");
         }
-        out.println("      <td>"
-            + (vaccinationEvent.getEventDate() == null ? "" : sdf.format(vaccinationEvent.getEventDate())) + "</td>");
+        out.println("      <td>" + (vaccinationEvent.getEventDate() == null ? "" : sdf.format(vaccinationEvent.getEventDate())) + "</td>");
         out.println("      <td>");
-        EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(
-            vaccinationEvent);
+        EvaluationExpected evaluationExpected = expectationsManager.getTestEventMapToEvaluationExpected().get(vaccinationEvent);
         out.println("          <select name=\"" + PARAM_EVALUATION_STATUS + vaccinationEvent.getTestEventId() + "\">");
         out.println("            <option value=\"0\">--select--</option>");
         for (Evaluation evaluation : Evaluation.values()) {
           if (evaluationExpected != null && evaluationExpected.getEvaluation() == evaluation) {
-            out.println("            <option value=\"" + evaluation.getEvaluationStatus() + "\" selected=\"selected\">"
-                + evaluation.getLabel() + "</option>");
+            out.println("            <option value=\"" + evaluation.getEvaluationStatus() + "\" selected=\"selected\">" + evaluation.getLabel()
+                + "</option>");
           } else {
-            out.println("            <option value=\"" + evaluation.getEvaluationStatus() + "\">"
-                + evaluation.getLabel() + "</option>");
+            out.println("            <option value=\"" + evaluation.getEvaluationStatus() + "\">" + evaluation.getLabel() + "</option>");
           }
         }
         out.println("          </select>");
@@ -1737,29 +1704,29 @@ public class TestCasesServlet extends MainServlet
     out.println("    </tr>");
     out.println("    <tr>");
     out.println("      <th>Dose</th>");
-    out.println("      <td><input type=\"text\" name=\"" + PARAM_DOSE_NUMBER + "\" value=\""
-        + forecastExpected.getDoseNumber() + "\" size=\"5\"/></td>");
+    out.println(
+        "      <td><input type=\"text\" name=\"" + PARAM_DOSE_NUMBER + "\" value=\"" + forecastExpected.getDoseNumber() + "\" size=\"5\"/></td>");
     out.println("    </tr>");
     if (testCase.getDateSet() == DateSet.FIXED) {
       out.println("    <tr>");
       out.println("      <th>Earliest Date</th>");
-      out.println("      <td><input type=\"text\" name=\"" + PARAM_VALID_DATE + "\" value=\""
-          + forecastExpected.getValidDateString() + "\" size=\"10\"/></td>");
+      out.println("      <td><input type=\"text\" name=\"" + PARAM_VALID_DATE + "\" value=\"" + forecastExpected.getValidDateString()
+          + "\" size=\"10\"/></td>");
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <th>Recommended Date</th>");
-      out.println("      <td><input type=\"text\" name=\"" + PARAM_DUE_DATE + "\" value=\""
-          + forecastExpected.getDueDateString() + "\" size=\"10\"/></td>");
+      out.println(
+          "      <td><input type=\"text\" name=\"" + PARAM_DUE_DATE + "\" value=\"" + forecastExpected.getDueDateString() + "\" size=\"10\"/></td>");
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <th>Past Due Date</th>");
-      out.println("      <td><input type=\"text\" name=\"" + PARAM_OVERDUE_DATE + "\" value=\""
-          + forecastExpected.getOverdueDateString() + "\" size=\"10\"/></td>");
+      out.println("      <td><input type=\"text\" name=\"" + PARAM_OVERDUE_DATE + "\" value=\"" + forecastExpected.getOverdueDateString()
+          + "\" size=\"10\"/></td>");
       out.println("    </tr>");
       out.println("    <tr>");
       out.println("      <th>Latest Date</th>");
-      out.println("      <td><input type=\"text\" name=\"" + PARAM_OVERDUE_DATE + "\" value=\""
-          + forecastExpected.getFinishedDateString() + "\" size=\"10\"/></td>");
+      out.println("      <td><input type=\"text\" name=\"" + PARAM_OVERDUE_DATE + "\" value=\"" + forecastExpected.getFinishedDateString()
+          + "\" size=\"10\"/></td>");
       out.println("    </tr>");
     } else {
       printRelativeRuleRow(PARAM_VALID_RULE, out, forecastExpected.getValidRule(), "Earliest Date", null);
@@ -1768,8 +1735,8 @@ public class TestCasesServlet extends MainServlet
       printRelativeRuleRow(PARAM_FINISHED_RULE, out, forecastExpected.getFinishedRule(), "Finished Date", null);
     }
     out.println("        <tr>");
-    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-        + "\" value=\"" + ACTION_SAVE_EXPECTATIONS + "\"/></td>");
+    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\"" + ACTION_SAVE_EXPECTATIONS
+        + "\"/></td>");
     out.println("        </tr>");
 
     out.println("  </table>");
@@ -1788,8 +1755,7 @@ public class TestCasesServlet extends MainServlet
         out.println("<b>Currently Selected</b><br/>");
         for (RecommendGuidance recommendGuidance : expectationsManager.getRecommendGuidanceList()) {
           out.println("          <input type=\"checkbox\" name=\"" + PARAM_RECOMMEND_ID + "" + "\" value=\""
-              + recommendGuidance.getRecommend().getRecommendId() + "\" checked=\"checked\">"
-              + recommendGuidance.getRecommend() + "<br/>");
+              + recommendGuidance.getRecommend().getRecommendId() + "\" checked=\"checked\">" + recommendGuidance.getRecommend() + "<br/>");
           recommendSet.add(recommendGuidance.getRecommend());
         }
         out.println("<b>Select Additional</b><br/>");
@@ -1798,21 +1764,18 @@ public class TestCasesServlet extends MainServlet
       List<Recommend> recommendList = query.list();
       for (Recommend recommend : recommendList) {
         if (!recommendSet.contains(recommend)) {
-          out.println("          <input type=\"checkbox\" name=\"" + PARAM_RECOMMEND_ID + "\" value=\""
-              + recommend.getRecommendId() + "\">" + recommend + "<br/>");
+          out.println("          <input type=\"checkbox\" name=\"" + PARAM_RECOMMEND_ID + "\" value=\"" + recommend.getRecommendId() + "\">"
+              + recommend + "<br/>");
         }
       }
-      out.println("          <input type=\"checkbox\" name=\""
-          + PARAM_RECOMMEND_ID
-          + ""
+      out.println("          <input type=\"checkbox\" name=\"" + PARAM_RECOMMEND_ID + ""
           + "\" value=\"-1\" onChange=\"showRow('recommendNewValue1');showRow('recommendNewValue2');showRow('recommendNewValue3');\">propose a new value<br/>");
       out.println("        </div></td>");
       out.println("      </tr>");
       out.println("      <tr id=\"recommendNewValue1\" style=\"display: none;\">");
       out.println("        <th>New Text</th>");
       out.println("        <td>");
-      out.println("          <textarea name=\"" + PARAM_RECOMMEND_TEXT
-          + "\" value=\"\" cols=\"60\" rows=\"3\"></textarea>");
+      out.println("          <textarea name=\"" + PARAM_RECOMMEND_TEXT + "\" value=\"\" cols=\"60\" rows=\"3\"></textarea>");
       out.println("        </td>");
       out.println("      </tr>");
       out.println("      <tr id=\"recommendNewValue2\" style=\"display: none;\">");
@@ -1821,8 +1784,7 @@ public class TestCasesServlet extends MainServlet
       out.println("          <select name=\"" + PARAM_RECOMMEND_TYPE_CODE + "\" >");
       out.println("            <option value=\"0\">--select--</option>");
       for (RecommendType recommendType : RecommendType.values()) {
-        out.println("            <option value=\"" + recommendType.getRecommendTypeCode() + "\">"
-            + recommendType.getLabel() + "</option>");
+        out.println("            <option value=\"" + recommendType.getRecommendTypeCode() + "\">" + recommendType.getLabel() + "</option>");
       }
       out.println("          </select>");
       out.println("        </td>");
@@ -1833,8 +1795,7 @@ public class TestCasesServlet extends MainServlet
       out.println("           <select name=\"" + PARAM_RECOMMEND_RANGE_CODE + "\" >");
       out.println("            <option value=\"0\">--select--</option>");
       for (RecommendRange recommendRange : RecommendRange.values()) {
-        out.println("            <option value=\"" + recommendRange.getRecommendRangeCode() + "\">"
-            + recommendRange.getLabel() + "</option>");
+        out.println("            <option value=\"" + recommendRange.getRecommendRangeCode() + "\">" + recommendRange.getLabel() + "</option>");
       }
       out.println("          </select>");
       out.println("        </td>");
@@ -1851,8 +1812,8 @@ public class TestCasesServlet extends MainServlet
         out.println("<b>Currently Selected</b><br/>");
         for (ConsiderationGuidance considerationGuidance : expectationsManager.getConsiderationGuidanceList()) {
           out.println("          <input type=\"checkbox\" name=\"" + PARAM_CONSIDERATION_ID + "\" value=\""
-              + considerationGuidance.getConsideration().getConsiderationId() + "\" checked=\"checked\">"
-              + considerationGuidance.getConsideration() + "<br/>");
+              + considerationGuidance.getConsideration().getConsiderationId() + "\" checked=\"checked\">" + considerationGuidance.getConsideration()
+              + "<br/>");
           considerationSet.add(considerationGuidance.getConsideration());
         }
         out.println("<b>Select Additional</b><br/>");
@@ -1861,8 +1822,8 @@ public class TestCasesServlet extends MainServlet
       List<Consideration> considerationList = query.list();
       for (Consideration consideration : considerationList) {
         if (!considerationSet.contains(consideration)) {
-          out.println("          <input type=\"checkbox\" name=\"" + PARAM_CONSIDERATION_ID + "\" value=\""
-              + consideration.getConsiderationId() + "\">" + consideration + "<br/>");
+          out.println("          <input type=\"checkbox\" name=\"" + PARAM_CONSIDERATION_ID + "\" value=\"" + consideration.getConsiderationId()
+              + "\">" + consideration + "<br/>");
         }
       }
       out.println("          <input type=\"checkbox\" name=\"" + PARAM_CONSIDERATION_ID + ""
@@ -1872,8 +1833,7 @@ public class TestCasesServlet extends MainServlet
       out.println("      <tr id=\"considerationNewValue1\" style=\"display: none;\">");
       out.println("        <th>New Text</th>");
       out.println("        <td>");
-      out.println("          <textarea name=\"" + PARAM_CONSIDERATION_TEXT
-          + "\" value=\"\" cols=\"60\" rows=\"3\"></textarea>");
+      out.println("          <textarea name=\"" + PARAM_CONSIDERATION_TEXT + "\" value=\"\" cols=\"60\" rows=\"3\"></textarea>");
       out.println("        </td>");
       out.println("      </tr>");
       out.println("      <tr id=\"considerationNewValue2\" style=\"display: none;\">");
@@ -1882,8 +1842,8 @@ public class TestCasesServlet extends MainServlet
       out.println("          <select name=\"" + PARAM_CONSIDERATION_TYPE_CODE + "\" >");
       out.println("            <option value=\"0\">--select--</option>");
       for (ConsiderationType considerationType : ConsiderationType.values()) {
-        out.println("            <option value=\"" + considerationType.getConsiderationTypeCode() + "\">"
-            + considerationType.getLabel() + "</option>");
+        out.println(
+            "            <option value=\"" + considerationType.getConsiderationTypeCode() + "\">" + considerationType.getLabel() + "</option>");
       }
       out.println("          </select>");
       out.println("        </td>");
@@ -1900,9 +1860,9 @@ public class TestCasesServlet extends MainServlet
       if (expectationsManager.getRationaleGuidanceList().size() > 0) {
         out.println("<b>Currently Selected</b><br/>");
         for (RationaleGuidance rationaleGuidance : expectationsManager.getRationaleGuidanceList()) {
-          out.println("          <input type=\"checkbox\" name=\"" + PARAM_RATIONALE_ID + "\" value=\""
-              + rationaleGuidance.getRationale().getRationaleId() + "\" checked=\"checked\">"
-              + rationaleGuidance.getRationale().getRationaleText() + "<br/>");
+          out.println(
+              "          <input type=\"checkbox\" name=\"" + PARAM_RATIONALE_ID + "\" value=\"" + rationaleGuidance.getRationale().getRationaleId()
+                  + "\" checked=\"checked\">" + rationaleGuidance.getRationale().getRationaleText() + "<br/>");
           rationaleSet.add(rationaleGuidance.getRationale());
         }
         out.println("<b>Select Additional</b><br/>");
@@ -1911,8 +1871,8 @@ public class TestCasesServlet extends MainServlet
       List<Rationale> rationaleList = query.list();
       for (Rationale rationale : rationaleList) {
         if (!rationaleSet.contains(rationale)) {
-          out.println("          <input type=\"checkbox\" name=\"" + PARAM_RATIONALE_ID + "\" value=\""
-              + rationale.getRationaleId() + "\">" + rationale.getRationaleText() + "<br/>");
+          out.println("          <input type=\"checkbox\" name=\"" + PARAM_RATIONALE_ID + "\" value=\"" + rationale.getRationaleId() + "\">"
+              + rationale.getRationaleText() + "<br/>");
         }
       }
       out.println("          <input type=\"checkbox\" name=\"" + PARAM_RATIONALE_ID + ""
@@ -1922,8 +1882,7 @@ public class TestCasesServlet extends MainServlet
       out.println("      <tr id=\"rationaleNewValue1\" style=\"display: none;\">");
       out.println("        <th>New Text</th>");
       out.println("        <td>");
-      out.println("          <textarea name=\"" + PARAM_RATIONALE_TEXT
-          + "\" value=\"\" cols=\"60\" rows=\"3\"></textarea>");
+      out.println("          <textarea name=\"" + PARAM_RATIONALE_TEXT + "\" value=\"\" cols=\"60\" rows=\"3\"></textarea>");
       out.println("        </td>");
       out.println("      </tr>");
     }
@@ -1938,9 +1897,8 @@ public class TestCasesServlet extends MainServlet
         out.println("<b>Currently Selected</b><br/>");
         for (ResourceGuidance resourceGuidance : expectationsManager.getResourceGuidanceList()) {
           out.println("          <input type=\"checkbox\" name=\"" + PARAM_RESOURCE_ID + "\" value=\""
-              + resourceGuidance.getResource().getResourceId() + "\" checked=\"checked\">"
-              + resourceGuidance.getResource().getResourceText() + " - <a href=\""
-              + resourceGuidance.getResource().getResourceLink() + "\" target=\"_blank\">"
+              + resourceGuidance.getResource().getResourceId() + "\" checked=\"checked\">" + resourceGuidance.getResource().getResourceText()
+              + " - <a href=\"" + resourceGuidance.getResource().getResourceLink() + "\" target=\"_blank\">"
               + resourceGuidance.getResource().getResourceLink() + "</a><br/>");
           resourceSet.add(resourceGuidance.getResource());
         }
@@ -1950,14 +1908,12 @@ public class TestCasesServlet extends MainServlet
       List<Resource> resourceList = query.list();
       for (Resource resource : resourceList) {
         if (!resourceSet.contains(resource)) {
-          out.println("          <input type=\"checkbox\" name=\"" + PARAM_RESOURCE_ID + "\" value=\""
-              + resource.getResourceId() + "\">" + resource.getResourceText() + " - <a href=\""
-              + resource.getResourceLink() + "\" target=\"_blank\">" + resource.getResourceLink() + "</a><br/>");
+          out.println("          <input type=\"checkbox\" name=\"" + PARAM_RESOURCE_ID + "\" value=\"" + resource.getResourceId() + "\">"
+              + resource.getResourceText() + " - <a href=\"" + resource.getResourceLink() + "\" target=\"_blank\">" + resource.getResourceLink()
+              + "</a><br/>");
         }
       }
-      out.println("          <input type=\"checkbox\" name=\""
-          + PARAM_RESOURCE_ID
-          + ""
+      out.println("          <input type=\"checkbox\" name=\"" + PARAM_RESOURCE_ID + ""
           + "\" value=\"-1\" onChange=\"showRow('resourceNewValue1');showRow('resourceNewValue2');\">propose a new value<br/>");
       out.println("        </div></td>");
       out.println("      </tr>");
@@ -1975,8 +1931,8 @@ public class TestCasesServlet extends MainServlet
       out.println("      </tr>");
     }
     out.println("        <tr>");
-    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-        + "\" value=\"" + ACTION_SAVE_EXPECTATIONS + "\"/></td>");
+    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\"" + ACTION_SAVE_EXPECTATIONS
+        + "\"/></td>");
     out.println("        </tr>");
     out.println("  </table>");
     out.println("  </form>");
@@ -1984,15 +1940,14 @@ public class TestCasesServlet extends MainServlet
 
   public void printAdminSelect(PrintWriter out, String adminStatus, Admin admin) {
     if (adminStatus == admin.getAdminStatus()) {
-      out.println("            <option value=\"" + admin.getAdminStatus() + "\" selected=\"selected\">"
-          + admin.getLabel() + "</option>");
+      out.println("            <option value=\"" + admin.getAdminStatus() + "\" selected=\"selected\">" + admin.getLabel() + "</option>");
     } else {
       out.println("            <option value=\"" + admin.getAdminStatus() + "\">" + admin.getLabel() + "</option>");
     }
   }
 
-  public void printEditEvents(HttpServletRequest req, PrintWriter out, Session dataSession, User user,
-      EventType eventType, String show) throws UnsupportedEncodingException {
+  public void printEditEvents(HttpServletRequest req, PrintWriter out, Session dataSession, User user, EventType eventType, String show)
+      throws UnsupportedEncodingException {
     printShowRowScript(out);
 
     setupTestEventList(user);
@@ -2000,8 +1955,8 @@ public class TestCasesServlet extends MainServlet
     TestCase testCase = user.getSelectedTestCase();
     out.println("<div class=\"centerColumn\">");
     out.println("  <h2>Test Context");
-    out.println("    <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&"
-        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a>");
+    out.println("    <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "="
+        + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Back</a>");
     out.println("  </h2>");
     out.println("  <table>");
     out.println("    <tr>");
@@ -2009,8 +1964,7 @@ public class TestCasesServlet extends MainServlet
     if (testCase.getPatientDob() == null) {
       out.println("<td></td>");
     } else if (testCase.getDateSet() == DateSet.RELATIVE && testCase.getEvalRule() != null) {
-      out.println("      <td>" + sdf.format(testCase.getPatientDob()) + " (" + testCase.getEvalRule().getTimePeriod()
-          + " old)</td>");
+      out.println("      <td>" + sdf.format(testCase.getPatientDob()) + " (" + testCase.getEvalRule().getTimePeriod() + " old)</td>");
     } else {
       out.println("      <td>" + sdf.format(testCase.getPatientDob()) + "</td>");
     }
@@ -2025,12 +1979,10 @@ public class TestCasesServlet extends MainServlet
       printEventTable(out, user, EventType.VACCINATION, testEventList, "Vaccination History", "Vaccination", show);
     }
     if (countACIP > 0) {
-      printEventTable(out, user, EventType.ACIP_DEFINED_CONDITION, testEventList, "ACIP-Defined Conditions Observed",
-          "Condition", show);
+      printEventTable(out, user, EventType.ACIP_DEFINED_CONDITION, testEventList, "ACIP-Defined Conditions Observed", "Condition", show);
     }
     if (countCondition > 0) {
-      printEventTable(out, user, EventType.CONDITION_IMPLICATION, testEventList, "Condition Implications Asserted",
-          "Implication", show);
+      printEventTable(out, user, EventType.CONDITION_IMPLICATION, testEventList, "Condition Implications Asserted", "Implication", show);
     }
     if (countOther > 0) {
       printEventTable(out, user, null, testEventList, "Other Events Observed", "Event", show);
@@ -2066,8 +2018,7 @@ public class TestCasesServlet extends MainServlet
     if (eventType != EventType.VACCINATION) {
       String editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_VACCINATIONS + "&" + PARAM_TEST_PANEL_CASE_ID + "="
           + user.getSelectedTestPanelCase().getTestPanelCaseId() + "&" + PARAM_EVENT_TYPE_CODE + "=";
-      editButton += " <a class=\"fauxbutton\" href=\"" + editLink + EventType.VACCINATION.getEventTypeCode()
-          + "\">Vaccination</a>";
+      editButton += " <a class=\"fauxbutton\" href=\"" + editLink + EventType.VACCINATION.getEventTypeCode() + "\">Vaccination</a>";
 
     }
     if (eventType == EventType.VACCINATION) {
@@ -2087,11 +2038,10 @@ public class TestCasesServlet extends MainServlet
       List<Event> eventList = query.list();
       for (Event event : eventList) {
         if (eventId == event.getEventId()) {
-          out.println("            <option value=\"" + event.getEventId() + "\" selected=\"selected\">"
-              + event.getLabel() + "</option>");
+          out.println("            <option value=\"" + event.getEventId() + "\" selected=\"selected\">" + event.getLabel() + "</option>");
         } else {
-          out.println("            <option value=\"" + event.getEventId() + "\">" + event.getLabel() + " - CVX "
-              + event.getVaccineCvx() + "</option>");
+          out.println(
+              "            <option value=\"" + event.getEventId() + "\">" + event.getLabel() + " - CVX " + event.getVaccineCvx() + "</option>");
         }
       }
       out.println("          </select>");
@@ -2100,8 +2050,7 @@ public class TestCasesServlet extends MainServlet
       if (user.getSelectedTestPanelCase().getTestCase().getDateSet() == DateSet.FIXED) {
         out.println("      <tr>");
         out.println("          <th>Administered Date</th>");
-        out.println("          <td><input type=\"text\" name=\"" + PARAM_EVENT_DATE + "\" size=\"10\" value=\""
-            + eventDateString + "\"/></td>");
+        out.println("          <td><input type=\"text\" name=\"" + PARAM_EVENT_DATE + "\" size=\"10\" value=\"" + eventDateString + "\"/></td>");
         out.println("        </td>");
         out.println("      </tr>");
       } else {
@@ -2109,8 +2058,8 @@ public class TestCasesServlet extends MainServlet
         printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label, RelativeTo.BIRTH);
       }
       out.println("        <tr>");
-      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" value=\"" + ACTION_ADD_VACCINATION + "\"/></td>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\"" + ACTION_ADD_VACCINATION
+          + "\"/></td>");
       out.println("        </tr>");
 
       out.println("    </table>");
@@ -2134,25 +2083,22 @@ public class TestCasesServlet extends MainServlet
       List<Event> eventList = query.list();
       for (Event event : eventList) {
         if (eventId == event.getEventId()) {
-          out.println("          <input type=\"radio\" name=\"" + PARAM_EVENT_ID + "\" value=\"" + event.getEventId()
-              + "\" checked=\"checked\">" + event.getLabel() + "<br/>");
+          out.println("          <input type=\"radio\" name=\"" + PARAM_EVENT_ID + "\" value=\"" + event.getEventId() + "\" checked=\"checked\">"
+              + event.getLabel() + "<br/>");
         } else {
-          out.println("          <input type=\"radio\" name=\"" + PARAM_EVENT_ID + "\" value=\"" + event.getEventId()
-              + "\">" + event.getLabel() + "<br/>");
+          out.println(
+              "          <input type=\"radio\" name=\"" + PARAM_EVENT_ID + "\" value=\"" + event.getEventId() + "\">" + event.getLabel() + "<br/>");
         }
       }
-      out.println("          <input type=\"radio\" name=\"" + PARAM_EVENT_ID
-          + "\" value=\"-1\">none of these, proposing a new label<br/>");
+      out.println("          <input type=\"radio\" name=\"" + PARAM_EVENT_ID + "\" value=\"-1\">none of these, proposing a new label<br/>");
       out.println("        </div>propose new label");
-      out.println("        <input type=\"text\" name=\"" + PARAM_NEW_EVENT_LABEL + "\" value=\"" + newEventLabel
-          + "\" size=\"50\" /></td>");
+      out.println("        <input type=\"text\" name=\"" + PARAM_NEW_EVENT_LABEL + "\" value=\"" + newEventLabel + "\" size=\"50\" /></td>");
       out.println("      </tr>");
 
       if (user.getSelectedTestPanelCase().getTestCase().getDateSet() == DateSet.FIXED) {
         out.println("      <tr>");
         out.println("          <th>Observed Date</th>");
-        out.println("          <td><input type=\"text\" name=\"" + PARAM_EVENT_DATE + "\" size=\"10\" value=\""
-            + eventDateString + "\"/></td>");
+        out.println("          <td><input type=\"text\" name=\"" + PARAM_EVENT_DATE + "\" size=\"10\" value=\"" + eventDateString + "\"/></td>");
         out.println("        </td>");
         out.println("      </tr>");
       } else {
@@ -2160,14 +2106,13 @@ public class TestCasesServlet extends MainServlet
         printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label, RelativeTo.EVALUATION);
       }
       out.println("        <tr>");
-      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" value=\"" + ACTION_ADD_EVENT + "\"/></td>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\"" + ACTION_ADD_EVENT
+          + "\"/></td>");
       out.println("        </tr>");
 
       out.println("    </table>");
       out.println("    <input type=\"hidden\" name=\"" + PARAM_SHOW + "\" value=\"" + SHOW_EDIT_EVENTS + "\"/>");
-      out.println("    <input type=\"hidden\" name=\"" + PARAM_EVENT_TYPE_CODE + "\" value=\""
-          + eventType.getEventTypeCode() + "\"/>");
+      out.println("    <input type=\"hidden\" name=\"" + PARAM_EVENT_TYPE_CODE + "\" value=\"" + eventType.getEventTypeCode() + "\"/>");
       out.println("  </form>");
 
     }
@@ -2187,25 +2132,22 @@ public class TestCasesServlet extends MainServlet
       List<Event> eventList = query.list();
       for (Event event : eventList) {
         if (eventId == event.getEventId()) {
-          out.println("          <input type=\"radio\" name=\"" + PARAM_EVENT_ID + "\" value=\"" + event.getEventId()
-              + "\" checked=\"checked\">" + event.getLabel() + "<br/>");
+          out.println("          <input type=\"radio\" name=\"" + PARAM_EVENT_ID + "\" value=\"" + event.getEventId() + "\" checked=\"checked\">"
+              + event.getLabel() + "<br/>");
         } else {
-          out.println("          <input type=\"radio\" name=\"" + PARAM_EVENT_ID + "\" value=\"" + event.getEventId()
-              + "\">" + event.getLabel() + "<br/>");
+          out.println(
+              "          <input type=\"radio\" name=\"" + PARAM_EVENT_ID + "\" value=\"" + event.getEventId() + "\">" + event.getLabel() + "<br/>");
         }
       }
-      out.println("          <input type=\"radio\" name=\"" + PARAM_EVENT_ID
-          + "\" value=\"-1\">none of these, proposing a new label<br/>");
+      out.println("          <input type=\"radio\" name=\"" + PARAM_EVENT_ID + "\" value=\"-1\">none of these, proposing a new label<br/>");
       out.println("        </div>propose new label");
-      out.println("        <input type=\"text\" name=\"" + PARAM_NEW_EVENT_LABEL + "\" value=\"" + newEventLabel
-          + "\" size=\"50\" /></td>");
+      out.println("        <input type=\"text\" name=\"" + PARAM_NEW_EVENT_LABEL + "\" value=\"" + newEventLabel + "\" size=\"50\" /></td>");
       out.println("      </tr>");
 
       if (user.getSelectedTestPanelCase().getTestCase().getDateSet() == DateSet.FIXED) {
         out.println("      <tr>");
         out.println("          <th>Asserted Date</th>");
-        out.println("          <td><input type=\"text\" name=\"" + PARAM_EVENT_DATE + "\" size=\"10\" value=\""
-            + eventDateString + "\"/></td>");
+        out.println("          <td><input type=\"text\" name=\"" + PARAM_EVENT_DATE + "\" size=\"10\" value=\"" + eventDateString + "\"/></td>");
         out.println("        </td>");
         out.println("      </tr>");
       } else {
@@ -2213,14 +2155,13 @@ public class TestCasesServlet extends MainServlet
         printRelativeRuleRow(PARAM_EVENT_RULE, out, relativeRule, label, RelativeTo.EVALUATION);
       }
       out.println("        <tr>");
-      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" value=\"" + ACTION_ADD_EVENT + "\"/></td>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" value=\"" + ACTION_ADD_EVENT
+          + "\"/></td>");
       out.println("        </tr>");
 
       out.println("    </table>");
       out.println("    <input type=\"hidden\" name=\"" + PARAM_SHOW + "\" value=\"" + SHOW_EDIT_EVENTS + "\"/>");
-      out.println("    <input type=\"hidden\" name=\"" + PARAM_EVENT_TYPE_CODE + "\" value=\""
-          + eventType.getEventTypeCode() + "\"/>");
+      out.println("    <input type=\"hidden\" name=\"" + PARAM_EVENT_TYPE_CODE + "\" value=\"" + eventType.getEventTypeCode() + "\"/>");
       out.println("  </form>");
     }
 
@@ -2244,23 +2185,21 @@ public class TestCasesServlet extends MainServlet
     out.println("</script>");
   }
 
-  public void printRelativeRuleRow(String paramRuleName, PrintWriter out, RelativeRule relativeRule, String label,
-      RelativeTo relativeTo) {
+  public void printRelativeRuleRow(String paramRuleName, PrintWriter out, RelativeRule relativeRule, String label, RelativeTo relativeTo) {
     RelativeRule rr = relativeRule;
     boolean showRow = true;
     for (int pos = 1; pos <= 4; pos++) {
       printRelativeRuleRow(paramRuleName, out, testEventList, rr, pos, label, (pos == 1 ? relativeTo : null), showRow);
       showRow = false;
       if (rr != null) {
-        showRow = rr.getTestEvent() != null || rr.getRelativeTo() == RelativeTo.BIRTH
-            || rr.getRelativeTo() == RelativeTo.EVALUATION;
+        showRow = rr.getTestEvent() != null || rr.getRelativeTo() == RelativeTo.BIRTH || rr.getRelativeTo() == RelativeTo.EVALUATION;
         rr = rr.getAndRule();
       }
     }
   }
 
-  public void printEventTable(PrintWriter out, User user, EventType eventType, List<TestEvent> testEventList,
-      String sectionLabel, String itemLabel, String show) throws UnsupportedEncodingException {
+  public void printEventTable(PrintWriter out, User user, EventType eventType, List<TestEvent> testEventList, String sectionLabel, String itemLabel,
+      String show) throws UnsupportedEncodingException {
     TestCase testCase = user.getSelectedTestCase();
 
     out.println("  <h3>" + sectionLabel + "</h3>");
@@ -2286,12 +2225,11 @@ public class TestCasesServlet extends MainServlet
             && testEvent.getEvent().getEventType() != EventType.ACIP_DEFINED_CONDITION
             && testEvent.getEvent().getEventType() != EventType.CONDITION_IMPLICATION;
       } else {
-        shouldShow = eventType != EventType.BIRTH && eventType != EventType.EVALUATION
-            && testEvent.getEvent().getEventType() == eventType;
+        shouldShow = eventType != EventType.BIRTH && eventType != EventType.EVALUATION && testEvent.getEvent().getEventType() == eventType;
       }
       if (shouldShow) {
-        String deleteLink = "testCases?" + PARAM_SHOW + "=" + show + "&" + PARAM_TEST_EVENT_ID + "="
-            + testEvent.getTestEventId() + "&" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_DELETE_EVENT, "UTF-8");
+        String deleteLink = "testCases?" + PARAM_SHOW + "=" + show + "&" + PARAM_TEST_EVENT_ID + "=" + testEvent.getTestEventId() + "&" + PARAM_ACTION
+            + "=" + URLEncoder.encode(ACTION_DELETE_EVENT, "UTF-8");
         if (eventType != null) {
           deleteLink += "&" + PARAM_EVENT_TYPE_CODE + "=" + eventType.getEventTypeCode();
         }
@@ -2307,8 +2245,7 @@ public class TestCasesServlet extends MainServlet
           printOutRelativeRule(out, testEvent.getEventRule());
           out.print("</td>");
         }
-        out.println("      <td>" + (testEvent.getEventDate() == null ? "" : sdf.format(testEvent.getEventDate()))
-            + "</td>");
+        out.println("      <td>" + (testEvent.getEventDate() == null ? "" : sdf.format(testEvent.getEventDate())) + "</td>");
         out.println("      <td><a class=\"fauxbutton\" href=\"" + deleteLink + "\">Delete</a></td>");
         out.println("    </tr>");
       }
@@ -2334,8 +2271,7 @@ public class TestCasesServlet extends MainServlet
 
   public void setupTestEventList(User user) {
     TestCase testCase = user.getSelectedTestCase();
-    Query query = applicationSession.getDataSession().createQuery(
-        "from TestEvent where testCase = ? order by eventDate");
+    Query query = applicationSession.getDataSession().createQuery("from TestEvent where testCase = ? order by eventDate");
     query.setParameter(0, testCase);
     testEventList = query.list();
     testCase.setTestEventList(testEventList);
@@ -2385,8 +2321,7 @@ public class TestCasesServlet extends MainServlet
     return birthEvent;
   }
 
-  public RelativeRule readRelativeRules(String paramRuleName, HttpServletRequest req, Session dataSession,
-      TestCase testCase) {
+  public RelativeRule readRelativeRules(String paramRuleName, HttpServletRequest req, Session dataSession, TestCase testCase) {
     RelativeRule relativeRule = null;
     RelativeRule childRule = null;
     int i = 1;
@@ -2400,8 +2335,7 @@ public class TestCasesServlet extends MainServlet
         parentRule.setAndRule(childRule);
       }
       String beforeOrAfter = notNull(req.getParameter(paramRuleName + RULE_BEFORE_OR_AFTER + i), "A");
-      childRule.setBeforeOrAfter(beforeOrAfter.equals("B") ? RelativeRule.BeforeOrAfter.BEFORE
-          : RelativeRule.BeforeOrAfter.AFTER);
+      childRule.setBeforeOrAfter(beforeOrAfter.equals("B") ? RelativeRule.BeforeOrAfter.BEFORE : RelativeRule.BeforeOrAfter.AFTER);
       String relativeRuleTestEventIdString = req.getParameter(paramRuleName + RULE_TEST_EVENT_ID + i);
       if (relativeRuleTestEventIdString != null) {
         int relativeRuleTestEventId = Integer.parseInt(relativeRuleTestEventIdString);
@@ -2423,8 +2357,8 @@ public class TestCasesServlet extends MainServlet
     return relativeRule;
   }
 
-  public void printRelativeRuleRow(String paramRuleName, PrintWriter out, List<TestEvent> testEventList,
-      RelativeRule relativeRule, int pos, String label, RelativeTo relativeTo, boolean showRow) {
+  public void printRelativeRuleRow(String paramRuleName, PrintWriter out, List<TestEvent> testEventList, RelativeRule relativeRule, int pos,
+      String label, RelativeTo relativeTo, boolean showRow) {
 
     if (pos == 1) {
       out.println("      <tr id=\"" + label + "." + pos + "\">");
@@ -2441,29 +2375,18 @@ public class TestCasesServlet extends MainServlet
     out.println("          <td id=\"\">");
     out.println("            <input type=\"text\" name=\"" + paramRuleName + pos + "\" size=\"17\" value=\""
         + (relativeRule == null || relativeRule.getTimePeriod() == null ? "" : relativeRule.getTimePeriod()) + "\"/>");
-    out.println("            <input type=\"radio\" name=\""
-        + paramRuleName
-        + RULE_BEFORE_OR_AFTER
-        + pos
-        + "\" value=\"B\""
-        + ((relativeRule != null && relativeRule.getBeforeOrAfter() == RelativeRule.BeforeOrAfter.BEFORE) ? " checked=\"true\""
-            : "") + "/> Before ");
-    out.println("            <input type=\"radio\" name=\""
-        + paramRuleName
-        + RULE_BEFORE_OR_AFTER
-        + pos
-        + "\" value=\"O\""
-        + ((relativeRule == null || (relativeRule.isZero() && relativeRule.getBeforeOrAfter() == RelativeRule.BeforeOrAfter.AFTER)) ? " checked=\"true\""
-            : "") + "/> On ");
-    out.println("            <input type=\"radio\" name=\""
-        + paramRuleName
-        + RULE_BEFORE_OR_AFTER
-        + pos
-        + "\" value=\"A\""
-        + ((relativeRule != null && !relativeRule.isZero() && relativeRule.getBeforeOrAfter() == RelativeRule.BeforeOrAfter.AFTER) ? " checked=\"true\""
-            : "") + "/> After ");
-    out.println("          <select name=\"" + paramRuleName + RULE_TEST_EVENT_ID + pos + "\" onChange=\"showRow('"
-        + label + "." + (pos + 1) + "')\">");
+    out.println("            <input type=\"radio\" name=\"" + paramRuleName + RULE_BEFORE_OR_AFTER + pos + "\" value=\"B\""
+        + ((relativeRule != null && relativeRule.getBeforeOrAfter() == RelativeRule.BeforeOrAfter.BEFORE) ? " checked=\"true\"" : "") + "/> Before ");
+    out.println("            <input type=\"radio\" name=\"" + paramRuleName + RULE_BEFORE_OR_AFTER + pos + "\" value=\"O\""
+        + ((relativeRule == null || (relativeRule.isZero() && relativeRule.getBeforeOrAfter() == RelativeRule.BeforeOrAfter.AFTER))
+            ? " checked=\"true\"" : "")
+        + "/> On ");
+    out.println("            <input type=\"radio\" name=\"" + paramRuleName + RULE_BEFORE_OR_AFTER + pos + "\" value=\"A\""
+        + ((relativeRule != null && !relativeRule.isZero() && relativeRule.getBeforeOrAfter() == RelativeRule.BeforeOrAfter.AFTER)
+            ? " checked=\"true\"" : "")
+        + "/> After ");
+    out.println(
+        "          <select name=\"" + paramRuleName + RULE_TEST_EVENT_ID + pos + "\" onChange=\"showRow('" + label + "." + (pos + 1) + "')\">");
     out.println("            <option value=\"0\">--select--</option>");
     for (TestEvent testEvent : testEventList) {
       boolean selected = false;
@@ -2492,21 +2415,19 @@ public class TestCasesServlet extends MainServlet
           if (relativeTo != null) {
             if (relativeTo == RelativeTo.BIRTH && testEvent.getEvent().getEventType() == EventType.BIRTH) {
               selected = true;
-            } else if (relativeTo == RelativeTo.EVALUATION
-                && testEvent.getEvent().getEventType() == EventType.EVALUATION) {
+            } else if (relativeTo == RelativeTo.EVALUATION && testEvent.getEvent().getEventType() == EventType.EVALUATION) {
               selected = true;
             }
           }
         } else {
-          if (relativeRule.getTestEvent() != null && relativeRule.getTestEvent().getTestEventId() != -1
-              && testEvent != null && testEvent.getTestEventId() != -1) {
+          if (relativeRule.getTestEvent() != null && relativeRule.getTestEvent().getTestEventId() != -1 && testEvent != null
+              && testEvent.getTestEventId() != -1) {
             selected = relativeRule.getTestEvent().equals(testEvent);
           }
         }
       }
       if (selected) {
-        out.println("            <option value=\"" + testEvent.getTestEventId() + "\" selected=\"selected\">"
-            + eventLabel + "</option>");
+        out.println("            <option value=\"" + testEvent.getTestEventId() + "\" selected=\"selected\">" + eventLabel + "</option>");
       } else {
         out.println("            <option value=\"" + testEvent.getTestEventId() + "\">" + eventLabel + "</option>");
       }
@@ -2553,7 +2474,8 @@ public class TestCasesServlet extends MainServlet
     }
 
     TaskGroup taskGroup = user.getSelectedTaskGroup();
-    if (testPanelCase != null || taskGroup != null) {
+    user.setCanViewPrivate(false);
+    if (taskGroup != null) {
       user.setCanEditTestCase(false);
       Query query = dataSession.createQuery("from Expert where user = ? and taskGroup = ?");
       query.setParameter(0, user);
@@ -2562,6 +2484,7 @@ public class TestCasesServlet extends MainServlet
       if (expertList.size() == 0) {
         user.setSelectedExpert(null);
       } else {
+        user.setCanViewPrivate(true);
         Expert expert = expertList.get(0);
         user.setSelectedExpert(expert);
         if (testPanelCase != null && expert.getRole().canEdit()) {
@@ -2576,8 +2499,7 @@ public class TestCasesServlet extends MainServlet
     }
   }
 
-  public void printAddEditTestCases(HttpServletRequest req, PrintWriter out, Session dataSession,
-      TestPanelCase testPanelCase, String show) {
+  public void printAddEditTestCases(HttpServletRequest req, PrintWriter out, Session dataSession, TestPanelCase testPanelCase, String show) {
     String label;
     String description;
     int vaccineGroupId;
@@ -2600,8 +2522,8 @@ public class TestCasesServlet extends MainServlet
     if (show.equals(SHOW_EDIT_TEST_CASE)) {
       label = notNull(req.getParameter(PARAM_LABEL), testCase.getLabel());
       description = notNull(req.getParameter(PARAM_DESCRIPTION), testCase.getDescription());
-      vaccineGroupId = notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), (testCase.getVaccineGroup() == null ? 0
-          : testCase.getVaccineGroup().getVaccineGroupId()));
+      vaccineGroupId = notNull(req.getParameter(PARAM_VACCINE_GROUP_ID),
+          (testCase.getVaccineGroup() == null ? 0 : testCase.getVaccineGroup().getVaccineGroupId()));
       includeStatus = notNull(req.getParameter(PARAM_INCLUDE_STATUS), testPanelCase.getIncludeStatus());
       patientFirst = notNull(req.getParameter(PARAM_PATIENT_FIRST), testCase.getPatientFirst());
       patientLast = notNull(req.getParameter(PARAM_PATIENT_LAST), testCase.getPatientLast());
@@ -2611,13 +2533,12 @@ public class TestCasesServlet extends MainServlet
       testCaseNumber = notNull(req.getParameter(PARAM_TEST_CASE_NUMBER), testPanelCase.getTestCaseNumber());
       dateSetCode = notNull(req.getParameter(PARAM_DATE_SET_CODE), testCase.getDateSetCode());
       evalDate = notNull(req.getParameter(PARAM_EVAL_DATE), sdf.format(testCase.getEvalDate()));
-      evalRule = notNull(req.getParameter(PARAM_EVAL_RULE), testCase.getEvalRule() != null ? testCase.getEvalRule()
-          .getTimePeriodString() : "");
+      evalRule = notNull(req.getParameter(PARAM_EVAL_RULE), testCase.getEvalRule() != null ? testCase.getEvalRule().getTimePeriodString() : "");
     } else if (show.equals(SHOW_COPY_TEST_CASE)) {
       label = notNull(req.getParameter(PARAM_LABEL), testCase.getLabel());
       description = notNull(req.getParameter(PARAM_DESCRIPTION), testCase.getDescription());
-      vaccineGroupId = notNull(req.getParameter(PARAM_VACCINE_GROUP_ID), (testCase.getVaccineGroup() == null ? 0
-          : testCase.getVaccineGroup().getVaccineGroupId()));
+      vaccineGroupId = notNull(req.getParameter(PARAM_VACCINE_GROUP_ID),
+          (testCase.getVaccineGroup() == null ? 0 : testCase.getVaccineGroup().getVaccineGroupId()));
       includeStatus = notNull(req.getParameter(PARAM_INCLUDE_STATUS), Include.INCLUDED.getIncludeStatus());
       patientFirst = notNull(req.getParameter(PARAM_PATIENT_FIRST), RandomNames.getRandomFirstName());
       patientLast = notNull(req.getParameter(PARAM_PATIENT_LAST), RandomNames.getRandomLastName());
@@ -2627,8 +2548,7 @@ public class TestCasesServlet extends MainServlet
       testCaseNumber = notNull(req.getParameter(PARAM_TEST_CASE_NUMBER));
       dateSetCode = notNull(req.getParameter(PARAM_DATE_SET_CODE), testCase.getDateSetCode());
       evalDate = notNull(req.getParameter(PARAM_EVAL_DATE), sdf.format(testCase.getEvalDate()));
-      evalRule = notNull(req.getParameter(PARAM_EVAL_RULE), testCase.getEvalRule() != null ? testCase.getEvalRule()
-          .getTimePeriodString() : "");
+      evalRule = notNull(req.getParameter(PARAM_EVAL_RULE), testCase.getEvalRule() != null ? testCase.getEvalRule().getTimePeriodString() : "");
     } else {
       label = notNull(req.getParameter(PARAM_LABEL));
       description = notNull(req.getParameter(PARAM_DESCRIPTION));
@@ -2671,8 +2591,8 @@ public class TestCasesServlet extends MainServlet
     out.println("<div class=\"centerColumn\">");
     String cancelButton = "";
     if (testPanelCase != null) {
-      cancelButton = " <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&"
-          + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId() + "\">Back</a>";
+      cancelButton = " <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_CASE_ID + "="
+          + testPanelCase.getTestPanelCaseId() + "\">Back</a>";
     }
     if (show.equals(SHOW_ADD_TEST_CASE)) {
       out.println("  <h2>Add Test Case" + cancelButton + "</h2>");
@@ -2683,25 +2603,22 @@ public class TestCasesServlet extends MainServlet
     }
     out.println("    <form method=\"POST\" action=\"testCases\">");
     if (testPanelCase != null) {
-      out.println("      <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
-          + testPanelCase.getTestPanelCaseId() + "\"/>");
+      out.println("      <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\"" + testPanelCase.getTestPanelCaseId() + "\"/>");
     }
     out.println("      <table width=\"100%\">");
     out.println("        <tr>");
     out.println("          <th>Category</th>");
-    out.println("          <td><input type=\"text\" name=\"" + PARAM_CATEGORY_NAME + "\" size=\"50\" value=\""
-        + categoryName + "\"/></td>");
+    out.println("          <td><input type=\"text\" name=\"" + PARAM_CATEGORY_NAME + "\" size=\"50\" value=\"" + categoryName + "\"/></td>");
     out.println("        </tr>");
     if (testPanelCase == null || applicationSession.getUser().isCanEditTestCase() || show.equals(SHOW_COPY_TEST_CASE)) {
       out.println("        <tr>");
       out.println("          <th>Label</th>");
-      out.println("          <td><input type=\"text\" name=\"" + PARAM_LABEL + "\" size=\"50\" value=\"" + label
-          + "\"/></td>");
+      out.println("          <td><input type=\"text\" name=\"" + PARAM_LABEL + "\" size=\"50\" value=\"" + label + "\"/></td>");
       out.println("        </tr>");
       out.println("        <tr>");
       out.println("          <th>Description</th>");
-      out.println("          <td><textarea type=\"text\" name=\"" + PARAM_DESCRIPTION + "\" cols=\"50\" rows=\"3\">"
-          + description + "</textarea></td>");
+      out.println(
+          "          <td><textarea type=\"text\" name=\"" + PARAM_DESCRIPTION + "\" cols=\"50\" rows=\"3\">" + description + "</textarea></td>");
       out.println("        </tr>");
       out.println("        <tr>");
       out.println("          <th>Vaccine Group</th>");
@@ -2712,11 +2629,10 @@ public class TestCasesServlet extends MainServlet
       List<VaccineGroup> vaccineGroupList = query.list();
       for (VaccineGroup vaccineGroup : vaccineGroupList) {
         if (vaccineGroup.getVaccineGroupId() == vaccineGroupId) {
-          out.println("              <option value=\"" + vaccineGroup.getVaccineGroupId() + "\" selected=\"selected\">"
-              + vaccineGroup.getLabel() + "</option>");
+          out.println("              <option value=\"" + vaccineGroup.getVaccineGroupId() + "\" selected=\"selected\">" + vaccineGroup.getLabel()
+              + "</option>");
         } else {
-          out.println("              <option value=\"" + vaccineGroup.getVaccineGroupId() + "\">"
-              + vaccineGroup.getLabel() + "</option>");
+          out.println("              <option value=\"" + vaccineGroup.getVaccineGroupId() + "\">" + vaccineGroup.getLabel() + "</option>");
         }
       }
       out.println("            </select>");
@@ -2729,11 +2645,9 @@ public class TestCasesServlet extends MainServlet
     out.println("            <select type=\"text\" name=\"" + PARAM_INCLUDE_STATUS + "\">");
     for (Include include : Include.valueList()) {
       if (include.getIncludeStatus().equals(includeStatus)) {
-        out.println("              <option value=\"" + include.getIncludeStatus() + "\" selected=\"selected\">"
-            + include.getLabel() + "</option>");
+        out.println("              <option value=\"" + include.getIncludeStatus() + "\" selected=\"selected\">" + include.getLabel() + "</option>");
       } else {
-        out.println("              <option value=\"" + include.getIncludeStatus() + "\">" + include.getLabel()
-            + "</option>");
+        out.println("              <option value=\"" + include.getIncludeStatus() + "\">" + include.getLabel() + "</option>");
       }
     }
     out.println("            </select>");
@@ -2742,21 +2656,18 @@ public class TestCasesServlet extends MainServlet
 
     if (testCaseNumber != null) {
       out.println("          <th>Number</th>");
-      out.println("          <td><input type=\"text\" name=\"" + PARAM_TEST_CASE_NUMBER + "\" size=\"15\" value=\""
-          + testCaseNumber + "\"/></td>");
+      out.println("          <td><input type=\"text\" name=\"" + PARAM_TEST_CASE_NUMBER + "\" size=\"15\" value=\"" + testCaseNumber + "\"/></td>");
       out.println("        </tr>");
     }
     out.println("        <tr>");
     if (testPanelCase == null || applicationSession.getUser().isCanEditTestCase() || show.equals(SHOW_COPY_TEST_CASE)) {
 
       out.println("          <th>Patient First</th>");
-      out.println("          <td><input type=\"text\" name=\"" + PARAM_PATIENT_FIRST + "\" size=\"15\" value=\""
-          + patientFirst + "\"/></td>");
+      out.println("          <td><input type=\"text\" name=\"" + PARAM_PATIENT_FIRST + "\" size=\"15\" value=\"" + patientFirst + "\"/></td>");
       out.println("        </tr>");
       out.println("        <tr>");
       out.println("          <th>Patient Last</th>");
-      out.println("          <td><input type=\"text\" name=\"" + PARAM_PATIENT_LAST + "\" size=\"15\" value=\""
-          + patientLast + "\"/></td>");
+      out.println("          <td><input type=\"text\" name=\"" + PARAM_PATIENT_LAST + "\" size=\"15\" value=\"" + patientLast + "\"/></td>");
       out.println("        </tr>");
       out.println("        <tr>");
       out.println("          <th>Patient Sex</th>");
@@ -2778,14 +2689,10 @@ public class TestCasesServlet extends MainServlet
       out.println("        <tr>");
       out.println("          <th>Date Set</th>");
       out.println("          <td>");
-      out.println("            <input type=\"radio\" name=\"" + PARAM_DATE_SET_CODE + "\" value=\""
-          + DateSet.RELATIVE.getDateSetCode() + "\""
-          + (dateSetCode.equals(DateSet.RELATIVE.getDateSetCode()) ? " checked=\"true\"" : "")
-          + " onChange=\"changeDateSet(this)\"/> Relative ");
-      out.println("            <input type=\"radio\" name=\"" + PARAM_DATE_SET_CODE + "\" value=\""
-          + DateSet.FIXED.getDateSetCode() + "\""
-          + (dateSetCode.equals(DateSet.FIXED.getDateSetCode()) ? " checked=\"true\"" : "")
-          + " onChange=\"changeDateSet(this)\"/> Fixed");
+      out.println("            <input type=\"radio\" name=\"" + PARAM_DATE_SET_CODE + "\" value=\"" + DateSet.RELATIVE.getDateSetCode() + "\""
+          + (dateSetCode.equals(DateSet.RELATIVE.getDateSetCode()) ? " checked=\"true\"" : "") + " onChange=\"changeDateSet(this)\"/> Relative ");
+      out.println("            <input type=\"radio\" name=\"" + PARAM_DATE_SET_CODE + "\" value=\"" + DateSet.FIXED.getDateSetCode() + "\""
+          + (dateSetCode.equals(DateSet.FIXED.getDateSetCode()) ? " checked=\"true\"" : "") + " onChange=\"changeDateSet(this)\"/> Fixed");
       out.println("          </td>");
       out.println("        </tr>");
 
@@ -2799,30 +2706,27 @@ public class TestCasesServlet extends MainServlet
 
       out.println("        <tr" + showRelative + " id=\"relativeRow\">");
       out.println("          <th>Patient Age</th>");
-      out.println("          <td><input type=\"text\" name=\"" + PARAM_EVAL_RULE + "\" size=\"30\" value=\"" + evalRule
-          + "\"/></td>");
+      out.println("          <td><input type=\"text\" name=\"" + PARAM_EVAL_RULE + "\" size=\"30\" value=\"" + evalRule + "\"/></td>");
       out.println("        </tr>");
       out.println("        <tr" + showFixed + " id=\"fixedRow1\">");
       out.println("          <th>Date of Birth</th>");
-      out.println("          <td><input type=\"text\" name=\"" + PARAM_PATIENT_DOB + "\" size=\"10\" value=\""
-          + patientDob + "\"/></td>");
+      out.println("          <td><input type=\"text\" name=\"" + PARAM_PATIENT_DOB + "\" size=\"10\" value=\"" + patientDob + "\"/></td>");
       out.println("        </tr>");
       out.println("        <tr" + showFixed + " id=\"fixedRow2\">");
       out.println("          <th>Assessment Date</th>");
-      out.println("          <td><input type=\"text\" name=\"" + PARAM_EVAL_DATE + "\" size=\"10\" value=\"" + evalDate
-          + "\"/></td>");
+      out.println("          <td><input type=\"text\" name=\"" + PARAM_EVAL_DATE + "\" size=\"10\" value=\"" + evalDate + "\"/></td>");
       out.println("        </tr>");
     }
     out.println("        <tr>");
     if (show.equals(SHOW_ADD_TEST_CASE)) {
-      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" size=\"15\" value=\"" + ACTION_ADD_TEST_CASE + "\"/></td>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+          + ACTION_ADD_TEST_CASE + "\"/></td>");
     } else if (show.equals(SHOW_EDIT_TEST_CASE)) {
-      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" size=\"15\" value=\"" + ACTION_UPDATE_TEST_CASE + "\"/></td>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+          + ACTION_UPDATE_TEST_CASE + "\"/></td>");
     } else if (show.equals(SHOW_COPY_TEST_CASE)) {
-      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" size=\"15\" value=\"" + ACTION_COPY_TEST_CASE + "\"/></td>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+          + ACTION_COPY_TEST_CASE + "\"/></td>");
     }
     out.println("        </tr>");
     out.println("      </table>");
@@ -2830,8 +2734,7 @@ public class TestCasesServlet extends MainServlet
     out.println("</div>");
   }
 
-  public void printAddEditTestPanel(HttpServletRequest req, PrintWriter out, Session dataSession, TestPanel testPanel,
-      String show) {
+  public void printAddEditTestPanel(HttpServletRequest req, PrintWriter out, Session dataSession, TestPanel testPanel, String show) {
     String label;
 
     if (show.equals(SHOW_EDIT_TEST_PANEL)) {
@@ -2850,23 +2753,36 @@ public class TestCasesServlet extends MainServlet
     }
     out.println("    <form method=\"POST\" action=\"testCases\">");
     if (show.equals(SHOW_EDIT_TEST_CASE)) {
-      out.println("      <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_ID + "\" value=\""
-          + testPanel.getTestPanelId() + "\"/>");
+      out.println("      <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_ID + "\" value=\"" + testPanel.getTestPanelId() + "\"/>");
     }
     out.println("      <table>");
     out.println("        <tr>");
     out.println("          <th>Label</th>");
-    out.println("          <td><input type=\"text\" name=\"" + PARAM_LABEL + "\" size=\"50\" value=\"" + label
-        + "\"/></td>");
+    out.println("          <td><input type=\"text\" name=\"" + PARAM_LABEL + "\" size=\"50\" value=\"" + label + "\"/></td>");
+    out.println("        </tr>");
+
+    out.println("        <tr>");
+    out.println("          <th>Available</th>");
+    out.println("          <td>");
+    out.println("            <select type=\"text\" name=\"" + PARAM_AVAILABLE_CODE + "\">");
+    for (Available available : Available.valueList()) {
+      if (available == testPanel.getAvailable()) {
+        out.println("              <option value=\"" + available.getAvailableCode() + "\" selected=\"true\">" + available.getLabel() + "</option>");
+      } else {
+        out.println("              <option value=\"" + available.getAvailableCode() + "\">" + available.getLabel() + "</option>");
+      }
+    }
+    out.println("            </select>");
+    out.println("          </td>");
     out.println("        </tr>");
 
     out.println("        <tr>");
     if (show.equals(SHOW_ADD_TEST_PANEL)) {
-      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" size=\"15\" value=\"" + ACTION_ADD_TEST_PANEL + "\"/></td>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+          + ACTION_ADD_TEST_PANEL + "\"/></td>");
     } else if (show.equals(SHOW_EDIT_TEST_PANEL)) {
-      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" size=\"15\" value=\"" + ACTION_UPDATE_TEST_PANEL + "\"/></td>");
+      out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+          + ACTION_UPDATE_TEST_PANEL + "\"/></td>");
     }
     out.println("        </tr>");
     out.println("      </table>");
@@ -2891,14 +2807,15 @@ public class TestCasesServlet extends MainServlet
       if (user.getSelectedTestPanel() != null) {
         printTestPanel(out, dataSession, user, user.getSelectedTestPanel());
       }
+      removeNonVisibleTestPanels(user, testPanelList);
+
       for (TestPanel testPanel : testPanelList) {
         if (user.getSelectedTestPanel() == null || !user.getSelectedTestPanel().equals(testPanel)) {
           printTestPanel(out, dataSession, user, testPanel);
         }
       }
       if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
-        out.println("      <li><a class=\"add\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_ADD_TEST_PANEL
-            + "\">add test panel</a></li>");
+        out.println("      <li><a class=\"add\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_ADD_TEST_PANEL + "\">add test panel</a></li>");
       } else if (testPanelList.size() == 0) {
         out.println("      <li><em>no test panels defined</em></li>");
       }
@@ -2911,12 +2828,25 @@ public class TestCasesServlet extends MainServlet
       out.println("<ul class=\"selectLevel1\">");
     }
     for (TaskGroup taskGroup : taskGroupList) {
-      final String link1 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_TASK_GROUP, "UTF-8")
-          + "&" + PARAM_TASK_GROUP_ID + "=" + taskGroup.getTaskGroupId();
+      final String link1 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_TASK_GROUP, "UTF-8") + "&" + PARAM_TASK_GROUP_ID + "="
+          + taskGroup.getTaskGroupId();
       out.println("  <li class=\"selectLevel1\"><a href=\"" + link1 + "\">" + taskGroup.getLabel() + "</a></li>");
     }
     out.println("</ul>");
     out.println("</div>");
+  }
+
+  public static void removeNonVisibleTestPanels(User user, List<TestPanel> testPanelList) {
+    for (Iterator<TestPanel> it = testPanelList.iterator(); it.hasNext();) {
+      TestPanel testPanel = it.next();
+      if (testPanel.getAvailable() == Available.DELETED) {
+        it.remove();
+      } else if (testPanel.getAvailable() == Available.PUBLIC || user.isCanViewPrivate()) {
+        // can display
+      } else {
+        it.remove();
+      }
+    }
   }
 
   public void printActualsVsExpected(PrintWriter out, User user) {
@@ -2937,8 +2867,7 @@ public class TestCasesServlet extends MainServlet
       ForecastExpected forecastExpected = null;
 
       if (testCase != null && testPanel != null) {
-        Query query = dataSession
-            .createQuery("from TestPanelForecast where testPanelCase.testCase = ? and testPanelCase.testPanel = ?");
+        Query query = dataSession.createQuery("from TestPanelForecast where testPanelCase.testCase = ? and testPanelCase.testPanel = ?");
         query.setParameter(0, testCase);
         query.setParameter(1, testPanel);
         List<TestPanelForecast> testPanelForecastList = query.list();
@@ -2949,8 +2878,8 @@ public class TestCasesServlet extends MainServlet
           forecastCompare.setVaccineGroup(forecastExpected.getVaccineGroup());
           forecastCompareMap.put(forecastCompare.getVaccineGroup(), forecastCompare);
           if (software != null) {
-            query = dataSession
-                .createQuery("from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ? order by softwareResult.runDate desc");
+            query = dataSession.createQuery(
+                "from ForecastActual where softwareResult.software = ? and softwareResult.testCase = ? and vaccineGroup = ? order by softwareResult.runDate desc");
             query.setParameter(0, software);
             query.setParameter(1, testCase);
             query.setParameter(2, forecastExpected.getVaccineGroup());
@@ -2970,12 +2899,11 @@ public class TestCasesServlet extends MainServlet
     VaccineGroup vaccineGroup = testCase.getVaccineGroup();
     if (vaccineGroup != null) {
       vaccineGroupDisplayedSet.add(vaccineGroup);
-      out.println("<h2>Actual vs Expected for " + vaccineGroup.getLabel()
-          + " <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_EXPECTATIONS + "&"
-          + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId() + "&" + PARAM_VACCINE_GROUP_ID + "="
-          + vaccineGroup.getVaccineGroupId() + "\">Edit</a><a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW
-          + "=" + SHOW_PREVIEW_TEST_CASE + "&" + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId() + "&"
-          + PARAM_VACCINE_GROUP_ID + "=" + vaccineGroup.getVaccineGroupId() + "\">Preview</a></h2>");
+      out.println("<h2>Actual vs Expected for " + vaccineGroup.getLabel() + " <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
+          + SHOW_EDIT_EXPECTATIONS + "&" + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId() + "&" + PARAM_VACCINE_GROUP_ID + "="
+          + vaccineGroup.getVaccineGroupId() + "\">Edit</a><a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_PREVIEW_TEST_CASE
+          + "&" + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId() + "&" + PARAM_VACCINE_GROUP_ID + "=" + vaccineGroup.getVaccineGroupId()
+          + "\">Preview</a></h2>");
       boolean printedEvaluation = printEvaluationCompare(out, dataSession, testCase, vaccineGroup);
       boolean printedForecast = printForecastCompare(out, user, dataSession, testCase, forecastCompareMap, vaccineGroup);
       boolean printedGuidance = printGuidanceCompare(out, dataSession, testCase, vaccineGroup);
@@ -2986,12 +2914,11 @@ public class TestCasesServlet extends MainServlet
       for (VaccineGroup vg : forecastCompareMap.keySet()) {
         if (vaccineGroup == null || !vg.equals(vaccineGroup)) {
           vaccineGroupDisplayedSet.add(vg);
-          out.println("<h2>Actual vs Expected for " + vg.getLabel() + " <a class=\"fauxbutton\" href=\"testCases?"
-              + PARAM_SHOW + "=" + SHOW_EDIT_EXPECTATIONS + "&" + PARAM_TEST_PANEL_ID + "="
-              + testPanel.getTestPanelId() + "&" + PARAM_VACCINE_GROUP_ID + "=" + vg.getVaccineGroupId()
-              + "\">Edit</a><a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_PREVIEW_TEST_CASE
-              + "&" + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId() + "&" + PARAM_VACCINE_GROUP_ID + "="
-              + vg.getVaccineGroupId() + "\">Preview</a></h2>");
+          out.println(
+              "<h2>Actual vs Expected for " + vg.getLabel() + " <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_EXPECTATIONS
+                  + "&" + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId() + "&" + PARAM_VACCINE_GROUP_ID + "=" + vg.getVaccineGroupId()
+                  + "\">Edit</a><a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_PREVIEW_TEST_CASE + "&" + PARAM_TEST_PANEL_ID
+                  + "=" + testPanel.getTestPanelId() + "&" + PARAM_VACCINE_GROUP_ID + "=" + vg.getVaccineGroupId() + "\">Preview</a></h2>");
 
           printEvaluationCompare(out, dataSession, testCase, vg);
           printForecastCompare(out, user, dataSession, testCase, forecastCompareMap, vg);
@@ -3001,15 +2928,12 @@ public class TestCasesServlet extends MainServlet
     }
 
     out.println("<h2>Other ");
-    out.println("<a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_DEBUGGING_TOOLS + "&"
-        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
-        + "\">Debugging Tools</a>");
-    out.println("<a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_REQUEST_ACTUAL_RESULTS + "&"
-        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
-        + "\">Request Actual Results</a>");
-    out.println("<a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_ADD_ACTUAL_VS_EXPECTED + "&"
-        + PARAM_TEST_PANEL_CASE_ID + "=" + user.getSelectedTestPanelCase().getTestPanelCaseId()
-        + "\">Add Actual vs Expected</a>");
+    out.println("<a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_DEBUGGING_TOOLS + "&" + PARAM_TEST_PANEL_CASE_ID + "="
+        + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Debugging Tools</a>");
+    out.println("<a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_REQUEST_ACTUAL_RESULTS + "&" + PARAM_TEST_PANEL_CASE_ID + "="
+        + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Request Actual Results</a>");
+    out.println("<a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_ADD_ACTUAL_VS_EXPECTED + "&" + PARAM_TEST_PANEL_CASE_ID + "="
+        + user.getSelectedTestPanelCase().getTestPanelCaseId() + "\">Add Actual vs Expected</a>");
     out.println("</h2>");
     if (hasPrimaryExpectations) {
 
@@ -3018,10 +2942,8 @@ public class TestCasesServlet extends MainServlet
     out.println("</div>");
   }
 
-  private boolean printGuidanceCompare(PrintWriter out, Session dataSession, TestCase testCase,
-      VaccineGroup vaccineGroup) {
-    Query query = dataSession
-        .createQuery("from GuidanceExpected where testCase = ? and guidance.vaccineGroup = ? order by updatedDate desc");
+  private boolean printGuidanceCompare(PrintWriter out, Session dataSession, TestCase testCase, VaccineGroup vaccineGroup) {
+    Query query = dataSession.createQuery("from GuidanceExpected where testCase = ? and guidance.vaccineGroup = ? order by updatedDate desc");
     query.setParameter(0, testCase);
     query.setParameter(1, vaccineGroup);
     List<GuidanceExpected> guidanceExpectedList = query.list();
@@ -3034,8 +2956,7 @@ public class TestCasesServlet extends MainServlet
       out.println("  <tr>");
       out.println("    <td>");
       for (GuidanceExpected guidanceExpected : guidanceExpectedList) {
-        query = dataSession
-            .createQuery("from RecommendGuidance where guidance = ? order by recommend.recommendTypeCode, recommend.recommendText");
+        query = dataSession.createQuery("from RecommendGuidance where guidance = ? order by recommend.recommendTypeCode, recommend.recommendText");
         query.setParameter(0, guidanceExpected.getGuidance());
         List<RecommendGuidance> recommendGuidanceList = query.list();
         User author = guidanceExpected.getAuthor();
@@ -3057,8 +2978,7 @@ public class TestCasesServlet extends MainServlet
       out.println("  <tr>");
       out.println("    <td>");
       for (GuidanceExpected guidanceExpected : guidanceExpectedList) {
-        query = dataSession
-            .createQuery("from ConsiderationGuidance where guidance = ? order by consideration.considerationText");
+        query = dataSession.createQuery("from ConsiderationGuidance where guidance = ? order by consideration.considerationText");
         query.setParameter(0, guidanceExpected.getGuidance());
         List<ConsiderationGuidance> considerationGuidanceList = query.list();
         if (considerationGuidanceList.size() > 0) {
@@ -3110,9 +3030,9 @@ public class TestCasesServlet extends MainServlet
           out.println("     Expected by " + author.getName() + " at " + author.getOrganization() + "<br/>");
           out.println("     <ul>");
           for (ResourceGuidance resourceGuidance : resourceGuidanceList) {
-            out.println("     <li>" + resourceGuidance.getResource().getResourceText() + " - <a href=\""
-                + resourceGuidance.getResource().getResourceLink() + "\" target=\"_blank\">"
-                + resourceGuidance.getResource().getResourceLink() + "</a></li>");
+            out.println(
+                "     <li>" + resourceGuidance.getResource().getResourceText() + " - <a href=\"" + resourceGuidance.getResource().getResourceLink()
+                    + "\" target=\"_blank\">" + resourceGuidance.getResource().getResourceLink() + "</a></li>");
           }
           out.println("     </ul>");
         }
@@ -3144,8 +3064,7 @@ public class TestCasesServlet extends MainServlet
       ForecastExpected forecastExpected = null;
 
       if (testCase != null && testPanel != null) {
-        Query query = dataSession
-            .createQuery("from TestPanelForecast where testPanelCase.testCase = ? and testPanelCase.testPanel = ?");
+        Query query = dataSession.createQuery("from TestPanelForecast where testPanelCase.testCase = ? and testPanelCase.testPanel = ?");
         query.setParameter(0, testCase);
         query.setParameter(1, testPanel);
         List<TestPanelForecast> testPanelForecastList = query.list();
@@ -3159,17 +3078,15 @@ public class TestCasesServlet extends MainServlet
       }
     }
 
-    out.println("<h2>Preview for " + vaccineGroup.getLabel() + " <a class=\"fauxbutton\" href=\"testCases?"
-        + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&" + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId()
-        + "\">Back</a></h2>");
+    out.println("<h2>Preview for " + vaccineGroup.getLabel() + " <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_TEST_CASE + "&"
+        + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId() + "\">Back</a></h2>");
 
     out.println("<div class=\"preview\">");
     out.println("  <h2 class=\"previewHeading\">Patient</h2>");
     out.println("  <table>");
     out.println("    <tr>");
     out.println("      <th>Patient</th>");
-    out.println("      <td>" + testCase.getPatientFirst() + " " + testCase.getPatientLast() + " ("
-        + testCase.getPatientSex() + ")</td>");
+    out.println("      <td>" + testCase.getPatientFirst() + " " + testCase.getPatientLast() + " (" + testCase.getPatientSex() + ")</td>");
     out.println("    </tr>");
     out.println("    <tr>");
     out.println("      <th>Birth Date</th>");
@@ -3211,8 +3128,7 @@ public class TestCasesServlet extends MainServlet
           out.println("    <tr>");
           out.println("      <td>" + testEvent.getScreenId() + "</td>");
           out.println("      <td>" + testEvent.getEvent().getLabel() + "</td>");
-          out.println("      <td>" + (testEvent.getEventDate() == null ? "" : sdf.format(testEvent.getEventDate()))
-              + "</td>");
+          out.println("      <td>" + (testEvent.getEventDate() == null ? "" : sdf.format(testEvent.getEventDate())) + "</td>");
           EvaluationExpected evaluationExpected = authorMap.get(testEvent);
           if (evaluationExpected == null || evaluationExpected.getEvaluation() == null) {
             out.println("    <td></td>");
@@ -3256,14 +3172,11 @@ public class TestCasesServlet extends MainServlet
       query1.setParameter(1, vaccineGroup);
       List<ForecastExpected> expectedList = query1.list();
 
-      String expectedAdmin = (forecastExpected.getAdmin() == null ? Admin.UNKNOWN : forecastExpected.getAdmin())
-          .getLabel();
+      String expectedAdmin = (forecastExpected.getAdmin() == null ? Admin.UNKNOWN : forecastExpected.getAdmin()).getLabel();
       String expectedDoseNumber = forecastExpected.getDoseNumber() != null ? forecastExpected.getDoseNumber() : "-";
-      String expectedValidDate = forecastExpected.getValidDate() != null ? sdf.format(forecastExpected.getValidDate())
-          : "-";
+      String expectedValidDate = forecastExpected.getValidDate() != null ? sdf.format(forecastExpected.getValidDate()) : "-";
       String expectedDueDate = forecastExpected.getDueDate() != null ? sdf.format(forecastExpected.getDueDate()) : "-";
-      String expectedOverdueDate = forecastExpected.getOverdueDate() != null ? sdf.format(forecastExpected
-          .getOverdueDate()) : "-";
+      String expectedOverdueDate = forecastExpected.getOverdueDate() != null ? sdf.format(forecastExpected.getOverdueDate()) : "-";
       out.println("    <tr>");
       out.println("      <td>" + vaccineGroup.getLabel() + "</td>");
       out.println("      <td>" + expectedAdmin + "</td>");
@@ -3285,8 +3198,7 @@ public class TestCasesServlet extends MainServlet
     if (guidanceExpectedList.size() > 0) {
       GuidanceExpected guidanceExpected = guidanceExpectedList.get(0);
       out.println("<h2 class=\"previewHeading\">Guidance</h2>");
-      query = dataSession
-          .createQuery("from RecommendGuidance where guidance = ? order by recommend.recommendTypeCode, recommend.recommendText");
+      query = dataSession.createQuery("from RecommendGuidance where guidance = ? order by recommend.recommendTypeCode, recommend.recommendText");
       query.setParameter(0, guidanceExpected.getGuidance());
       List<RecommendGuidance> recommendGuidanceList = query.list();
       if (recommendGuidanceList.size() > 0) {
@@ -3297,8 +3209,7 @@ public class TestCasesServlet extends MainServlet
         }
         out.println("     </ul>");
       }
-      query = dataSession
-          .createQuery("from ConsiderationGuidance where guidance = ? order by consideration.considerationText");
+      query = dataSession.createQuery("from ConsiderationGuidance where guidance = ? order by consideration.considerationText");
       query.setParameter(0, guidanceExpected.getGuidance());
       List<ConsiderationGuidance> considerationGuidanceList = query.list();
       if (considerationGuidanceList.size() > 0) {
@@ -3327,9 +3238,9 @@ public class TestCasesServlet extends MainServlet
         out.println("<h3 class=\"previewHeading\">Additional Resources</h3>");
         out.println("     <ul>");
         for (ResourceGuidance resourceGuidance : resourceGuidanceList) {
-          out.println("     <li>" + resourceGuidance.getResource().getResourceText() + " - <a href=\""
-              + resourceGuidance.getResource().getResourceLink() + "\" target=\"_blank\">"
-              + resourceGuidance.getResource().getResourceLink() + "</a></li>");
+          out.println(
+              "     <li>" + resourceGuidance.getResource().getResourceText() + " - <a href=\"" + resourceGuidance.getResource().getResourceLink()
+                  + "\" target=\"_blank\">" + resourceGuidance.getResource().getResourceLink() + "</a></li>");
         }
         out.println("     </ul>");
       }
@@ -3339,8 +3250,7 @@ public class TestCasesServlet extends MainServlet
     out.println("</div>");
   }
 
-  public void printEventPreview(PrintWriter out, TestCase testCase, List<TestEvent> testEventList, EventType eventType,
-      String eventLabel) {
+  public void printEventPreview(PrintWriter out, TestCase testCase, List<TestEvent> testEventList, EventType eventType, String eventLabel) {
     out.println("<h3 class=\"previewHeading\">" + eventLabel + "</h3>");
     out.println("<ul>");
     int screenId = 0;
@@ -3351,22 +3261,19 @@ public class TestCasesServlet extends MainServlet
         if (testEvent.getEventDate() == null || testEvent.getEventDate().equals(testCase.getEvalDate())) {
           out.println("  <li>" + testEvent.getEvent().getLabel() + "</li>");
         } else {
-          out.println("  <li>" + testEvent.getEvent().getLabel() + " on " + sdf.format(testEvent.getEventDate())
-              + "</li>");
+          out.println("  <li>" + testEvent.getEvent().getLabel() + " on " + sdf.format(testEvent.getEventDate()) + "</li>");
         }
       }
     }
     out.println("</ul>");
   }
 
-  private boolean printEvaluationCompare(PrintWriter out, Session dataSession, TestCase testCase,
-      VaccineGroup vaccineGroup) {
+  private boolean printEvaluationCompare(PrintWriter out, Session dataSession, TestCase testCase, VaccineGroup vaccineGroup) {
     if (countVaccination > 0) {
       Map<User, Map<TestEvent, EvaluationExpected>> expectedMap = new HashMap<User, Map<TestEvent, EvaluationExpected>>();
       List<User> authorList = new ArrayList<User>();
 
-      Query query = dataSession
-          .createQuery("from EvaluationExpected where testCase = ? and vaccineGroup = ? order by updatedDate desc");
+      Query query = dataSession.createQuery("from EvaluationExpected where testCase = ? and vaccineGroup = ? order by updatedDate desc");
       query.setParameter(0, testCase);
       query.setParameter(1, vaccineGroup);
       List<EvaluationExpected> evaluationExpectedList = query.list();
@@ -3496,8 +3403,7 @@ public class TestCasesServlet extends MainServlet
     String actualDoseNumber = forecastActual.getDoseNumber() != null ? forecastActual.getDoseNumber() : "-";
     String actualValidDate = forecastActual.getValidDate() != null ? sdf.format(forecastActual.getValidDate()) : "-";
     String actualDueDate = forecastActual.getDueDate() != null ? sdf.format(forecastActual.getDueDate()) : "-";
-    String actualOverdueDate = forecastActual.getOverdueDate() != null ? sdf.format(forecastActual.getOverdueDate())
-        : "-";
+    String actualOverdueDate = forecastActual.getOverdueDate() != null ? sdf.format(forecastActual.getOverdueDate()) : "-";
 
     out.println("    <tr>");
     out.println("      <td>" + entityLabel + "</td>");
@@ -3510,16 +3416,12 @@ public class TestCasesServlet extends MainServlet
   }
 
   public void printForecastExpected(PrintWriter out, ForecastExpected forecastExpected) {
-    String entityLabel = "Expected by " + forecastExpected.getAuthor().getName() + " at "
-        + forecastExpected.getAuthor().getOrganization();
-    String expectedAdmin = (forecastExpected.getAdmin() == null ? Admin.UNKNOWN : forecastExpected.getAdmin())
-        .getLabel();
+    String entityLabel = "Expected by " + forecastExpected.getAuthor().getName() + " at " + forecastExpected.getAuthor().getOrganization();
+    String expectedAdmin = (forecastExpected.getAdmin() == null ? Admin.UNKNOWN : forecastExpected.getAdmin()).getLabel();
     String expectedDoseNumber = forecastExpected.getDoseNumber() != null ? forecastExpected.getDoseNumber() : "-";
-    String expectedValidDate = forecastExpected.getValidDate() != null ? sdf.format(forecastExpected.getValidDate())
-        : "-";
+    String expectedValidDate = forecastExpected.getValidDate() != null ? sdf.format(forecastExpected.getValidDate()) : "-";
     String expectedDueDate = forecastExpected.getDueDate() != null ? sdf.format(forecastExpected.getDueDate()) : "-";
-    String expectedOverdueDate = forecastExpected.getOverdueDate() != null ? sdf.format(forecastExpected
-        .getOverdueDate()) : "-";
+    String expectedOverdueDate = forecastExpected.getOverdueDate() != null ? sdf.format(forecastExpected.getOverdueDate()) : "-";
 
     out.println("    <tr>");
     out.println("      <td>" + entityLabel + "</td>");
@@ -3537,24 +3439,16 @@ public class TestCasesServlet extends MainServlet
 
     boolean hasActual = forecastActual != null;
 
-    String expectedAdmin = (forecastExpected.getAdmin() == null ? Admin.UNKNOWN : forecastExpected.getAdmin())
-        .getLabel();
-    String actualAdmin = (forecastActual == null || forecastActual.getAdmin() == null ? Admin.UNKNOWN : forecastActual
-        .getAdmin()).getLabel();
+    String expectedAdmin = (forecastExpected.getAdmin() == null ? Admin.UNKNOWN : forecastExpected.getAdmin()).getLabel();
+    String actualAdmin = (forecastActual == null || forecastActual.getAdmin() == null ? Admin.UNKNOWN : forecastActual.getAdmin()).getLabel();
     String expectedDoseNumber = forecastExpected.getDoseNumber() != null ? forecastExpected.getDoseNumber() : "-";
-    String actualDoseNumber = hasActual && forecastActual.getDoseNumber() != null ? forecastActual.getDoseNumber()
-        : "-";
-    String expectedValidDate = forecastExpected.getValidDate() != null ? sdf.format(forecastExpected.getValidDate())
-        : "-";
-    String actualValidDate = hasActual && forecastActual.getValidDate() != null ? sdf.format(forecastActual
-        .getValidDate()) : "-";
+    String actualDoseNumber = hasActual && forecastActual.getDoseNumber() != null ? forecastActual.getDoseNumber() : "-";
+    String expectedValidDate = forecastExpected.getValidDate() != null ? sdf.format(forecastExpected.getValidDate()) : "-";
+    String actualValidDate = hasActual && forecastActual.getValidDate() != null ? sdf.format(forecastActual.getValidDate()) : "-";
     String expectedDueDate = forecastExpected.getDueDate() != null ? sdf.format(forecastExpected.getDueDate()) : "-";
-    String actualDueDate = hasActual && forecastActual.getDueDate() != null ? sdf.format(forecastActual.getDueDate())
-        : "-";
-    String expectedOverdueDate = forecastExpected.getOverdueDate() != null ? sdf.format(forecastExpected
-        .getOverdueDate()) : "-";
-    String actualOverdueDate = hasActual && forecastActual.getOverdueDate() != null ? sdf.format(forecastActual
-        .getOverdueDate()) : "-";
+    String actualDueDate = hasActual && forecastActual.getDueDate() != null ? sdf.format(forecastActual.getDueDate()) : "-";
+    String expectedOverdueDate = forecastExpected.getOverdueDate() != null ? sdf.format(forecastExpected.getOverdueDate()) : "-";
+    String actualOverdueDate = hasActual && forecastActual.getOverdueDate() != null ? sdf.format(forecastActual.getOverdueDate()) : "-";
 
     String styleClassLabel = "";
     String styleClassAdmin = "";
@@ -3564,21 +3458,20 @@ public class TestCasesServlet extends MainServlet
     String styleClassOverdue = "";
 
     if (forecastActual != null) {
-      styleClassAdmin = (hasActual && ForecastActualExpectedCompare.same(forecastExpected.getAdmin(),
-          forecastActual == null ? null : forecastActual.getAdmin())) ? "pass" : "fail";
+      styleClassAdmin = (hasActual
+          && ForecastActualExpectedCompare.same(forecastExpected.getAdmin(), forecastActual == null ? null : forecastActual.getAdmin())) ? "pass"
+              : "fail";
       styleClassDoseNumber = hasActual && compareDoseNumbers(expectedDoseNumber, actualDoseNumber) ? "pass" : "fail";
       styleClassValid = hasActual && compareDoseNumbers(expectedValidDate, actualValidDate) ? "pass" : "fail";
       styleClassDue = hasActual && compareDoseNumbers(expectedDueDate, actualDueDate) ? "pass" : "fail";
       styleClassOverdue = hasActual && compareDoseNumbers(expectedOverdueDate, actualOverdueDate) ? "pass" : "fail";
-      styleClassLabel = styleClassAdmin.equals("pass") && styleClassDoseNumber.equals("pass")
-          && styleClassValid.equals("pass") && styleClassDue.equals("pass") && styleClassOverdue.equals("pass") ? "pass"
-          : "fail";
+      styleClassLabel = styleClassAdmin.equals("pass") && styleClassDoseNumber.equals("pass") && styleClassValid.equals("pass")
+          && styleClassDue.equals("pass") && styleClassOverdue.equals("pass") ? "pass" : "fail";
 
     }
 
     {
-      String entityLabel = "Expected by " + forecastExpected.getAuthor().getName() + " at "
-          + forecastExpected.getAuthor().getOrganization();
+      String entityLabel = "Expected by " + forecastExpected.getAuthor().getName() + " at " + forecastExpected.getAuthor().getOrganization();
       out.println("    <tr>");
       out.println("      <td class=\"" + styleClassLabel + "\">" + entityLabel + "</td>");
       out.println("      <td class=\"" + styleClassAdmin + "\">" + expectedAdmin + "</td>");
@@ -3652,8 +3545,7 @@ public class TestCasesServlet extends MainServlet
     out.println("        <tr>");
     out.println("          <th>Vaccine Group</th>");
     out.println("          <td>"
-        + (testPanelCase.getTestCase().getVaccineGroup() == null ? "" : testPanelCase.getTestCase().getVaccineGroup()
-            .getLabel()) + "</td>");
+        + (testPanelCase.getTestCase().getVaccineGroup() == null ? "" : testPanelCase.getTestCase().getVaccineGroup().getLabel()) + "</td>");
     out.println("    </tr>");
     out.println("    <tr>");
     out.println("      <th>Include Status</th>");
@@ -3678,16 +3570,14 @@ public class TestCasesServlet extends MainServlet
     out.println("    </tr>");
     out.println("    <tr>");
     out.println("      <th>Patient</th>");
-    out.println("      <td>" + testCase.getPatientFirst() + " " + testCase.getPatientLast() + " ("
-        + testCase.getPatientSex() + ")</td>");
+    out.println("      <td>" + testCase.getPatientFirst() + " " + testCase.getPatientLast() + " (" + testCase.getPatientSex() + ")</td>");
     out.println("    </tr>");
     out.println("    <tr>");
     out.println("      <th>Birth Date</th>");
     if (testCase.getPatientDob() == null) {
       out.println("<td></td>");
     } else if (testCase.getDateSet() == DateSet.RELATIVE && testCase.getEvalRule() != null) {
-      out.println("      <td>" + sdf.format(testCase.getPatientDob()) + " (" + testCase.getEvalRule().getTimePeriod()
-          + " old)</td>");
+      out.println("      <td>" + sdf.format(testCase.getPatientDob()) + " (" + testCase.getEvalRule().getTimePeriod() + " old)</td>");
     } else {
       out.println("      <td>" + sdf.format(testCase.getPatientDob()) + "</td>");
     }
@@ -3702,8 +3592,7 @@ public class TestCasesServlet extends MainServlet
     countACIP = 0;
     countCondition = 0;
     countOther = 0;
-    Query query = applicationSession.getDataSession().createQuery(
-        "from TestEvent where testCase = ? order by eventDate");
+    Query query = applicationSession.getDataSession().createQuery("from TestEvent where testCase = ? order by eventDate");
     query.setParameter(0, testCase);
     testEventList = query.list();
     testCase.setTestEventList(testEventList);
@@ -3719,8 +3608,7 @@ public class TestCasesServlet extends MainServlet
       }
     }
 
-    editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_VACCINATIONS + "&" + PARAM_TEST_PANEL_CASE_ID + "="
-        + testPanelCase.getTestPanelCaseId();
+    editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_VACCINATIONS + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId();
     editButton = "";
     if (user.isCanEditTestCase()) {
       editButton = " <a class=\"fauxbutton\" href=\"" + editLink + "\">Edit</a>";
@@ -3746,8 +3634,7 @@ public class TestCasesServlet extends MainServlet
           out.println("      <td>" + testEvent.getEvent().getLabel() + "</td>");
           out.println("      <td>" + testEvent.getEvent().getVaccineCvx() + "</td>");
           out.println("      <td>" + testEvent.getEvent().getVaccineMvx() + "</td>");
-          out.println("      <td>" + (testEvent.getEventDate() == null ? "" : sdf.format(testEvent.getEventDate()))
-              + "</td>");
+          out.println("      <td>" + (testEvent.getEventDate() == null ? "" : sdf.format(testEvent.getEventDate())) + "</td>");
           out.println("      <td>" + testEvent.getAgeAlmost(testCase) + "</td>");
           out.println("    </tr>");
         }
@@ -3755,11 +3642,10 @@ public class TestCasesServlet extends MainServlet
       out.println("  </table>");
     }
 
-    editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_EVENTS + "&" + PARAM_TEST_PANEL_CASE_ID + "="
-        + testPanelCase.getTestPanelCaseId() + "&" + PARAM_EVENT_TYPE_CODE + "=";
+    editLink = "testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_EVENTS + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId() + "&"
+        + PARAM_EVENT_TYPE_CODE + "=";
     if (user.isCanEditTestCase()) {
-      editButton = " <a class=\"fauxbutton\" href=\"" + editLink + EventType.ACIP_DEFINED_CONDITION.getEventTypeCode()
-          + "\">Edit</a>";
+      editButton = " <a class=\"fauxbutton\" href=\"" + editLink + EventType.ACIP_DEFINED_CONDITION.getEventTypeCode() + "\">Edit</a>";
     } else {
       editButton = "";
     }
@@ -3770,8 +3656,7 @@ public class TestCasesServlet extends MainServlet
     }
 
     if (user.isCanEditTestCase()) {
-      editButton = " <a class=\"fauxbutton\" href=\"" + editLink + EventType.CONDITION_IMPLICATION.getEventTypeCode()
-          + "\">Edit</a>";
+      editButton = " <a class=\"fauxbutton\" href=\"" + editLink + EventType.CONDITION_IMPLICATION.getEventTypeCode() + "\">Edit</a>";
     } else {
       editButton = "";
     }
@@ -3782,9 +3667,8 @@ public class TestCasesServlet extends MainServlet
 
     String editSoftwareSettings = "";
     if (user.isExpertOrAdmin(user.getSelectedTaskGroup())) {
-      editSoftwareSettings = " <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "="
-          + SHOW_EDIT_TEST_CASE_SETTINGS + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId()
-          + "\">Edit</a>";
+      editSoftwareSettings = " <a class=\"fauxbutton\" href=\"testCases?" + PARAM_SHOW + "=" + SHOW_EDIT_TEST_CASE_SETTINGS + "&"
+          + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId() + "\">Edit</a>";
     }
 
     out.println("  <h3>Software Settings" + editSoftwareSettings + "</h3>");
@@ -3822,13 +3706,11 @@ public class TestCasesServlet extends MainServlet
     }
     out.println("  <h2>Comments" + addCommentButton + "</h2>");
 
-    out.println("  <form method=\"POST\" action=\"testCases\" id=\"commentForm\" style=\""
-        + (testNoteToEdit == null ? "display: none;" : "") + "\">");
-    out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\""
-        + testPanelCase.getTestPanelCaseId() + "\"/>");
+    out.println(
+        "  <form method=\"POST\" action=\"testCases\" id=\"commentForm\" style=\"" + (testNoteToEdit == null ? "display: none;" : "") + "\">");
+    out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_PANEL_CASE_ID + "\" value=\"" + testPanelCase.getTestPanelCaseId() + "\"/>");
     if (testNoteToEdit != null) {
-      out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_NOTE_ID + "\" value=\""
-          + testNoteToEdit.getTestNoteId() + "\"/>");
+      out.println("    <input type=\"hidden\" name=\"" + PARAM_TEST_NOTE_ID + "\" value=\"" + testNoteToEdit.getTestNoteId() + "\"/>");
     }
     out.println("    <table width=\"100%\">");
     out.println("      <tr>");
@@ -3846,11 +3728,9 @@ public class TestCasesServlet extends MainServlet
       out.println("              <option value=\"0\">--select--</option>");
       for (Result result : Result.values()) {
         if (testPanelCase.getResult() == result) {
-          out.println("              <option value=\"" + result.getResultStatus() + "\" selected=\"true\">"
-              + result.getLabel() + "</option>");
+          out.println("              <option value=\"" + result.getResultStatus() + "\" selected=\"true\">" + result.getLabel() + "</option>");
         } else {
-          out.println("              <option value=\"" + result.getResultStatus() + "\">" + result.getLabel()
-              + "</option>");
+          out.println("              <option value=\"" + result.getResultStatus() + "\">" + result.getLabel() + "</option>");
         }
       }
       out.println("            </select>");
@@ -3858,9 +3738,8 @@ public class TestCasesServlet extends MainServlet
       out.println("      </tr>");
     }
     out.println("      <tr>");
-    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-        + "\" size=\"15\" value=\"" + (testNoteToEdit == null ? ACTION_ADD_COMMENT : ACTION_UPDATE_COMMENT)
-        + "\"/></td>");
+    out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+        + (testNoteToEdit == null ? ACTION_ADD_COMMENT : ACTION_UPDATE_COMMENT) + "\"/></td>");
     out.println("      </tr>");
     out.println("    </table>");
     out.println("  </form>");
@@ -3870,13 +3749,13 @@ public class TestCasesServlet extends MainServlet
     List<TestNote> testNoteList = query.list();
     for (TestNote testNote : testNoteList) {
       if (!testNote.getNoteText().equals("")) {
-        out.println("<p>" + testNote.getUser().getName() + " from " + testNote.getUser().getOrganization()
-            + " writes on " + sdf.format(testNote.getNoteDate()) + ":</p>");
+        out.println("<p>" + testNote.getUser().getName() + " from " + testNote.getUser().getOrganization() + " writes on "
+            + sdf.format(testNote.getNoteDate()) + ":</p>");
         out.println("<blockquote>");
         out.println(testNote.getNoteText());
         if (testNote.getUser().equals(user)) {
-          String link = "testCases?" + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId() + "&"
-              + PARAM_TEST_NOTE_ID + "=" + testNote.getTestNoteId() + "&" + PARAM_TEST_NOTE_EDIT + "=true";
+          String link = "testCases?" + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId() + "&" + PARAM_TEST_NOTE_ID + "="
+              + testNote.getTestNoteId() + "&" + PARAM_TEST_NOTE_EDIT + "=true";
           out.println("<a class=\"add\" href=\"" + link + "\">Edit</a>");
         }
         out.println("</blockquote>");
@@ -3888,8 +3767,7 @@ public class TestCasesServlet extends MainServlet
     return testEventList;
   }
 
-  public void printEventViewTable(PrintWriter out, TestCase testCase, List<TestEvent> testEventList,
-      EventType eventType, String eventLabel) {
+  public void printEventViewTable(PrintWriter out, TestCase testCase, List<TestEvent> testEventList, EventType eventType, String eventLabel) {
     out.println("  <table width=\"100%\">");
     out.println("    <tr>");
     out.println("      <th>#</th>");
@@ -3905,8 +3783,7 @@ public class TestCasesServlet extends MainServlet
         out.println("    <tr>");
         out.println("      <td>" + testEvent.getScreenId() + "</td>");
         out.println("      <td>" + testEvent.getEvent().getLabel() + "</td>");
-        out.println("      <td>" + (testEvent.getEventDate() == null ? "" : sdf.format(testEvent.getEventDate()))
-            + "</td>");
+        out.println("      <td>" + (testEvent.getEventDate() == null ? "" : sdf.format(testEvent.getEventDate())) + "</td>");
         out.println("      <td>" + testEvent.getAgeAlmost(testCase) + "</td>");
         out.println("    </tr>");
       }
@@ -3914,10 +3791,9 @@ public class TestCasesServlet extends MainServlet
     out.println("  </table>");
   }
 
-  public void printTestPanel(PrintWriter out, Session dataSession, User user, TestPanel testPanel)
-      throws UnsupportedEncodingException {
-    final String link1 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_TEST_PANEL, "UTF-8") + "&"
-        + PARAM_TEST_PANEL_ID + "=" + testPanel.getTestPanelId();
+  public void printTestPanel(PrintWriter out, Session dataSession, User user, TestPanel testPanel) throws UnsupportedEncodingException {
+    final String link1 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_TEST_PANEL, "UTF-8") + "&" + PARAM_TEST_PANEL_ID + "="
+        + testPanel.getTestPanelId();
     if (user.getSelectedTestPanel() != null && user.getSelectedTestPanel().equals(testPanel)) {
       out.println("      <li class=\"selectLevel1\"><a href=\"" + link1 + "\">" + testPanel.getLabel() + "</a>");
       out.println("        <ul class=\"selectLevel2\">");
@@ -3939,15 +3815,15 @@ public class TestCasesServlet extends MainServlet
           if (!categoryName.equals(lastCategoryName)) {
             if (selectedCategoryOpened) {
               if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
-                out.println("            <li><a class=\"add\" href=\"testCases?show=" + SHOW_ADD_TEST_CASE + "&"
-                    + PARAM_CATEGORY_NAME + "=" + lastCategoryName + "\">add test case</a></li>");
+                out.println("            <li><a class=\"add\" href=\"testCases?show=" + SHOW_ADD_TEST_CASE + "&" + PARAM_CATEGORY_NAME + "="
+                    + lastCategoryName + "\">add test case</a></li>");
               }
               out.println("          </ul>");
               out.println("        </li>");
               selectedCategoryOpened = false;
             }
-            final String link2 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_CATEGORY, "UTF-8")
-                + "&" + PARAM_CATEGORY_NAME + "=" + categoryName;
+            final String link2 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_CATEGORY, "UTF-8") + "&" + PARAM_CATEGORY_NAME
+                + "=" + categoryName;
 
             String classStyle = "selectLevel2";
             if (categoryHasProblemSet != null) {
@@ -3957,13 +3833,11 @@ public class TestCasesServlet extends MainServlet
               }
             }
             if (user.getSelectedCategoryName() != null && categoryName.equals(user.getSelectedCategoryName())) {
-              out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName
-                  + "</a>");
+              out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName + "</a>");
               out.println("            <ul class=\"selectLevel3\">");
               selectedCategoryOpened = true;
             } else {
-              out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName
-                  + "</a></li>");
+              out.println("          <li class=\"" + classStyle + "\"><a href=\"" + link2 + "\">" + categoryName + "</a></li>");
             }
           }
 
@@ -3975,8 +3849,8 @@ public class TestCasesServlet extends MainServlet
       }
       if (selectedCategoryOpened) {
         if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
-          out.println("            <li><a class=\"add\" href=\"testCases?show=" + SHOW_ADD_TEST_CASE + "&"
-              + PARAM_CATEGORY_NAME + "=" + lastCategoryName + "\">add test case</a></li>");
+          out.println("            <li><a class=\"add\" href=\"testCases?show=" + SHOW_ADD_TEST_CASE + "&" + PARAM_CATEGORY_NAME + "="
+              + lastCategoryName + "\">add test case</a></li>");
         }
         out.println("          </ul>");
         out.println("        </li>");
@@ -4001,8 +3875,7 @@ public class TestCasesServlet extends MainServlet
 
       if (user.getSelectedCategoryName() == null) {
         if (user.getSelectedExpert() != null && user.getSelectedExpert().getRole().canEdit()) {
-          out.println("          <li><a class=\"add\" href=\"testCases?show=" + SHOW_ADD_TEST_CASE
-              + "\">add test case</a></li>");
+          out.println("          <li><a class=\"add\" href=\"testCases?show=" + SHOW_ADD_TEST_CASE + "\">add test case</a></li>");
         }
       }
       out.println("        </ul>");
@@ -4023,10 +3896,10 @@ public class TestCasesServlet extends MainServlet
     return testPanelCaseList;
   }
 
-  public void printTestCaseLine(PrintWriter out, User user, boolean selectedTestPanelWasTested,
-      TestPanelCase testPanelCase, String categoryName) throws UnsupportedEncodingException {
-    final String link3 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_TEST_PANEL_CASE, "UTF-8")
-        + "&" + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId();
+  public void printTestCaseLine(PrintWriter out, User user, boolean selectedTestPanelWasTested, TestPanelCase testPanelCase, String categoryName)
+      throws UnsupportedEncodingException {
+    final String link3 = "testCases?" + PARAM_ACTION + "=" + URLEncoder.encode(ACTION_SELECT_TEST_PANEL_CASE, "UTF-8") + "&"
+        + PARAM_TEST_PANEL_CASE_ID + "=" + testPanelCase.getTestPanelCaseId();
     String annotations = " ";
     String styleClass = "selectLevel3";
     if (selectedTestPanelWasTested) {
@@ -4049,8 +3922,8 @@ public class TestCasesServlet extends MainServlet
         }
       }
     }
-    out.println("              <li class=\"" + styleClass + "\"><a href=\"" + link3 + "\">"
-        + testPanelCase.getTestCase().getLabel() + "</a>" + annotations + "</li>");
+    out.println("              <li class=\"" + styleClass + "\"><a href=\"" + link3 + "\">" + testPanelCase.getTestCase().getLabel() + "</a>"
+        + annotations + "</li>");
   }
 
 }

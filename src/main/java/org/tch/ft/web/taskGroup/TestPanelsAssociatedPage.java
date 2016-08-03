@@ -51,7 +51,7 @@ public class TestPanelsAssociatedPage extends FTBasePage  implements SecurePage 
     if (taskGroup == null) {
       taskGroupSection.setVisible(false);
     } else {
-      query = dataSession.createQuery("from TestPanel where taskGroup = ? order by label");
+      query = dataSession.createQuery("from TestPanel where taskGroup = ? and availableCode = 'A' order by label");
       query.setParameter(0, taskGroup);
       List<TestPanel> testPanelList = query.list();
 

@@ -31,6 +31,7 @@ import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.TestEvent;
 import org.tch.ft.CentralControl;
 import org.tch.ft.manager.readers.MiisTestCaseReader;
+import org.tch.ft.model.Available;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.TestCaseWithExpectations;
@@ -123,6 +124,7 @@ public class TestMiisTestCaseReader extends TestCase{
     {
       testPanel = new TestPanel();
       testPanel.setLabel(filename);
+      testPanel.setAvailable(Available.PUBLIC);
       testPanel.setTaskGroup(taskGroup);
       dataSession.save(testPanel);
     }
