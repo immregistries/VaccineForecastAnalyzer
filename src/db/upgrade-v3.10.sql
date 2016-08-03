@@ -1,0 +1,1 @@
+ALTER TABLE test_panel ADD COLUMN available_code VARCHAR(1) NOT NULL DEFAULT 'A';
