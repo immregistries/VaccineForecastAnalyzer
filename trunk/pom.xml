@@ -4,7 +4,7 @@
 	<groupId>org.tch.ft</groupId>
 	<artifactId>ForecastTester</artifactId>
 	<packaging>war</packaging>
-	<version>3.09</version>
+	<version>3.10</version>
 	<name>Forecast Tester</name>
 	<description></description>
 	<!-- TODO <organization> <name>company name</name> <url>company url</url> 

@@ -48,6 +48,7 @@ import org.tch.ft.manager.readers.TestCaseReaderFactory;
 import org.tch.fc.model.Event;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.fc.model.TestEvent;
+import org.tch.ft.model.Available;
 import org.tch.ft.model.Role;
 import org.tch.fc.model.Software;
 import org.tch.ft.model.TaskGroup;
@@ -164,6 +165,7 @@ public class UploadTestCasesPage extends FTBasePage implements SecurePage {
               } else {
                 testPanel = new TestPanel();
                 testPanel.setLabel(filename);
+                testPanel.setAvailable(Available.PUBLIC);
                 testPanel.setTaskGroup(taskGroup);
                 dataSession.save(testPanel);
               }

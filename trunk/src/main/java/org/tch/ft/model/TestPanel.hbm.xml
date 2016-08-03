@@ -7,5 +7,6 @@
     </id>
     <many-to-one name="taskGroup" column="task_group_id" class="TaskGroup"/>
     <property name="label" column="label" type="string"/>
+    <property name="availableCode" column="available_code" type="string"/>
   </class>
 </hibernate-mapping>

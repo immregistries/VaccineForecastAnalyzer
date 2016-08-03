@@ -27,6 +27,7 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.tch.ft.model.Available;
 import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.TestNote;
 import org.tch.ft.model.TestPanel;
@@ -55,7 +56,7 @@ public class SelectTestPanelPage extends FTBasePage implements SecurePage {
 
     List<TestPanel> testPanelList;
     if (user.getSelectedTaskGroup() != null) {
-      Query query = dataSession.createQuery("from TestPanel where taskGroup = ? order by label");
+      Query query = dataSession.createQuery("from TestPanel where taskGroup = ? and availableCode = 'A' order by label");
       query.setParameter(0, user.getSelectedTaskGroup());
       testPanelList = query.list();
     } else {
@@ -81,6 +82,7 @@ public class SelectTestPanelPage extends FTBasePage implements SecurePage {
       protected void onSubmit() {
         TestPanel testPanel = new TestPanel();
         testPanel.setLabel(testPanelLabelModel.getObject());
+        testPanel.setAvailable(Available.PUBLIC);
         testPanel.setTaskGroup(taskGroup);
         user.setSelectedSoftwareCompare(null);
         Transaction transaction = dataSession.beginTransaction();

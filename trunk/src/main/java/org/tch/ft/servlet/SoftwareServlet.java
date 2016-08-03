@@ -1081,6 +1081,7 @@ public class SoftwareServlet extends MainServlet
         query = dataSession.createQuery("from TestPanel where taskGroup = ? order by label");
         query.setParameter(0, selectedTaskGroup);
         List<TestPanel> testPanelList = query.list();
+        TestCasesServlet.removeNonVisibleTestPanels(user, testPanelList);
         if (testPanelList.size() > 0) {
           out.println("          <ul class=\"selectLevel2\">");
           TestPanel selectedTestPanel = user.getSelectedTestPanel();
