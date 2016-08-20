@@ -15,6 +15,9 @@ public class SoftwareManager
 {
 
   public static boolean isSoftwareAccessRestricted(Software software, User user, Session session) {
+    if (user.getOrganization().equals("AIRA")) {
+      return false;
+    }
     boolean restricted = software.isVisibleStatusRestricted();
     Query query = session.createQuery("from TaskGroup where primarySoftware = ?");
     query.setParameter(0, software);

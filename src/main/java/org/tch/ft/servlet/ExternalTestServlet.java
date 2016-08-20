@@ -171,7 +171,7 @@ public class ExternalTestServlet extends HttpServlet
 
       Set<VaccineGroup> vaccineGroupSet = new HashSet<VaccineGroup>();
       TestPanelCase testPanelCase = null;
-      boolean createTestCaseAndExpectations = req.getParameter(POST_TASK_GROUP_ID) != null;
+      boolean createTestCaseAndExpectations = req.getParameter(POST_TEST_PANEL_LABEL) != null && !req.getParameter(POST_TEST_PANEL_LABEL).equals("");
       TestCase testCase;
       if (createTestCaseAndExpectations) {
         testCase = new TestCase();
