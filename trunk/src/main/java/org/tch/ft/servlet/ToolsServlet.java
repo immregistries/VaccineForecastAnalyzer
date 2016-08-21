@@ -34,6 +34,7 @@ import org.tch.ft.manager.ForecastActualGenerator;
 import org.tch.ft.manager.SoftwareManager;
 import org.tch.ft.manager.readers.TestCaseReader;
 import org.tch.ft.manager.writers.TestCaseWriter;
+import org.tch.ft.manager.writers.TestCaseWriter.FormatType;
 import org.tch.ft.manager.writers.TestCaseWriterFactory;
 import org.tch.ft.model.Expert;
 import org.tch.ft.model.Result;
@@ -44,8 +45,7 @@ import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.User;
 import org.tch.ft.servlet.MainServlet.HoverText;
 
-public class ToolsServlet extends MainServlet
-{
+public class ToolsServlet extends MainServlet {
 
   public ToolsServlet() {
     super("Tools", ServletProtection.ALL_USERS);
@@ -61,40 +61,36 @@ public class ToolsServlet extends MainServlet
   private final static String PARAM_FORMAT_TYPE = "formatType";
   private final static String PARAM_SOFTWARE_ID = "softwareId";
   private final static String PARAM_TEST_PANEL_ID = "testPanelId";
-  private final static String PARAM_ = "";
 
   private final static String PARAM_CATEGORY_NAME = "categoryName";
   private final static String PARAM_RUN_ALL = "runAll";
 
-  private final static HoverText HOVER_TEXT_TEST_CASE_FILE = new HoverText("Test Case File")
-      .add("<p>Select the file that you want to upload. </p>");
-  private final static HoverText HOVER_TEXT_FORMAT = new HoverText("Format")
-      .add("<p>Select the format of the data in the file. </p>")
+  private final static HoverText HOVER_TEXT_TEST_CASE_FILE = new HoverText("Test Case File").add("<p>Select the file that you want to upload. </p>");
+  private final static HoverText HOVER_TEXT_FORMAT = new HoverText("Format").add("<p>Select the format of the data in the file. </p>")
       .add("<ul><li><b>CDC</b>CSV formatted data from the CDSi test case spreadsheets. </li>")
       .add("<li><b>IHS</b> A simple format used by IHS to upload example test cases. </li>")
       .add("<li><b>MIIS</b> Massachusetts Immunization Information System CSV format.</li>")
       .add("<li><b>STC</b> Scientific Technologies Corporation CSV format. </li></ul>");
+  private final static HoverText HOVER_TEXT_FORMAT_EXPORT = new HoverText("Format").add("<p>Select the format of the test case data. </p>")
+      .add("<ul><li><b>CDC</b>CSV formatted data from the CDSi test case spreadsheets. </li>")
+      .add("<li><b>Epic</b>Epic's Immunization Scheduling Tester </li></ul>");
   private final static HoverText HOVER_TEXT_SET_EXPECTATIONS = new HoverText("Set Expectations")
       .add("<p>Set expectations for each test case based on actuals from the selected software. ")
       .add("  This option is used for test case formats that don't include expectations, such ")
       .add("  as those that are random samples from patient histories. </p>");
-  private final static HoverText HOVER_TEXT_TASK_GROUP = new HoverText("Task Group")
-      .add("<p>The currently selected Task Group. ")
+  private final static HoverText HOVER_TEXT_TASK_GROUP = new HoverText("Task Group").add("<p>The currently selected Task Group. ")
       .add("A different Task Group can be selected by returning to the Test Cases and ")
       .add("selecting the Task Group in the navigation box on the left. </p> ");
-  private final static HoverText HOVER_TEXT_TEST_PANEL = new HoverText("Test Panel")
-      .add("<p> The currently selected Test Panel. ")
+  private final static HoverText HOVER_TEXT_TEST_PANEL = new HoverText("Test Panel").add("<p> The currently selected Test Panel. ")
       .add("A different Test Panel can be selected by returning to the Test Cases and ")
       .add("selecting the Test Panel in the navigation box on the left. </p>");
-  private final static HoverText HOVER_TEXT_EXPORT_FOR = new HoverText("Export For")
-      .add("<p>Specify which categories to export. </p>");
+  private final static HoverText HOVER_TEXT_EXPORT_FOR = new HoverText("Export For").add("<p>Specify which categories to export. </p>");
   private final static HoverText HOVER_TEXT_LIMIT_BY_CATEGORIES = new HoverText("Limit by Categories")
       .add("<p>Select which categories to export. </p>");
   private final static HoverText HOVER_TEXT_ = new HoverText("").add("<p></p>");
 
   @Override
-  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show)
-      throws IOException {
+  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show) throws IOException {
     Session dataSession = applicationSession.getDataSession();
     User user = applicationSession.getUser();
 
@@ -122,7 +118,8 @@ public class ToolsServlet extends MainServlet
 
         DiskFileItemFactory fileItemFactory = new DiskFileItemFactory(fileCleaner);
         fileItemFactory.setSizeThreshold(1 * 1024 * 1024); // 1 MB
-        String uploadDirString = ""; //ksm.getKeyedValue(KeyedSetting.UPLOAD_DIR, ".");
+        String uploadDirString = ""; // ksm.getKeyedValue(KeyedSetting.UPLOAD_DIR,
+                                     // ".");
         File uploadDir = new File(uploadDirString);
         if (!uploadDir.exists()) {
           throw new IllegalArgumentException("Upload directory not found, unable to upload");
@@ -165,11 +162,9 @@ public class ToolsServlet extends MainServlet
           // throw new ServletException("Unable to upload file", ex);
         }
 
-      }else if (action.equals(ACTION_EXPORT))
-      {
+      } else if (action.equals(ACTION_EXPORT)) {
         TestPanel testPanel = user.getSelectedTestPanel();
-        
-        
+
         Set<String> categoryNameSet = null;
         if (req.getParameter(PARAM_RUN_ALL) == null) {
           categoryNameSet = new HashSet<String>();
@@ -179,27 +174,32 @@ public class ToolsServlet extends MainServlet
             }
           }
         }
-        
+
         String problem = null;
-        
+
         if (categoryNameSet != null && categoryNameSet.size() == 0) {
           problem = "Unable to export tests, no categories selected. ";
-        } 
+        }
+
+        if (req.getParameter(PARAM_FORMAT_TYPE).equals("")) {
+          problem = "Format was not specified";
+        }
 
         if (problem != null) {
           applicationSession.setAlertError(problem);
           return SHOW_EXPORT_TEST_CASES;
         }
         
-        
-        resp.setContentType("text/plain");
-        resp.setHeader("Content-Disposition", "Attachment;filename=\"" + testPanel.getLabel() + ".csv\"");
-        PrintWriter out = new PrintWriter(resp.getOutputStream());
-        
-        TestCaseWriter testCaseWriter = TestCaseWriterFactory.createTestCaseWriter(TestCaseWriter.FormatType.CDC);
+        FormatType formatType = FormatType.valueOf(req.getParameter(PARAM_FORMAT_TYPE));
+        TestCaseWriter testCaseWriter = TestCaseWriterFactory.createTestCaseWriter(formatType);
         testCaseWriter.setCategoryNameSet(categoryNameSet);
         testCaseWriter.setDataSession(dataSession);
         testCaseWriter.setTestPanel(testPanel);
+
+        resp.setContentType("text/plain");
+        resp.setHeader("Content-Disposition", "Attachment;filename=\"" + testCaseWriter.createFilename() + "\"");
+        PrintWriter out = new PrintWriter(resp.getOutputStream());
+
         testCaseWriter.write(out);
         out.close();
         return SHOW_NOTHING;
@@ -209,8 +209,7 @@ public class ToolsServlet extends MainServlet
   }
 
   @Override
-  protected void printPage(HttpServletRequest req, HttpServletResponse resp, PrintWriter out, String show)
-      throws ServletException, IOException {
+  protected void printPage(HttpServletRequest req, HttpServletResponse resp, PrintWriter out, String show) throws ServletException, IOException {
     Session dataSession = applicationSession.getDataSession();
     User user = applicationSession.getUser();
     Software software = user.getSelectedSoftware();
@@ -219,10 +218,10 @@ public class ToolsServlet extends MainServlet
     out.println("<div class=\"leftColumn\">");
     out.println("<h2>Tools</h2>");
     out.println("<ul class=\"selectLevel1\">");
-//    out.println("  <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW + "=" + SHOW_IMPORT_TEST_CASES
-//        + "\">Import Test Cases</a></li>");
-    out.println("  <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW + "=" + SHOW_EXPORT_TEST_CASES
-        + "\">Export Test Cases</a></li>");
+    // out.println(" <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW +
+    // "=" + SHOW_IMPORT_TEST_CASES
+    // + "\">Import Test Cases</a></li>");
+    out.println("  <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW + "=" + SHOW_EXPORT_TEST_CASES + "\">Export Test Cases</a></li>");
     out.println("</ul>");
     out.println("</div>");
     if (show != null) {
@@ -252,8 +251,8 @@ public class ToolsServlet extends MainServlet
         out.println("          <option value=\"\">--select--</option>");
         out.println("        </select>");
         out.println("    </tr>");
-        out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-            + "\" size=\"15\" value=\"" + ACTION_IMPORT + "\"/></td>");
+        out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+            + ACTION_IMPORT + "\"/></td>");
         out.println("  </table>");
         out.println("  </form>");
         out.println("</div>");
@@ -278,8 +277,7 @@ public class ToolsServlet extends MainServlet
         } else {
 
           out.println("  <form method=\"POST\" action=\"tools\" id=\"exportTestsForm\">");
-          out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID + "\" value=\"" + software.getSoftwareId()
-              + "\"/>");
+          out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID + "\" value=\"" + software.getSoftwareId() + "\"/>");
           out.println("  <table width=\"100%\"> ");
           out.println("    <tr>");
           out.println("      <th>" + HOVER_TEXT_TASK_GROUP + "</th>");
@@ -289,12 +287,23 @@ public class ToolsServlet extends MainServlet
           out.println("      <th>" + HOVER_TEXT_TEST_PANEL + "</th>");
           out.println("      <td>" + testPanel.getLabel() + "</td>");
           out.println("    </tr>");
+          out.println("    <tr>");
+          out.println("      <th>" + HOVER_TEXT_FORMAT + "</th>");
+          out.println("      <td>");
+          out.println("        <select name=\"" + PARAM_FORMAT_TYPE + "\">");
+          out.println("          <option value=\"\">--select--</option>");
+          for (TestCaseWriter.FormatType formatType : TestCaseWriter.FormatType.values()) {
+            out.println("              <option value=\"" + formatType + "\">" + formatType + "</option>");
+          }
+          out.println("        </select>");
+          out.println("      </td>");
+          out.println("    </tr>");
+
           Set<String> categoryNameSet = applicationSession.getForecastCompareCategoryNameSet();
           out.println("    <tr>");
           out.println("      <th>" + HOVER_TEXT_EXPORT_FOR + "</th>");
           out.println("      <td><input type=\"checkbox\" name=\"" + PARAM_RUN_ALL + "\" value=\"true\""
-              + (categoryNameSet == null ? " checked=\"true\"" : "")
-              + " onChange=\"showExportAll()\"/> All Categories</td>");
+              + (categoryNameSet == null ? " checked=\"true\"" : "") + " onChange=\"showExportAll()\"/> All Categories</td>");
           out.println("    </tr>");
           out.println("    <tr" + (categoryNameSet == null ? " style=\"display: none;\"" : "") + " id=\"runSome\">");
           out.println("      <th>" + HOVER_TEXT_LIMIT_BY_CATEGORIES + "</th>");
@@ -313,12 +322,11 @@ public class ToolsServlet extends MainServlet
                     && user.getSelectedTestPanelCase().getCategoryName().equals(testPanelCase.getCategoryName());
               }
               if (checked) {
-                out.println("        <input type=\"checkbox\" name=\"" + PARAM_CATEGORY_NAME + "\" value=\""
-                    + testPanelCase.getCategoryName() + "\" checked=\"true\"/>" + testPanelCase.getCategoryName()
-                    + "<br/>");
+                out.println("        <input type=\"checkbox\" name=\"" + PARAM_CATEGORY_NAME + "\" value=\"" + testPanelCase.getCategoryName()
+                    + "\" checked=\"true\"/>" + testPanelCase.getCategoryName() + "<br/>");
               } else {
-                out.println("        <input type=\"checkbox\" name=\"" + PARAM_CATEGORY_NAME + "\" value=\""
-                    + testPanelCase.getCategoryName() + "\"/>" + testPanelCase.getCategoryName() + "<br/>");
+                out.println("        <input type=\"checkbox\" name=\"" + PARAM_CATEGORY_NAME + "\" value=\"" + testPanelCase.getCategoryName()
+                    + "\"/>" + testPanelCase.getCategoryName() + "<br/>");
               }
             }
             categoryName = testPanelCase.getCategoryName();
@@ -326,8 +334,8 @@ public class ToolsServlet extends MainServlet
           out.println("      </td>");
           out.println("    </tr>");
           out.println("  <tr>");
-          out.println("    <td align=\"right\" colspan=\"2\"><input type=\"submit\" name=\"" + PARAM_ACTION
-              + "\" size=\"15\" value=\"" + ACTION_EXPORT + "\"/></td>");
+          out.println("    <td align=\"right\" colspan=\"2\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+              + ACTION_EXPORT + "\"/></td>");
           out.println("  </tr>");
           out.println("  </table> ");
           out.println("</form>");

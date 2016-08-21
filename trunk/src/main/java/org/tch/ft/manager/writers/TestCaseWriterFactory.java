@@ -10,6 +10,10 @@ public class TestCaseWriterFactory
     {
       return new CdcTestCaseWriter();
     }
+    else if (formatType == TestCaseWriter.FormatType.EPIC)
+    {
+      return new EpicTestCaseWriter();
+    }
     return null;
   }
 }
