@@ -8,7 +8,7 @@ import org.tch.ft.model.TestPanel;
 
 public interface TestCaseWriter
 {
-  public static enum FormatType {CDC}
+  public static enum FormatType {CDC, EPIC}
   
   public void setDataSession(Session dataSession) ;
 
@@ -17,4 +17,6 @@ public interface TestCaseWriter
   public void setTestPanel(TestPanel testPanel);
 
   public void write(PrintWriter out) ;
+  
+  public String createFilename();
 }
