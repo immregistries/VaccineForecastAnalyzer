@@ -1,0 +1,98 @@
+Test Case Name	Description	Date of Birth	Sex	Dose 1 Vaccine	Dose 1 Date	Dose 2 Vaccine	Dose 2 Date	Dose 3 Vaccine	Dose 3 Date	Dose 4 Vaccine	Dose 4 Date	Dose 5 Vaccine	Dose 5 Date	Dose 6 Vaccine	Dose 6 Date	Dose 7 Vaccine	Dose 7 Date	Dose 8 Vaccine	Dose 8 Date	Dose 9 Vaccine	Dose 9 Date	Dose 10 Vaccine	Dose 10 Date	Expected
+2013-0392	#1 @ 9 yrs - 4 days, female, gardisil	8/12/2007	Female	LIM-1003	8/8/2016																			10/3/2016
+2013-0393	#1 @ 9 yrs - 5 days, female, gardisil	05/01/2002	Female	LIM-1003	04/26/2011																			05/01/2013
+2013-0394	#1 @ 9 yrs - 0 days, female, gardisil	8/12/2007	Female	LIM-1003	8/12/2016																			10/7/2016
+2013-0395	#1 @ 11 yrs - 0 days, female, gardisil	8/12/2005	Female	LIM-1003	8/12/2016																			10/7/2016
+EPIC-0392	#1 @ 9 yrs - 4 days, unknown, gardisil	8/12/2007	Unknown	LIM-1003	8/8/2016																			10/3/2016
+EPIC-0393	#1 @ 9 yrs - 5 days, unknown, gardisil	05/01/2002	Unknown	LIM-1003	04/26/2011																			05/01/2013
+EPIC-0394	#1 @ 9 yrs - 0 days, unknown, gardisil	8/12/2007	Unknown	LIM-1003	8/12/2016																			10/7/2016
+2013-0395	#1 @ 11 yrs - 0 days, unknown, gardisil	8/12/2005	Female	LIM-1003	8/12/2016																			10/7/2016
+2013-0396	#1 @ 9 yrs - 4 days, male, gardisil	8/12/2007	Male	LIM-1003	8/8/2016																			10/3/2016
+2013-0397	#1 @ 9 yrs - 5 days, male, gardisil	05/01/2002	Male	LIM-1003	04/26/2011																			05/01/2013
+2013-0398	#1 @ 9 yrs - 0 days, male, gardisil	8/12/2007	Male	LIM-1003	8/12/2016																			10/7/2016
+2013-0395	#1 @ 11 yrs - 0 days, male, gardisil	8/12/2005	Male	LIM-1003	8/12/2016																			10/7/2016
+2013-0400	#2 @ 9 yrs, 4 wks - 4 days, female, gardisil	8/12/2006	Female	LIM-1003	8/8/2015	LIM-1003	9/5/2015																	1/23/2016
+2013-0401	#2 @ 9 yrs, 4 wks - 5 days, female gardisil	8/12/2006	Female	LIM-1003	8/8/2015	LIM-1003	9/4/2015																	1/23/2016
+2013-0402	#2 @ 9 yrs, 4 wks - 0 days, female gardisil	8/12/2006	Female	LIM-1003	8/8/2015	LIM-1003	9/9/2015																	1/23/2016
+2013-0403	#2 @ 11 yrs + 2 mo, female, gardisil	05/01/2000	Female	LIM-1003	05/01/2011	LIM-1003	07/01/2011																	11/01/2011
+EPIC-0400	#2 @ 9 yrs, 4 wks - 4 days, unknown, gardisil	8/12/2006	Unknown	LIM-1003	8/8/2015	LIM-1003	9/5/2015																	1/23/2016
+EPIC-0401	#2 @ 9 yrs, 4 wks - 5 days, unknown gardisil	8/12/2006	Unknown	LIM-1003	8/8/2015	LIM-1003	9/4/2015																	1/23/2016
+EPIC-0402	#2 @ 9 yrs, 4 wks - 0 days, unknown gardisil	8/12/2006	Unknown	LIM-1003	8/8/2015	LIM-1003	9/9/2015																	1/23/2016
+EPIC-0403	#2 @ 11 yrs + 2 mo, unknown, gardisil	05/01/2000	Unknown	LIM-1003	05/01/2011	LIM-1003	07/01/2011																	11/01/2011
+2013-0404	#2 @ 9 yrs, 4 wks - 4 days, male, gardisil	8/12/2006	Male	LIM-1003	8/8/2015	LIM-1003	9/5/2015																	1/23/2016
+2013-0405	#2 @ 9 yrs, 4 wks - 5 days, male gardisil	8/12/2006	Male	LIM-1003	8/8/2015	LIM-1003	9/4/2015																	1/23/2016
+2013-0406	#2 @ 9 yrs, 4 wks - 0 days, male gardisil	8/12/2006	Male	LIM-1003	8/8/2015	LIM-1003	9/9/2015																	1/23/2016
+2013-0407	#2 @ 11 yrs + 2 mo, male, gardisil	05/01/2000	Male	LIM-1003	05/01/2011	LIM-1003	07/01/2011																	11/01/2011
+2013-0409	#3 @ 9 yrs, 16 weeks - 1 days, female, gardisil	8/12/2006	Female	LIM-1003	8/12/2015	LIM-1003	9/9/2015	LIM-1003	12/1/2015															4/1/2016
+2013-0410	#3 @ 9 yrs, 24 weeks, 0 days, female, gardisil	05/01/2002	Female	LIM-1003	05/01/2011	LIM-1003	05/29/2011	LIM-1003	10/16/2011															COMPLETION
+2013-0411	#3 @ 11 yrs + 6 mo, female, gardisil	05/01/2000	Female	LIM-1003	05/01/2011	LIM-1003	07/01/2011	LIM-1003	11/01/2011															COMPLETION
+EPIC-0409	#3 @ 9 yrs, 16 weeks - 1 days, unknown, gardisil	8/12/2006	Unknown	LIM-1003	8/12/2015	LIM-1003	9/9/2015	LIM-1003	12/1/2015															4/1/2016
+EPIC-0410	#3 @ 9 yrs, 24 weeks, 0 days, unknown, gardisil	05/01/2002	Unknown	LIM-1003	05/01/2011	LIM-1003	05/29/2011	LIM-1003	10/16/2011															COMPLETION
+EPIC-0411	#3 @ 11 yrs + 6 mo, unknown, gardisil	05/01/2000	Unknown	LIM-1003	05/01/2011	LIM-1003	07/01/2011	LIM-1003	11/01/2011															COMPLETION
+2013-0413	#3 @ 9 yrs, 16 weeks - 1 days, male, gardisil	8/12/2006	Male	LIM-1003	8/12/2015	LIM-1003	9/9/2015	LIM-1003	12/1/2015															4/1/2016
+2013-0414	#3 @ 9 yrs, 24 weeks, 0 days, male, gardisil	05/01/2002	Male	LIM-1003	05/01/2011	LIM-1003	05/29/2011	LIM-1003	10/16/2011															COMPLETION
+2013-0415	#3 @ 11 yrs + 6 mo, male, gardisil	05/01/2000	Male	LIM-1003	05/01/2011	LIM-1003	07/01/2011	LIM-1003	11/01/2011															COMPLETION
+2013-0416	Any dose = 27 yrs, female, gardisil	05/01/1985	Female	LIM-1003	05/02/2012																			AGED OUT
+EPIC-0416	Any dose = 27 yrs, unknown, gardisil	05/01/1985	Unknown	LIM-1003	05/02/2012																			AGED OUT
+2013-0417	Any dose = 27 yrs, male, gardisil	05/01/1985	Male	LIM-1003	05/02/2012																			AGED OUT
+2013-0418	#1 @ 9 yrs - 4 days, female, Cervarix	8/12/2007	Female	LIM-1059	8/8/2016																			10/3/2016
+2013-0419	#1 @ 9 yrs - 5 days, female, Cervarix	05/01/2002	Female	LIM-1059	04/26/2011																			05/01/2013
+2013-0421	#1 @ 9 yrs - 0 days, female, Cervarix	8/12/2007	Female	LIM-1059	8/12/2016																			10/7/2016
+2013-0422	#1 @ 11 yrs - 0 days, female, Cervarix	8/12/2005	Female	LIM-1059	8/12/2016																			10/7/2016
+2013-0418b	#1 @ 9 yrs - 4 days, unknown, Cervarix	8/12/2007	Unknown	LIM-1059	8/8/2016																			10/3/2016
+EPIC-0419	#1 @ 9 yrs - 5 days, unknown, Cervarix	05/01/2002	Unknown	LIM-1059	04/26/2011																			05/01/2013
+EPIC-0421	#1 @ 9 yrs - 0 days, unknown, Cervarix	8/12/2007	Unknown	LIM-1059	8/12/2016																			10/7/2016
+2013-0422b	#1 @ 11 yrs - 0 days, unknown, Cervarix	8/12/2005	Unknown	LIM-1059	8/12/2016																			10/7/2016
+2013-0427	#2 @ 9 yrs, 4 wks - 4 days, female, Cervarix	8/12/2006	Female	LIM-1059	8/8/2015	LIM-1003	9/5/2015																	1/23/2016
+2013-0428	#2 @ 9 yrs, 4 wks - 0 days, female Cervarix	8/12/2006	Female	LIM-1059	8/8/2015	LIM-1003	9/9/2015																	1/23/2016
+2013-0429	#2 @ 11 yrs + 2 mo, female, Cervarix	05/01/2000	Female	LIM-1059	05/01/2011	LIM-1003	07/01/2011																	11/01/2011
+EPIC-0427	#2 @ 9 yrs, 4 wks - 4 days, unknown, Cervarix	8/12/2006	Unknown	LIM-1059	8/8/2015	LIM-1003	9/5/2015																	1/23/2016
+EPIC-0428	#2 @ 9 yrs, 4 wks - 0 days, unknown Cervarix	8/12/2006	Unknown	LIM-1059	8/8/2015	LIM-1003	9/9/2015																	1/23/2016
+EPIC-0429	#2 @ 11 yrs + 2 mo, unknown, Cervarix	05/01/2000	Unknown	LIM-1059	05/01/2011	LIM-1003	07/01/2011																	11/01/2011
+2013-0433	#3 @ 9 yrs, 24 weeks, 0 days, female, Cervarix	05/01/2002	Female	LIM-1059	05/01/2011	LIM-1003	05/29/2011	LIM-1003	10/16/2011															COMPLETION
+2013-0434	#3 @ 11 yrs + 6 mo, female, Cervarix	05/01/2000	Female	LIM-1059	05/01/2011	LIM-1003	07/01/2011	LIM-1003	11/01/2011															COMPLETION
+EPIC-0433	#3 @ 9 yrs, 24 weeks, 0 days, unknown, Cervarix	05/01/2002	Unknown	LIM-1059	05/01/2011	LIM-1003	05/29/2011	LIM-1003	10/16/2011															COMPLETION
+EPIC-0434	#3 @ 11 yrs + 6 mo, unknown, Cervarix	05/01/2000	Unknown	LIM-1059	05/01/2011	LIM-1003	07/01/2011	LIM-1003	11/01/2011															COMPLETION
+2013-0440	#2 with interval of 4 weeks from #1	8/12/2004	Female	LIM-1003	8/12/2015	LIM-1003	9/9/2015																	1/27/2016
+2013-0441	#2 with interval of 4 weeks - 4 days from #1	8/12/2004	Female	LIM-1003	8/12/2015	LIM-1003	9/5/2015																	1/27/2016
+2013-0442	#2 with interval of 4 weeks - 5 days from #1	8/12/2004	Female	LIM-1003	8/12/2015	LIM-1003	9/4/2015																	10/30/2015
+2013-0443	#2 with interval of 2 mo from #1	05/01/2000	Female	LIM-1003	05/01/2011	LIM-1003	07/01/2011																	11/01/2011
+2013-0444	#3 with interval of 12 weeks from #2	05/01/2002	Female	LIM-1003	05/01/2011	LIM-1003	05/29/2011	LIM-1003	08/21/2011															COMPLETION
+2013-0445	#3 with interval of 12 weeks - 4 days from #2	05/01/2000	Female	LIM-1003	05/01/2011	LIM-1003	06/06/2011	LIM-1003	08/25/2011															COMPLETION
+2013-0446	#3 with interval of 12 weeks - 5 days from #2	8/12/2004	Female	LIM-1003	8/12/2015	LIM-1003	9/17/2015	LIM-1003	12/5/2015															4/5/2016
+2013-0447	#3 with interval of 4 mo from #2	05/01/2000	Female	LIM-1003	05/01/2011	LIM-1003	07/01/2011	LIM-1003	11/01/2011															COMPLETION
+2013-0448	#3 with interval of 24 weeks from #1	05/01/2000	Female	LIM-1003	05/01/2010	LIM-1003	05/29/2010	LIM-1003	10/16/2010															COMPLETION
+2013-0450	#3 with interval of 16 weeks from #1	05/01/2000	Female	LIM-1003	05/01/2010	LIM-1003	05/29/2010	LIM-1003	08/21/2010															COMPLETION
+2013-0451	#1 @ 8 yrs - 5 days, #2 @ 9 yrs - 5 days	05/01/2002	Female	LIM-1003	04/26/2010	LIM-1003	04/26/2011																	05/01/2013
+2013-0452	#1 @ 9 yrs - 5 days, #2 @ 9 yrs - 4 days	8/12/2007	Female	LIM-1003	8/7/2016	LIM-1003	8/8/2016																	10/3/2016
+2013-0453	#1 @ 9 yrs, #2 @ 9 yrs + 2 weeks	8/12/2006	Female	LIM-1003	8/12/2015	LIM-1003	8/26/2015																	10/21/2015
+2013-0454	#1 @ 9 yrs, #2 @ 12 yrs, 2 mo, 3 days	8/12/2003	Female	LIM-1003	8/12/2012	LIM-1003	10/15/2015																	2/15/2016
+2013-0455	#1 @ 9 yrs, #2 @ 11 yr, 6 mo	8/12/2003	Female	LIM-1003	8/12/2012	LIM-1003	2/12/2015																	6/12/2015
+2013-0456	#1 @ 8 yrs - 5 days, #2 @ 9 yrs - 6 days, #3 @ 9 yrs - 5 days	05/01/2002	Female	LIM-1003	04/26/2010	LIM-1003	04/25/2011	LIM-1003	04/26/2011															05/01/2013
+2013-0457	#1 @ 8 yrs - 5 days, #2 @ 9 yrs - 6 days, #3 @ 9 yrs - 0 days	8/12/2007	Female	LIM-1003	8/7/2015	LIM-1003	8/6/2016	LIM-1003	8/12/2016															10/7/2016
+2013-0458	#1 @ 9 yrs - 5 days, #2 @ 9 yrs + 4 weeks, #3 @ 9 yrs, 8 weeks	8/12/2006	Female	LIM-1003	8/7/2015	LIM-1003	9/9/2015	LIM-1003	10/7/2015															2/24/2016
+2013-0459	#1 @ 9 yrs - 5 days, #2 @ 9 yrs + 4 weeks, #3 @ 9 yrs, 8 weeks, #4 @ 9 yrs, 24 weeks	05/01/2002	Female	LIM-1003	04/26/2011	LIM-1003	05/29/2011	LIM-1003	06/26/2011	LIM-1003	10/19/2011													COMPLETION
+2013-0460	Adolescent male, no HPV yet given.	04/04/1999	Female																					04/04/2010
+2013-0461	# 2 at age 9 years 4 weeks-5 days	8/12/2006	Female	LIM-1003	8/11/2015	LIM-1003	9/4/2015																	1/26/2016
+2013-0462	# 2 at age 9 years 4 weeks-4 days	8/12/2006	Female	LIM-1003	8/11/2015	LIM-1003	9/5/2015																	1/26/2016
+2013-0463	# 2 at age 9 years 4 weeks	8/12/2006	Female	LIM-1003	8/11/2015	LIM-1003	9/9/2015																	1/26/2016
+2013-0465	# 3 at age 9 years 16 weeks-1 days.	8/12/2006	Female	LIM-1003	8/11/2015	LIM-1003	9/8/2015	LIM-1003	12/1/2015															COMPLETION
+2013-0466	# 3 at age 9 years 16 weeks	12/01/2002	Female	LIM-1003	12/01/2011	LIM-1003	12/29/2011	LIM-1003	03/22/2012															COMPLETION
+2013-0467	# 2 at age 26 yrs 11 months 15 days; forecast # 3; female	8/12/1988	Female	LIM-1003	8/12/2013	LIM-1003	7/27/2015																	11/27/2015
+2013-0468	Dose 1 to dose 2 interval 28-5 days	8/12/2003	Female	LIM-1003	11/12/2014	LIM-1003	12/5/2014																	1/30/2015
+2013-0469	Dose 1 to dose 2 interval 28 days	04/04/1999	Female	LIM-1003	07/01/2011	LIM-1003	07/29/2011																	12/16/2011
+2013-0470	Adolescent female, no HPV yet  given.	12/25/1999	Female																					12/25/2010
+2013-0471	Dose 2 to dose 3 interval 12 weeks-5 days	8/12/2003	Female	LIM-1003	8/16/2013	LIM-1003	9/16/2013	LIM-1003	12/4/2013															4/4/2014
+2013-0472	Dose 2 to dose 3 interval 12 weeks-4 days	09/16/2000	Female	LIM-1003	09/20/2010	LIM-1003	11/20/2010	LIM-1003	02/08/2011															COMPLETION
+2013-0473	Dose 2 to dose 3 interval 12 weeks	09/16/2000	Female	LIM-1003	09/20/2010	LIM-1003	11/20/2010	LIM-1003	02/12/2011															COMPLETION
+2013-0474	Dose 1 to dose 3 interval 16 weeks -1 days	8/12/2003	Female	LIM-1003	7/15/2015	LIM-1003	8/12/2015	LIM-1003	11/3/2015															3/3/2016
+2013-0475	Dose 1 to dose 3 interval 16 weeks=valid	03/21/1996	Female	LIM-1003	04/18/2008	LIM-1003	05/16/2008	LIM-1003	08/08/2008															COMPLETION
+2013-0476	# 2 to # 3 interval 12 wks-4 days	01/01/1997	Female	LIM-1003	07/01/2010	LIM-1003	09/23/2010	LIM-1003	12/12/2010															COMPLETION
+2013-0477	Invalid dose 1 of three doses given	8/12/2006	Female	LIM-1003	7/23/2015	LIM-1003	11/12/2015	LIM-1003	5/12/2016															9/12/2016
+2013-0478	Invalid dose 2 in midst of others	8/12/2003	Female	LIM-1003	10/12/2014	LIM-1003	11/2/2014	LIM-1003	4/12/2015															8/12/2015
+2013-0482	Female, age 14.  HPV recommended	04/01/1998	Female																					04/01/2009
+2013-0484	# 1 at age 9 years-5 days	12/08/2001	Female	LIM-1003	12/03/2010																			12/08/2012
+2013-0485	# 1 at age  9 years-4 days	8/12/2007	Male	LIM-1003	8/8/2016																			10/3/2016
+2013-0486	# 1 at age 9 years	8/12/2007	Male	LIM-1003	8/12/2016																			10/7/2016
+EPIC-CHS01	3 quick doses start at 9	8/12/2006	Female	LIM-1003	8/12/2015	LIM-1003	9/9/2015	LIM-1003	12/2/2015															COMPLETION
+EPIC-CHS02	3 quick doses start at 11	8/12/2004	Female	LIM-1003	8/12/2015	LIM-1003	9/9/2015	LIM-1003	12/2/2015															COMPLETION
