@@ -1,0 +1,111 @@
+Test Case Name	Description	Date of Birth	Sex	Dose 1 Vaccine	Dose 1 Date	Dose 2 Vaccine	Dose 2 Date	Dose 3 Vaccine	Dose 3 Date	Dose 4 Vaccine	Dose 4 Date	Dose 5 Vaccine	Dose 5 Date	Dose 6 Vaccine	Dose 6 Date	Dose 7 Vaccine	Dose 7 Date	Dose 8 Vaccine	Dose 8 Date	Dose 9 Vaccine	Dose 9 Date	Dose 10 Vaccine	Dose 10 Date	Expected
+2013-0208	Recombivax Hep B ages 11-15.  Dose 2 recommended in 4-6 months. 	15 years		LIM-1027	%DOB + 12 years + 6  months																			%1 + 4 months
+EPIC-0238	# 3 Pediarix at 14 wks-5 days	5 years		LIM-1029	%DOB+6 days	LIM-1029	%DOB+10weeks	LIM-1029	%DOB+14weeks-5days															%DOB+6months
+EPIC-Error-Bad Vax	The unit tester is unable to run this test case because we have an invalid vaccine (among other problems…)	15 years		Cooties Vax	%DOB + 11 years	43	yesterday	LIM-1029	%Today		1/1/2000	1000	1/2/2003	LIM-1029	pbbbbtttt!!									%1+4months
+2013-0198	Newborn Testing.  No vaccinations to date. This fails because we have the wrong expected date.	4 days																						%TODAY
+2013-0199	Dose 1 to dose 2 interval 28-5 days	4/1/2011		LIM-1029	5/1/2011	LIM-1029	5/24/2011																	6/21/2011
+2013-0200	Dose 1 to dose 2 interval 28-4 days	4/1/2011		LIM-1029	4/1/2011	LIM-1029	4/25/2011																	10/1/2011
+2013-0201	Dose 1 to dose 2 interval 28 days	4/1/2011		LIM-1029	4/1/2011	LIM-1029	4/29/2011																	10/1/2011
+2013-0202	Dose 2 to dose 3 interval 8 wks-5 days	6/1/2005		LIM-1029	9/1/2005	LIM-1029	12/1/2005	LIM-1029	1/21/2006															3/18/2006
+2013-0203	Dose 2 to dose 3 interval 8 wks-4 days.  Series complete	2/11/2007		LIM-1029	3/1/2007	LIM-1029	8/1/2007	LIM-1029	9/22/2007															COMPLETION
+2013-0204	Dose 2 to dose 3 interval is 8 weeks.  Series complete.	10/11/2006		LIM-1029	12/11/2006	LIM-1029	4/11/2007	LIM-1029	6/6/2007															COMPLETION
+2013-0206	Dose 1 to dose 3 interval 16 weeks-4 days. Series complete.	7/4/2009		LIM-1029	10/1/2009	LIM-1029	11/24/2009	LIM-1029	1/17/2010															COMPLETION
+2013-0205	Dose 1 to dose 3 interval 16 weeks-5 days. 4th dose needed	7/1/2004		LIM-1029	10/1/2004	LIM-1029	11/7/2004	LIM-1029	1/16/2005															3/13/2005
+2013-0207	Dose 1 to dose 3 interval 16 weeks.  Series complete.	8/1/2011		LIM-1029	11/1/2011	LIM-1029	12/17/2011	LIM-1029	2/21/2012															COMPLETION
+2016-ERROR-01	Check that testing utility can detect missing vaccines	18 years + 2 weeks		LIM-1029	%DOB+4 weeks		%1+7days	Lim-1029	%2+8 weeks															COMPLETION
+2016-ERROR-02	Check that testing utility can detect missing admin dates	18 years + 2 weeks		LIM-1029	%DOB+4 weeks	LIM-1029	10-Jan-08	LIM-1029																Aged out
+2013-0209	Dose # 1 at age 0 days. 	4/1/2011		LIM-1029	4/1/2011																			5/1/2011
+2013-0210	Doses 1 and 2 of Recombvx at ages 11-15 years with = 4 mo interval = series complete. 	4/7/1997		CVX-43	10/13/2009	CVX-43	2/13/2010																	COMPLETION
+2013-0211	Dose 1 to dose 2 Recombvx interval  4 months-5 days.  Two dose adolescent schedule no longer applies.  	5/1/1996		LIM-1029	5/1/2007	LIM-1029	8/27/2007																	10/22/2007
+2013-0212	Dose 2 to dose 3 interval 8 wks-5 days in adolescent with two Recombvx not meeting rules for two dose adoles. schedule 	5/1/1992		LIM-1027	9/1/2005	LIM-1027	12/1/2005	LIM-1027	1/21/2006															3/18/2006
+2013-0213	Hep at birth.  Comvax at 6 wks and 6 mo. Hep series complete. 	2/4/2004		LIM-1029	2/4/2004	LIM-1029	3/13/2004	LIM-1029	8/4/2004															COMPLETION
+2013-0216	Hep B at birth. Comvax at 4 weeks and 6 months.  Series complete for Hep B.  	2/2/2006		LIM-1029	2/2/2006	LIM-1029	3/2/2006	LIM-1029	8/2/2006															COMPLETION
+2013-0219	Hep B at birth. Comvax at 5 mo and 8 wks-4 days later.  Series complete for Hep B. 	5/5/2006		LIM-1029	5/5/2006	LIM-1029	10/5/2006	LIM-1029	11/26/2006															COMPLETION
+2013-0220	Dose # 1 at age 1 day	4/1/2011		LIM-1029	4/2/2011																			5/1/2011
+2013-0221	Hep at birth.  Comvax at 5 mo and 8 wks later.  Series complete for Hep B. 	6/6/2006		LIM-1029	6/6/2006	LIM-1029	11/6/2006	LIM-1029	1/1/2007															COMPLETION
+2013-0222	Dose 1 to dose 3 interval of Comvax 16 wks-5 days=invalid as Hep B dose 3.	5/15/2002		LIM-1029	8/1/2002	LIM-1029	9/20/2002	LIM-1029	11/16/2002															1/11/2003
+2013-0223	Dose 1 to dose 3 interval of Comvax 16 wks-4 days=valid Hep B # 3.  Hep B series complete. 	7/7/2006		LIM-1029	10/18/2006	LIM-1029	12/9/2006	LIM-1029	2/3/2007															COMPLETION
+2013-0224	Dose 1 to dose 3 interval of Comvax is 16 weeks.   Series complete for Hep B. 	8/8/2006		LIM-1029	10/31/2006	LIM-1029	12/22/2006	LIM-1029	2/20/2007															COMPLETION
+2013-0225	Comvax given at birth.	10/10/2006		LIM-1029	10/10/2006																			11/10/2006
+2013-0227	Dose # 2 at 28-5 days	8/1/2010		LIM-1029	8/1/2010	LIM-1029	8/24/2010																	9/21/2010
+2013-0228	Dose # 2 at 28-4 days	2/1/2011		LIM-1029	2/1/2011	LIM-1029	2/25/2011																	8/1/2011
+2013-0229	Dose # 2 at 28 days	5/1/2011		LIM-1029	5/1/2011	LIM-1029	5/29/2011																	11/1/2011
+2013-0231	Dose # 3 at age 24 weeks-4 days.  Series complete. 	12/1/2010		LIM-1029	12/1/2010	LIM-1029	1/1/2011	LIM-1029	5/14/2011															COMPLETION
+2013-0232	Dose # 3 at 24 weeks.  Series complete.	4/1/2011		LIM-1029	4/1/2011	LIM-1029	6/1/2011	LIM-1029	9/16/2011															COMPLETION
+2013-0233	Newborn forecasting	4/1/2012																						4/1/2012
+2013-0234	# 2 Pediarix at 6 yrs 11.5 mo	1/1/2005		LIM-1029	12/16/2007	LIM-1029	12/15/2011																	2/9/2012
+2013-0235	# 2 Pediarix at 7 yrs; # 1 at less than 12 mo. 	9/16/2003		LIM-1029	12/16/2003	LIM-1029	9/16/2010																	11/11/2010
+2013-0236	# 2 Pediarix at 7 yrs; # 1 = 12 mo.	9/16/2004		LIM-1029	10/16/2005	LIM-1029	9/16/2011																	11/11/2011
+EPIC-0237	# 1 and 2 Pediarix at =7 yrs  with 28 day interval.	8 years		CVX-110	%DOB+7 years	110	%1+4 weeks																	%1+16 weeks
+EPIC-0239	# 3 Pediarix at 14 wks-4 days	2/9/2016		LIM-1029	2/15/2016	LIM-1029	4/19/2016	LIM-1029	5/13/2016															8/9/2016
+EPIC-0240	# 3 Pediarix at 14 wks	2/9/2016		LIM-1029	2/15/2016	LIM-1029	4/19/2016	LIM-1029	5/17/2016															8/9/2016
+2013-0241	# 3 Pediarix at 24 weeks-4 days. Valid for dose 3	5/13/2011		LIM-1029	6/24/2011	LIM-1029	8/24/2011	LIM-1029	10/24/2011															COMPLETION
+2013-0243	# 4 Pediarix at 1 yr -5 days	4/4/2010		LIM-1029	6/4/2010	LIM-1029	8/4/2010	LIM-1029	10/24/2011	LIM-1029	3/30/2011													COMPLETION
+2013-0244	# 1 Pediarix at 6 wks-5 days	5/6/2011		LIM-1029	6/12/2011																			7/10/2011
+2013-0245	# 4 Pediarix at 1 yr -4 days	6/1/2005		LIM-1029	8/1/2005	LIM-1029	11/1/2005	LIM-1029	1/15/2006	LIM-1029	5/28/2006													COMPLETION
+2013-0246	# 4 Pediarix at 3 yrs 11.5 mo. 	2/1/2008		LIM-1029	4/1/2008	LIM-1029	7/1/2008	LIM-1029	10/1/2008	LIM-1029	1/15/2012													COMPLETION
+2013-0247	# 4 Pediarix at 4 yrs	5/6/2006		LIM-1029	9/9/2006	LIM-1029	3/3/2007	LIM-1029	7/10/2008	LIM-1029	5/6/2010													COMPLETION
+2013-0248	# 5 Pediarix at 4 yrs -5 days	7/1/2006		LIM-1029	9/1/2006	LIM-1029	10/1/2006	LIM-1029	2/2/2007	LIM-1029	10/10/2007	LIM-1029	6/26/2010											COMPLETION
+2013-0249	# 5 Pediarix at 4 yrs -4 days	7/1/2006		LIM-1029	9/1/2006	LIM-1029	10/1/2006	LIM-1029	2/2/2007	LIM-1029	10/10/2007	LIM-1029	6/27/2010											COMPLETION
+2013-0250	# 5 Pediarix at 6 yrs 11.5 mo	4/1/2005		LIM-1029	6/1/2005	LIM-1029	8/1/2005	LIM-1029	10/1/2005	LIM-1029	5/1/2006	LIM-1029	3/15/2012											COMPLETION
+2013-0251	# 5 Pediarix at 7 yrs	5/1/2005		LIM-1029	8/1/2005	LIM-1029	11/1/2005	LIM-1029	2/1/2006	LIM-1029	11/16/2006	LIM-1029	5/1/2012											COMPLETION
+2013-0255	# 1 Pediarix at 6 wks-4 days	4/4/2006		LIM-1029	5/12/2006																			6/9/2006
+2013-0256	"dose 1 to 2 Pediarix, interval 28-5 days"	11/1/2010		LIM-1029	1/3/2011	LIM-1029	1/26/2011																	2/23/2011
+2013-0257	"dose 1 to 2 Pediarix, interval 28-4 days"	2/1/2006		LIM-1029	4/1/2006	LIM-1029	4/25/2006																	8/1/2006
+EPIC-0258	"dose 2 to 3 Pediarix, interval 8 weeks-5 days"	4/1/2011		LIM-1029	5/25/2011	LIM-1029	7/27/2011	LIM-1029	9/16/2011															11/11/2011
+2013-0259	"dose 2 to 3 Pediarix, interval 8 weeks-4 days "	12/1/2005		LIM-1029	1/25/2006	LIM-1029	3/27/2006	LIM-1029	5/18/2006															COMPLETION
+2013-0260	"dose 3 to 4 Pediarix, interval 6m-5 days"	8/9/2009		LIM-1029	10/9/2009	LIM-1029	12/9/2009	LIM-1029	4/9/2010	LIM-1029	10/4/2010													COMPLETION
+2013-0261	"dose 3 to 4 Pediarix, interval 6m-4 days"	8/9/2009		LIM-1029	10/9/2009	LIM-1029	12/9/2009	LIM-1029	4/9/2010	LIM-1029	10/5/2010													COMPLETION
+2013-0262	"dose 3 to 4 Pediarix, interval 4 mo-1 day"	4/4/2010		LIM-1029	6/4/2010	LIM-1029	8/4/2010	LIM-1029	2/4/2011	LIM-1029	6/3/2011													COMPLETION
+2013-0263	"dose 3 to 4 Pediarix, interval 4 mo"	4/4/2010		LIM-1029	6/4/2010	LIM-1029	8/4/2010	LIM-1029	2/4/2011	LIM-1029	6/4/2011													COMPLETION
+2013-0264	invalid dose 1-2 interval in midst of others	2/11/2009		LIM-1029	4/11/2009	LIM-1029	4/30/2009	LIM-1029	6/11/2009															8/11/2009
+2013-0265	invalid dose 2-3 interval in midst of others	2/2/2010		LIM-1029	4/2/2010	LIM-1029	6/2/2010	LIM-1029	6/25/2010	LIM-1029	2/2/2011													COMPLETION
+2013-0266	# 1 Pediarix at 6 wks	11/1/2011		LIM-1029	12/13/2011																			1/10/2012
+2013-0267	# 1 Pediarix at 6 yrs 11.5 mo	4/1/2005		LIM-1029	3/16/2012																			4/13/2012
+2013-0268	# 1 Pediarix at 7 yrs	2/1/2005		LIM-1029	2/1/2012																			2/29/2012
+2013-0269	# 2 Pediarix at 10 wks-5 days	10/10/2011		LIM-1029	11/17/2011	LIM-1029	12/14/2011																	4/10/2012
+2013-0270	# 2 Pediarix at 10 wks-4 days	2/26/2011		LIM-1029	3/26/2011	LIM-1029	5/3/2011																	8/26/2011
+2013-0271	# 2 Pediarix at 10 wks	2/26/2011		LIM-1029	3/26/2011	LIM-1029	5/7/2011																	8/26/2011
+EPIC-0278	Twinrix dose 1 at 18 years - 1 day	7/9/1997		LIM-1030	7/8/2015																			8/5/2015
+EPIC-0279	Twinrix dose 1 at 18 years	7/9/1997		LIM-1030	7/9/2015																			8/6/2015
+EPIC-0280	Twinrix dose 1 to dose 2 interval 4 weeks - 5 days	7/9/1997		LIM-1030	7/9/2015	LIM-1030	8/1/2015																	8/22/2015
+EPIC-0281	Twinrix dose 1 to dose 2 interval 4 weeks - 4 days	7/9/1997		LIM-1030	7/9/2015	LIM-1030	8/2/2015																	1/9/2016
+EPIC-0282	Twinrix dose 1 to dose 2 interval 4 weeks	7/9/1997		LIM-1030	7/9/2015	LIM-1030	8/6/2015																	1/9/2016
+EPIC-0283	Twinrix dose 1 to dose 2 interval 2 months	7/9/1997		LIM-1030	7/9/2015	LIM-1030	9/9/2015																	2/9/2016
+EPIC-0284	Twinrix dose 3 at 18 years + 6 months	7/9/1997		LIM-1030	7/9/2015	LIM-1030	8/6/2015	LIM-1030	1/9/2016															COMPLETION
+EPIC-0285	Twinrix dose 2 to dose 3 interval 5 months - 5 days	7/9/1997		LIM-1030	7/9/2015	LIM-1030	9/9/2015	LIM-1030	2/4/2016															COMPLETION
+EPIC-0286	Twinrix dose 2 to dose 3 interval 5 months - 4 days	7/9/1997		LIM-1030	7/9/2015	LIM-1030	9/9/2015	LIM-1030	2/5/2016															COMPLETION
+EPIC-0287	Twinrix dose 2 to dose 3 interval 5 months	7/9/1997		LIM-1030	7/9/2015	LIM-1030	9/9/2015	LIM-1030	2/9/2016															COMPLETION
+EPIC-0288	Twinrix dose 1 to dose 3 interval 6 months - 5 days	7/9/1997		LIM-1030	7/9/2015	LIM-1030	8/2/2015	LIM-1030	1/4/2016															COMPLETION
+EPIC-0289	Twinrix dose 1 to dose 3 interval 6 months - 4 days	7/9/1997		LIM-1030	7/9/2015	LIM-1030	8/2/2015	LIM-1030	1/5/2016															COMPLETION
+EPIC-0290	Twinrix dose 1 to dose 3 interval 6 months - 1 day	7/9/1997		LIM-1030	7/9/2015	LIM-1030	8/2/2015	LIM-1030	1/8/2016															COMPLETION
+EPIC-0291	Twinrix dose 1 to dose 3 interval 6 months	7/9/1997		LIM-1030	7/9/2015	LIM-1030	8/2/2015	LIM-1030	1/9/2016															COMPLETION
+EPIC-HepB1	#3 to #4 dose <1 week	1/25/2011		LIM-1029	1/25/2011	LIM-1029	3/25/2011	LIM-1029	7/5/2011	LIM-1029	7/10/2011													COMPLETION
+EPIC-HepB2	6d interval doses all the way to 6mo	1/25/2011		LIM-1029	1/25/2011	LIM-1029	3/25/2011	LIM-1029	7/5/2011	LIM-1029	7/10/2011	LIM-1029	7/16/2011											COMPLETION
+EPIC-HepB3	#3 to #4 6d	1/25/2011		LIM-1029	1/25/2011	LIM-1029	3/25/2011	LIM-1029	7/5/2011	LIM-1029	7/11/2011													COMPLETION
+EPIC-HepB4	#2 to #3	1/25/2011		LIM-1029	1/25/2011	LIM-1029	6/5/2011	LIM-1029	7/11/2011															9/5/2011
+EPIC-HepB5	"#2,3,4 after 6m"	1/25/2011		LIM-1029	1/25/2011	LIM-1029	7/5/2011	LIM-1029	8/25/2011															10/20/2011
+EPIC-HepB6	"#1 at birth, #2 6months - 1day, #3 6months"	7/9/2013		LIM-1029	7/9/2013	LIM-1029	1/8/2014	LIM-1029	1/9/2014															3/6/2014
+EPIC-HepB7	"#1 at birth, #2 6months - 1day, #3 6months, #4 6 months+ 1 week"	7/9/2013		LIM-1029	7/9/2013	LIM-1029	1/8/2014	LIM-1029	1/9/2014	LIM-1029	1/16/2014													COMPLETION
+EPIC-HepB8	Max age to start 2-dose = 16 years - 4 months	7/9/1999		LIM-1027	3/10/2015																			4/7/2015
+EPIC-HepB9	Max age to start 2-dose = 16 years - 4 months	7/9/1999		LIM-1027	3/9/2015																			4/6/2015
+EPIC-HepB10	4-dose series does not age out at 7 years	7/9/2008		LIM-1027	7/9/2008	LIM-1027	9/9/2008	LIM-1027	10/29/2008															1/9/2009
+EPIC-HepB11	Max age to start 2-dose = 16 years - 4 months	7/9/1999		LIM-1027	1/9/2016																			2/6/2016
+EPIC-HebB12	"Twinrix in 3-Dose primary: dose1=0d, dose2=1m, dose3=6m"	7/9/1998		LIM-1029	7/9/1998	LIM-1029	8/9/1998	LIM-1029	1/9/1999															COMPLETION
+EPIC-HebB13	"Twinrix in 3-Dose primary: dose1=0d, dose2=1m"	7/9/1998		LIM-1029	7/9/1998	LIM-1029	8/9/1998																	1/9/1999
+EPIC-HebB14	"Twinrix in 4-Dose series: dose1=0d, dose2=2m, dose3=2m+1d, dose4=6m"	7/9/1998		LIM-1029	7/9/1998	LIM-1029	9/9/1998	LIM-1029	9/10/1998	LIM-1029	1/9/1999													COMPLETION
+EPIC-HebB15	"Twinrix in 4-Dose series: dose1=0d, dose2=2m, dose3=2m+1d"	7/9/1998		LIM-1029	7/9/1998	LIM-1029	9/9/1998	LIM-1029	9/10/1998	LIM-1029	1/1/1841													1/9/1999
+EPIC-4-TWINRIX-HEPB-001	"Twinrix 4-Dose: dose1 12m, dose2 18y"	7/9/1976		LIM-1030	7/9/1994	LIM-1030	7/16/1994																	8/6/1994
+EPIC-4-TWINRIX-HEPB-002	Twinrix 4-Dose: dose 3 too early	7/9/1996		LIM-1030	7/9/2015	LIM-1030	7/16/2015	LIM-1030	8/5/2015															8/26/2015
+EPIC-4-TWINRIX-001	Twinrix 4-dose series: normal completion	7/9/1976		LIM-1030	7/9/1994	LIM-1030	7/16/1994	LIM-1030	8/6/1994	LIM-1030	7/9/1995													COMPLETION
+EPIC-4-TWINRIX-002	Twinrix 4-dose series: 1st dose too early	7/9/1976		LIM-1030	7/2/1994	LIM-1030	7/16/1994	LIM-1030	8/6/1994	LIM-1030	7/9/1995													7/16/1995
+EPIC-4-TWINRIX-003	Twinrix 4-dose series: 2nd dose too early	7/9/1976		LIM-1030	7/9/1994	LIM-1030	7/15/1994	LIM-1030	8/6/1994	LIM-1030	7/9/1995													7/9/1995
+EPIC-4-TWINRIX-004	Twinrix 4-dose series: 4th dose too early	7/9/1976		LIM-1030	7/9/1994	LIM-1030	7/16/1994	LIM-1030	8/6/1994	LIM-1030	7/4/1995													7/9/1995
+EPIC-4-TWINRIX-006	Twinrix 4-dose series: wrong 4th dose	7/9/1976		LIM-1030	7/9/1994	LIM-1030	7/16/1994	LIM-1030	8/6/1994	LIM-1029	7/9/1995													7/9/1995
+EPIC-4-TWINRIX-006	Testing Twinrix 4-dose series and best in progress series selection algorithm	7/9/1976		104	7/9/1994	104	7/16/1994	104	8/5/1994															8/26/1994
+EPIC-BAD INPUT	Testing that the unit tester can detect bad input	1/1/1955		104	7/9/1994	Rabies Vax	yesterday																	
+EPIC-BAD INPUT-2	Testing that the unit tester can display an error message for a bad cvx code	18 years + 2 weeks		10023	%DOB+7 years																			
+EPIC-2-Dose-Adol-1	Testing adolescent series	15 years																						%DOB
+EPIC-2-Dose-Adol-2	Testing adolescent series	15 years		43	%DOB+11years-3days																			%1+4months
+EPIC-2-Dose-Adol-3	Testing adolescent series	15 years		43	%DOB+11years	43	%1+4 months - 5 days																	%2+8weeks
+EPIC-2-Dose-Adol-4	Testing adolescent series	15 years		43	%DOB+11years	43	%1+4months																	COMPLETION

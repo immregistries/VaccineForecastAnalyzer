@@ -87,7 +87,6 @@ public class EpicTestCaseWriter extends CdcTestCaseWriter implements TestCaseWri
         if (forecastExpected.getDueRule() == null) {
           out.print(f(forecastExpected.getDueDate()));
         } else {
-          out.print(f(forecastExpected.getDueDate()));
           out.print(f(forecastExpected.getDueRule(), testEventList));
         }
       } else if (forecastExpected.getAdmin() == Admin.ERROR) {
@@ -103,7 +102,11 @@ public class EpicTestCaseWriter extends CdcTestCaseWriter implements TestCaseWri
 
       for (TestEvent testEvent : testEventList) {
         out.print(f(testEvent.getEvent().getVaccineCvx()));
-        out.print(f(testEvent.getEventDate()));
+        if (testEvent.getEventRule() == null) {
+          out.print(f(testEvent.getEventDate()));
+        } else {
+          out.print(f(testEvent.getEventRule(), testEventList));
+        }
       }
       out.println();
     }
@@ -128,7 +131,7 @@ public class EpicTestCaseWriter extends CdcTestCaseWriter implements TestCaseWri
 
   private String f(RelativeRule relativeRule, List<TestEvent> testEventList) {
     if (testEventList == null) {
-      return f("%DOB + " + relativeRule.getTimePeriod().toStringForEpic());
+      return f(relativeRule.getTimePeriod().toStringForEpic());
     } else {
       String mnemonic = "";
       if (relativeRule.getRelativeTo() == RelativeTo.BIRTH) {
@@ -136,23 +139,19 @@ public class EpicTestCaseWriter extends CdcTestCaseWriter implements TestCaseWri
       } else if (relativeRule.getRelativeTo() == RelativeTo.EVENT && relativeRule.getTestEvent() != null) {
         mnemonic = "%";
         int i = 0;
-        for (TestEvent testEvent : testEventList){
+        for (TestEvent testEvent : testEventList) {
           i++;
-          if (testEvent.equals(relativeRule.getTestEvent()))
-          {
+          if (testEvent.equals(relativeRule.getTestEvent())) {
             mnemonic = "%" + i;
           }
         }
       }
-      if (mnemonic.length() > 0)
-      {
+      if (mnemonic.length() > 0) {
         if (relativeRule.getBeforeOrAfter() == BeforeOrAfter.BEFORE) {
           mnemonic += " - ";
-        }
-        else if (relativeRule.getBeforeOrAfter() == BeforeOrAfter.AFTER) {
+        } else if (relativeRule.getBeforeOrAfter() == BeforeOrAfter.AFTER) {
           mnemonic += " + ";
-        }
-        else  {
+        } else {
           return f(mnemonic);
         }
       }
