@@ -3,14 +3,8 @@ package org.tch.ft.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -24,26 +18,15 @@ import org.apache.wicket.util.upload.FileItem;
 import org.apache.wicket.util.upload.ServletFileUpload;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.tch.fc.model.Service;
-import org.tch.fc.model.ServiceOption;
 import org.tch.fc.model.Software;
-import org.tch.fc.model.SoftwareSetting;
-import org.tch.ft.manager.ForecastActualExpectedCompare;
-import org.tch.ft.manager.ForecastActualGenerator;
-import org.tch.ft.manager.SoftwareManager;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.ft.manager.readers.TestCaseReader;
 import org.tch.ft.manager.writers.TestCaseWriter;
 import org.tch.ft.manager.writers.TestCaseWriter.FormatType;
 import org.tch.ft.manager.writers.TestCaseWriterFactory;
-import org.tch.ft.model.Expert;
-import org.tch.ft.model.Result;
-import org.tch.ft.model.Role;
-import org.tch.ft.model.TaskGroup;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.User;
-import org.tch.ft.servlet.MainServlet.HoverText;
 
 public class ToolsServlet extends MainServlet {
 
@@ -61,6 +44,7 @@ public class ToolsServlet extends MainServlet {
   private final static String PARAM_FORMAT_TYPE = "formatType";
   private final static String PARAM_SOFTWARE_ID = "softwareId";
   private final static String PARAM_TEST_PANEL_ID = "testPanelId";
+  private final static String PARAM_VACCINE_GROUP_ID = "vaccineGroupId";
 
   private final static String PARAM_CATEGORY_NAME = "categoryName";
   private final static String PARAM_RUN_ALL = "runAll";
@@ -74,6 +58,8 @@ public class ToolsServlet extends MainServlet {
   private final static HoverText HOVER_TEXT_FORMAT_EXPORT = new HoverText("Format").add("<p>Select the format of the test case data. </p>")
       .add("<ul><li><b>CDC</b>CSV formatted data from the CDSi test case spreadsheets. </li>")
       .add("<li><b>Epic</b>Epic's Immunization Scheduling Tester </li></ul>");
+  private final static HoverText HOVER_TEXT_VACCINE_GROUP = new HoverText("Vaccine Group")
+      .add("<p>Exclude all vaccine groups except this in the export.  </p>");
   private final static HoverText HOVER_TEXT_SET_EXPECTATIONS = new HoverText("Set Expectations")
       .add("<p>Set expectations for each test case based on actuals from the selected software. ")
       .add("  This option is used for test case formats that don't include expectations, such ")
@@ -189,9 +175,13 @@ public class ToolsServlet extends MainServlet {
           applicationSession.setAlertError(problem);
           return SHOW_EXPORT_TEST_CASES;
         }
-        
+
         FormatType formatType = FormatType.valueOf(req.getParameter(PARAM_FORMAT_TYPE));
         TestCaseWriter testCaseWriter = TestCaseWriterFactory.createTestCaseWriter(formatType);
+        if (!req.getParameter(PARAM_VACCINE_GROUP_ID).equals("")) {
+          VaccineGroup vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class, Integer.parseInt(req.getParameter(PARAM_VACCINE_GROUP_ID)));
+          testCaseWriter.setVaccineGroup(vaccineGroup);
+        }
         testCaseWriter.setCategoryNameSet(categoryNameSet);
         testCaseWriter.setDataSession(dataSession);
         testCaseWriter.setTestPanel(testPanel);
@@ -288,12 +278,27 @@ public class ToolsServlet extends MainServlet {
           out.println("      <td>" + testPanel.getLabel() + "</td>");
           out.println("    </tr>");
           out.println("    <tr>");
-          out.println("      <th>" + HOVER_TEXT_FORMAT + "</th>");
+          out.println("      <th>" + HOVER_TEXT_FORMAT_EXPORT + "</th>");
           out.println("      <td>");
           out.println("        <select name=\"" + PARAM_FORMAT_TYPE + "\">");
           out.println("          <option value=\"\">--select--</option>");
           for (TestCaseWriter.FormatType formatType : TestCaseWriter.FormatType.values()) {
             out.println("              <option value=\"" + formatType + "\">" + formatType + "</option>");
+          }
+          out.println("        </select>");
+          out.println("      </td>");
+          out.println("    </tr>");
+          out.println("    <tr>");
+          out.println("      <th>" + HOVER_TEXT_VACCINE_GROUP + "</th>");
+          out.println("      <td>");
+          out.println("        <select name=\"" + PARAM_VACCINE_GROUP_ID + "\">");
+          out.println("          <option value=\"\">--select--</option>");
+          {
+            Query query = dataSession.createQuery("from VaccineGroup order by label");
+            List<VaccineGroup> vaccineGroupList = query.list();
+            for (VaccineGroup vaccineGroup : vaccineGroupList) {
+              out.println("              <option value=\"" + vaccineGroup.getVaccineGroupId() + "\">" + vaccineGroup.getLabel() + "</option>");
+            }
           }
           out.println("        </select>");
           out.println("      </td>");

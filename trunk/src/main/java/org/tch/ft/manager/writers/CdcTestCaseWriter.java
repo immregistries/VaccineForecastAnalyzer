@@ -4,7 +4,6 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -14,6 +13,7 @@ import org.tch.fc.model.Admin;
 import org.tch.fc.model.EventType;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.ft.model.ForecastExpected;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
@@ -62,6 +62,15 @@ public class CdcTestCaseWriter implements TestCaseWriter {
   protected TestPanel testPanel = null;
   protected Set<String> categoryNameSet = null;
   protected Session dataSession = null;
+  protected VaccineGroup vaccineGroup = null;
+
+  public VaccineGroup getVaccineGroup() {
+    return vaccineGroup;
+  }
+
+  public void setVaccineGroup(VaccineGroup vaccineGroup) {
+    this.vaccineGroup = vaccineGroup;
+  }
 
   public void setDataSession(Session dataSession) {
     this.dataSession = dataSession;
@@ -98,6 +107,10 @@ public class CdcTestCaseWriter implements TestCaseWriter {
     List<TestPanelForecast> testPanelForecastList = getTestPanelForecastList();
 
     for (TestPanelForecast testPanelForecast : testPanelForecastList) {
+      if (vaccineGroup != null && !testPanelForecast.getForecastExpected().getVaccineGroup().equals(vaccineGroup))
+      {
+        continue;
+      }
       TestPanelCase testPanelCase = testPanelForecast.getTestPanelCase();
       TestCase testCase = testPanelCase.getTestCase();
       ForecastExpected forecastExpected = testPanelForecast.getForecastExpected();
