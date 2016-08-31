@@ -2766,7 +2766,7 @@ public class TestCasesServlet extends MainServlet {
     out.println("          <td>");
     out.println("            <select type=\"text\" name=\"" + PARAM_AVAILABLE_CODE + "\">");
     for (Available available : Available.valueList()) {
-      if (available == testPanel.getAvailable()) {
+      if (testPanel != null && available == testPanel.getAvailable()) {
         out.println("              <option value=\"" + available.getAvailableCode() + "\" selected=\"true\">" + available.getLabel() + "</option>");
       } else {
         out.println("              <option value=\"" + available.getAvailableCode() + "\">" + available.getLabel() + "</option>");

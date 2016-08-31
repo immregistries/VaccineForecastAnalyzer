@@ -78,6 +78,7 @@ public class ExternalTestServlet extends HttpServlet
   private static final String POST_DOSE_NUMBER = "doseNumber";
   private static final String POST_SCHEDULE_NAME = "scheduleName";
   private static final String POST_FORECAST_CVX = "forecastCvx";
+  private static final String POST_SERIES_STATUS = "seriesStatus";
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -227,8 +228,7 @@ public class ExternalTestServlet extends HttpServlet
       SoftwareResult softwareResult = loadOrCreateSoftwareResult(dataSession, testCase, software);
       updateSoftwareResult(req, dataSession, softwareResult);
       User author = readAuthor(req, dataSession);
-      if (createTestCaseAndExpectations && author == null)
-      {
+      if (createTestCaseAndExpectations && author == null) {
         throw new InputException("Username is required to create test case");
       }
 
@@ -312,9 +312,7 @@ public class ExternalTestServlet extends HttpServlet
       user = UserManager.login(user, dataSession);
       if (user.isLoggedIn()) {
         return user;
-      }
-      else
-      {
+      } else {
         throw new InputException("Username and password are not recognized");
       }
     }
@@ -398,6 +396,10 @@ public class ExternalTestServlet extends HttpServlet
     } else {
       forecastActual.setFinishedDate(null);
     }
+    if (req.getParameter(POST_SERIES_STATUS + pos) != null && !req.getParameter(POST_SERIES_STATUS + pos).equals(""))
+    {
+      forecastActual.setAdminStatus(req.getParameter(POST_SERIES_STATUS + pos));
+    }
     dataSession.saveOrUpdate(forecastActual);
     return forecastActual;
   }
@@ -463,7 +465,7 @@ public class ExternalTestServlet extends HttpServlet
   private TestPanelCase createTestCase(HttpServletRequest req, Session dataSession, SimpleDateFormat sdf, TestCase testCase) throws InputException {
     int taskGroupId;
     try {
-    taskGroupId= Integer.parseInt(req.getParameter(POST_TASK_GROUP_ID));
+      taskGroupId = Integer.parseInt(req.getParameter(POST_TASK_GROUP_ID));
     } catch (NumberFormatException nfe) {
       throw new InputException(POST_TASK_GROUP_ID + " has invalid value of '" + req.getParameter(POST_TASK_GROUP_ID) + "'");
     }
@@ -509,6 +511,11 @@ public class ExternalTestServlet extends HttpServlet
     testCase.setCategoryName(categoryName);
     testCase.setPatientFirst(RandomNames.getRandomFirstName());
     testCase.setPatientLast(RandomNames.getRandomLastName());
+    String label = testCase.getPatientFirst() + " " + testCase.getPatientLast();
+    if (testCaseNumber.indexOf("-") > 0) {
+      String s = "0000" + testCaseNumber.substring(testCaseNumber.indexOf('-') + 1).trim();
+      label = s.substring(s.length() - 4) + " " + label;
+    }
     testCase.setLabel(testCase.getPatientFirst() + " " + testCase.getPatientLast());
     testCase.setDescription("Test case built from forecast results from external source.");
     testCase.setEvalDate(new Date());

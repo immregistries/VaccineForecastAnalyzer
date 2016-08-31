@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.util.Set;
 
 import org.hibernate.Session;
+import org.tch.fc.model.VaccineGroup;
 import org.tch.ft.model.TestPanel;
 
 public interface TestCaseWriter
@@ -15,6 +16,9 @@ public interface TestCaseWriter
   public void setCategoryNameSet(Set<String> categoryNameSet) ;
 
   public void setTestPanel(TestPanel testPanel);
+  
+  public void setVaccineGroup(VaccineGroup vaccineGroup);
+
 
   public void write(PrintWriter out) ;
   

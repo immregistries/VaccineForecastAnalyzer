@@ -64,6 +64,10 @@ public class EpicTestCaseWriter extends CdcTestCaseWriter implements TestCaseWri
     out.println();
 
     for (TestPanelForecast testPanelForecast : testPanelForecastList) {
+      if (vaccineGroup != null && !testPanelForecast.getForecastExpected().getVaccineGroup().equals(vaccineGroup))
+      {
+        continue;
+      }
       TestPanelCase testPanelCase = testPanelForecast.getTestPanelCase();
       TestCase testCase = testPanelCase.getTestCase();
       ForecastExpected forecastExpected = testPanelForecast.getForecastExpected();
