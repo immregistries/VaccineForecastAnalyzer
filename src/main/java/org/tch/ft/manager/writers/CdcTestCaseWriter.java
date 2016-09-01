@@ -107,8 +107,7 @@ public class CdcTestCaseWriter implements TestCaseWriter {
     List<TestPanelForecast> testPanelForecastList = getTestPanelForecastList();
 
     for (TestPanelForecast testPanelForecast : testPanelForecastList) {
-      if (vaccineGroup != null && !testPanelForecast.getForecastExpected().getVaccineGroup().equals(vaccineGroup))
-      {
+      if (vaccineGroup != null && !testPanelForecast.getForecastExpected().getVaccineGroup().equals(vaccineGroup)) {
         continue;
       }
       TestPanelCase testPanelCase = testPanelForecast.getTestPanelCase();
@@ -281,8 +280,11 @@ public class CdcTestCaseWriter implements TestCaseWriter {
     }
     return "\"" + s + "\",";
   }
-  
+
   public String createFilename() {
+    if (vaccineGroup != null) {
+      return testPanel.getLabel() + "-" + vaccineGroup.getLabel() + ".csv";
+    }
     return testPanel.getLabel() + ".csv";
   }
 
