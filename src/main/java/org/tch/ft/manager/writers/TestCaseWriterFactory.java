@@ -4,13 +4,13 @@ package org.tch.ft.manager.writers;
 public class TestCaseWriterFactory
 {
   
-  public static TestCaseWriter createTestCaseWriter(TestCaseWriter.FormatType formatType)
+  public static WriterInterface createTestCaseWriter(TestCaseWriterFormatType formatType)
   {
-    if (formatType == TestCaseWriter.FormatType.CDC)
+    if (formatType == TestCaseWriterFormatType.CDC)
     {
       return new CdcTestCaseWriter();
     }
-    else if (formatType == TestCaseWriter.FormatType.EPIC)
+    else if (formatType == TestCaseWriterFormatType.EPIC)
     {
       return new EpicTestCaseWriter();
     }

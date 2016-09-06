@@ -2,7 +2,6 @@ package org.tch.ft.manager.writers;
 
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +9,6 @@ import java.util.Set;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.tch.fc.model.Admin;
-import org.tch.fc.model.EventType;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.fc.model.VaccineGroup;
@@ -20,7 +18,7 @@ import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.TestPanelEvaluation;
 import org.tch.ft.model.TestPanelForecast;
 
-public class CdcTestCaseWriter implements TestCaseWriter {
+public class CdcTestCaseWriter extends GeneralWriterSupport implements WriterInterface {
 
   private static final String FIELD_CDC_TEST_ID = "CDC_Test_ID";
   private static final String FIELD_TEST_CASE_NAME = "Test_Case_Name";
@@ -58,31 +56,6 @@ public class CdcTestCaseWriter implements TestCaseWriter {
   private static final String[] lastPart = { FIELD_FORECAST_NUM, FIELD_EARLIEST_DATE, FIELD_RECOMMENDED_DATE, FIELD_PAST_DUE_DATE,
       FIELD_VACCINE_GROUP, FIELD_ASSESSMENT_DATE, FIELD_EVALUATION_TEST_TYPE, FIELD_DATE_ADDED, FIELD_DATE_UPDATED, FIELD_FORECAST_TEST_TYPE,
       FIELD_REASON_FOR_CHANGE, FIELD_CHANGED_IN_VERSION };
-
-  protected TestPanel testPanel = null;
-  protected Set<String> categoryNameSet = null;
-  protected Session dataSession = null;
-  protected VaccineGroup vaccineGroup = null;
-
-  public VaccineGroup getVaccineGroup() {
-    return vaccineGroup;
-  }
-
-  public void setVaccineGroup(VaccineGroup vaccineGroup) {
-    this.vaccineGroup = vaccineGroup;
-  }
-
-  public void setDataSession(Session dataSession) {
-    this.dataSession = dataSession;
-  }
-
-  public void setCategoryNameSet(Set<String> categoryNameSet) {
-    this.categoryNameSet = categoryNameSet;
-  }
-
-  public void setTestPanel(TestPanel testPanel) {
-    this.testPanel = testPanel;
-  }
 
   private static final String SERIES_STATUS_NOT_COMPLETE = "Not Complete";
   private static final String SERIES_STATUS_CONTRAINDICATED = "Contraindicated";
@@ -234,37 +207,6 @@ public class CdcTestCaseWriter implements TestCaseWriter {
 
   }
 
-  protected List<TestEvent> getTextEventList(TestCase testCase) {
-    List<TestEvent> testEventList;
-    {
-      Query query = dataSession.createQuery("from TestEvent where testCase = ? and event.eventTypeCode = ? order by eventDate");
-      query.setParameter(0, testCase);
-      query.setParameter(1, EventType.VACCINATION.getEventTypeCode());
-      testEventList = query.list();
-    }
-    return testEventList;
-  }
-
-  protected List<TestPanelForecast> getTestPanelForecastList() {
-    List<TestPanelForecast> testPanelForecastList;
-    {
-      Query query = dataSession.createQuery(
-          "from TestPanelForecast where testPanelCase.testPanel = ? and testPanelCase.resultStatus <> 'E' order by testPanelCase.categoryName, testPanelCase.testCase.label");
-      query.setParameter(0, testPanel);
-      if (categoryNameSet == null) {
-        testPanelForecastList = query.list();
-      } else {
-        testPanelForecastList = new ArrayList<TestPanelForecast>();
-        for (TestPanelForecast testPanelForecast : (List<TestPanelForecast>) query.list()) {
-          if (categoryNameSet.contains(testPanelForecast.getTestPanelCase().getCategoryName())) {
-            testPanelForecastList.add(testPanelForecast);
-          }
-        }
-      }
-    }
-    return testPanelForecastList;
-  }
-
   private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 
   private String f(Date d) {
@@ -279,13 +221,6 @@ public class CdcTestCaseWriter implements TestCaseWriter {
       s = "";
     }
     return "\"" + s + "\",";
-  }
-
-  public String createFilename() {
-    if (vaccineGroup != null) {
-      return testPanel.getLabel() + "-" + vaccineGroup.getLabel() + ".csv";
-    }
-    return testPanel.getLabel() + ".csv";
   }
 
 }
