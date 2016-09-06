@@ -18,7 +18,7 @@ import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.TestPanelForecast;
 
-public class EpicTestCaseWriter extends CdcTestCaseWriter implements TestCaseWriter {
+public class EpicTestCaseWriter extends GeneralWriterSupport implements WriterInterface {
   /*
    * TODO NOTES:
    * 

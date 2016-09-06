@@ -6,21 +6,21 @@ import java.util.Set;
 import org.hibernate.Session;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.ft.model.TestPanel;
+import org.tch.ft.model.User;
 
-public interface TestCaseWriter
+public interface WriterInterface
 {
-  public static enum FormatType {CDC, EPIC}
-  
-  public void setDataSession(Session dataSession) ;
+  public void setDataSession(Session dataSession);
 
-  public void setCategoryNameSet(Set<String> categoryNameSet) ;
+  public void setCategoryNameSet(Set<String> categoryNameSet);
 
   public void setTestPanel(TestPanel testPanel);
-  
+
   public void setVaccineGroup(VaccineGroup vaccineGroup);
 
+  public void setUser(User user);
 
-  public void write(PrintWriter out) ;
-  
+  public void write(PrintWriter out);
+
   public String createFilename();
 }
