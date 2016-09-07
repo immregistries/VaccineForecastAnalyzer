@@ -40,6 +40,7 @@ public class MicrTestResultWriter extends GeneralWriterSupport implements Writer
         query.setParameter(1, testPanelForecast.getForecastExpected().getVaccineGroup());
         forecastActualList = query.list();
       }
+      out.println("Test Case Number,Patient Name,Patient DOB,Patient Sex,Evaluation Date,Software Label,Vaccine Group Label,Admin Label,Dose Number,Earliest Date,Recommended Date,Due Date,Past Due Date");
       for (ForecastActual forecastActual : forecastActualList) {
         if (softwareSet == null || softwareSet.contains(forecastActual.getSoftwareResult().getSoftware())) {
           out.print(f(testPanelForecast.getTestPanelCase().getTestCaseNumber()));
