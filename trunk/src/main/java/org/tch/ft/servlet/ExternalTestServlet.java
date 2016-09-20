@@ -252,8 +252,8 @@ public class ExternalTestServlet extends HttpServlet
             testEvent.setEvent(event);
             testEvent.setEventDate(eventDate);
             dataSession.save(testEvent);
-            pos++;
           }
+          pos++;
         }
       }
       {
