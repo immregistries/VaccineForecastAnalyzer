@@ -7,6 +7,9 @@ public class TestResultWriterFactory
     if (formatType == TestResultWriterFormatType.MCIR) {
       return new MicrTestResultWriter();
     }
+    if (formatType == TestResultWriterFormatType.MCIR_CONSOLIDATED) {
+      return new MicrConslidatedTestResultWriter();
+    }
     return null;
   }
 }

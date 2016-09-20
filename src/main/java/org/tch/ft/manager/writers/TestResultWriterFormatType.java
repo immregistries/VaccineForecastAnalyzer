@@ -1,5 +1,5 @@
 package org.tch.ft.manager.writers;
 
 public enum TestResultWriterFormatType {
-  MCIR
+  MCIR, MCIR_CONSOLIDATED
 }
