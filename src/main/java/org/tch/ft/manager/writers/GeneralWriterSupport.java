@@ -7,6 +7,7 @@ import java.util.Set;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.tch.fc.model.EventType;
+import org.tch.fc.model.Software;
 import org.tch.fc.model.TestCase;
 import org.tch.fc.model.TestEvent;
 import org.tch.fc.model.VaccineGroup;
@@ -21,6 +22,11 @@ public class GeneralWriterSupport
   protected Session dataSession = null;
   protected VaccineGroup vaccineGroup = null;
   protected User user = null;
+  protected Set<Software> softwareSet = null;
+
+  public void setSoftwareSet(Set<Software> softwareSet) {
+    this.softwareSet = softwareSet;
+  }
 
   public User getUser() {
     return user;

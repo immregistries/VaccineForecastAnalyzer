@@ -22,7 +22,7 @@ import org.tch.ft.model.TestPanelForecast;
 public class MicrConslidatedTestResultWriter extends GeneralWriterSupport implements WriterInterface {
 
   private class Row {
-    public Map<VaccineGroup, Map<Software, ForecastActual>> vaccineGroupSoftwareForecastActualMap = null;
+    public Map<VaccineGroup, Map<Software, ForecastActual>> map = null;
     TestPanelCase testPanelCase = null;
   }
 
@@ -30,49 +30,61 @@ public class MicrConslidatedTestResultWriter extends GeneralWriterSupport implem
     List<TestPanelForecast> testPanelForecastList = getTestPanelForecastList();
 
     Set<Software> softwareSetAccess = null;
+    if (softwareSet != null) {
+      softwareSetAccess = new HashSet<Software>(softwareSet);
+    }
     if (!user.isAdmin()) {
-      softwareSetAccess = new HashSet<Software>(SoftwareManager.getListOfUnrestrictedSoftware(user, dataSession));
+      List<Software> softwareList = SoftwareManager.getListOfUnrestrictedSoftware(user, dataSession);
+      if (softwareSetAccess == null) {
+        softwareSetAccess = new HashSet<Software>(softwareList);
+      } else {
+        softwareSetAccess.retainAll(softwareList);
+      }
     }
 
     Set<VaccineGroup> vaccineGroupSet = new HashSet<VaccineGroup>();
-    Set<Software> softwareSet = new HashSet<Software>();
+    Set<Software> softwareSetToInclude = new HashSet<Software>();
     List<Row> rowList = new ArrayList<Row>();
-
-    for (TestPanelForecast testPanelForecast : testPanelForecastList) {
-      if (vaccineGroup != null && !testPanelForecast.getForecastExpected().getVaccineGroup().equals(vaccineGroup)) {
-        continue;
-      }
-      TestCase testCase = testPanelForecast.getTestPanelCase().getTestCase();
-      Row row = new Row();
-      Map<VaccineGroup, Map<Software, ForecastActual>> vaccineGroupSoftwareForecastActualMap = new HashMap<VaccineGroup, Map<Software, ForecastActual>>();
-      row.vaccineGroupSoftwareForecastActualMap = vaccineGroupSoftwareForecastActualMap;
-      row.testPanelCase = testPanelForecast.getTestPanelCase();
-      rowList.add(row);
-      List<ForecastActual> forecastActualList;
-      {
-        Query query = dataSession
-            .createQuery("from ForecastActual where softwareResult.testCase = ? and vaccineGroup = ? order by softwareResult.runDate desc");
-        query.setParameter(0, testCase);
-        query.setParameter(1, testPanelForecast.getForecastExpected().getVaccineGroup());
-        forecastActualList = query.list();
-      }
-      for (ForecastActual forecastActual : forecastActualList) {
-        if (softwareSetAccess == null || softwareSetAccess.contains(forecastActual.getSoftwareResult().getSoftware())) {
-          VaccineGroup vaccineGroup = forecastActual.getVaccineGroup();
-          Software software = forecastActual.getSoftwareResult().getSoftware();
-          vaccineGroupSet.add(vaccineGroup);
-          softwareSet.add(software);
-          Map<Software, ForecastActual> softwareForecastActualMap = vaccineGroupSoftwareForecastActualMap.get(vaccineGroup);
-          if (softwareForecastActualMap == null) {
-            softwareForecastActualMap = new HashMap<Software, ForecastActual>();
-            vaccineGroupSoftwareForecastActualMap.put(vaccineGroup, softwareForecastActualMap);
+    {
+      Row row = null;
+      for (TestPanelForecast testPanelForecast : testPanelForecastList) {
+        if (vaccineGroup != null && !testPanelForecast.getForecastExpected().getVaccineGroup().equals(vaccineGroup)) {
+          continue;
+        }
+        TestCase testCase = testPanelForecast.getTestPanelCase().getTestCase();
+        if (row == null || !row.testPanelCase.equals(testPanelForecast.getTestPanelCase())) {
+          row = new Row();
+          Map<VaccineGroup, Map<Software, ForecastActual>> vaccineGroupSoftwareForecastActualMap = new HashMap<VaccineGroup, Map<Software, ForecastActual>>();
+          row.map = vaccineGroupSoftwareForecastActualMap;
+          row.testPanelCase = testPanelForecast.getTestPanelCase();
+          rowList.add(row);
+        }
+        List<ForecastActual> forecastActualList;
+        {
+          Query query = dataSession
+              .createQuery("from ForecastActual where softwareResult.testCase = ? and vaccineGroup = ? order by softwareResult.runDate desc");
+          query.setParameter(0, testCase);
+          query.setParameter(1, testPanelForecast.getForecastExpected().getVaccineGroup());
+          forecastActualList = query.list();
+        }
+        for (ForecastActual forecastActual : forecastActualList) {
+          if (softwareSetAccess == null || softwareSetAccess.contains(forecastActual.getSoftwareResult().getSoftware())) {
+            VaccineGroup vaccineGroup = forecastActual.getVaccineGroup();
+            Software software = forecastActual.getSoftwareResult().getSoftware();
+            vaccineGroupSet.add(vaccineGroup);
+            softwareSetToInclude.add(software);
+            Map<Software, ForecastActual> softwareForecastActualMap = row.map.get(vaccineGroup);
+            if (softwareForecastActualMap == null) {
+              softwareForecastActualMap = new HashMap<Software, ForecastActual>();
+              row.map.put(vaccineGroup, softwareForecastActualMap);
+            }
+            softwareForecastActualMap.put(software, forecastActual);
           }
-          softwareForecastActualMap.put(software, forecastActual);
         }
       }
     }
     List<VaccineGroup> vaccineGroupList = new ArrayList<VaccineGroup>(vaccineGroupSet);
-    List<Software> softwareList = new ArrayList<Software>(softwareSet);
+    List<Software> softwareList = new ArrayList<Software>(softwareSetToInclude);
     out.print("Test Case Number,Patient Name,Patient DOB,Patient Sex,Evaluation Date,");
     for (VaccineGroup vaccineGroup : vaccineGroupList) {
       for (Software software : softwareList) {
@@ -84,7 +96,7 @@ public class MicrConslidatedTestResultWriter extends GeneralWriterSupport implem
         out.print(baseLabel + "Past Due Date\",");
       }
     }
-    out.println("");
+    out.println();
     for (Row row : rowList) {
       TestCase testCase = row.testPanelCase.getTestCase();
       out.print(f(row.testPanelCase.getTestCaseNumber()));
@@ -93,7 +105,7 @@ public class MicrConslidatedTestResultWriter extends GeneralWriterSupport implem
       out.print(f(testCase.getPatientSex()));
       out.print(f(testCase.getEvalDate()));
       for (VaccineGroup vaccineGroup : vaccineGroupList) {
-        Map<Software, ForecastActual> softwareForecastActualMap = row.vaccineGroupSoftwareForecastActualMap.get(vaccineGroup);
+        Map<Software, ForecastActual> softwareForecastActualMap = row.map.get(vaccineGroup);
         for (Software software : softwareList) {
           ForecastActual forecastActual = softwareForecastActualMap == null ? null : softwareForecastActualMap.get(software);
           out.print(f(forecastActual == null || forecastActual.getAdmin() == null ? "" : forecastActual.getAdmin().getLabel()));

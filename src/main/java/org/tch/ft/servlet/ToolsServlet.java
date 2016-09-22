@@ -20,6 +20,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.tch.fc.model.Software;
 import org.tch.fc.model.VaccineGroup;
+import org.tch.ft.manager.SoftwareManager;
 import org.tch.ft.manager.readers.TestCaseReader;
 import org.tch.ft.manager.writers.TestCaseWriterFactory;
 import org.tch.ft.manager.writers.TestCaseWriterFormatType;
@@ -30,8 +31,7 @@ import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.TestPanelCase;
 import org.tch.ft.model.User;
 
-public class ToolsServlet extends MainServlet
-{
+public class ToolsServlet extends MainServlet {
 
   public ToolsServlet() {
     super("Tools", ServletProtection.ALL_USERS);
@@ -48,22 +48,20 @@ public class ToolsServlet extends MainServlet
   private final static String PARAM_FILE1 = "file1";
   private final static String PARAM_FORMAT_TYPE = "formatType";
   private final static String PARAM_SOFTWARE_ID = "softwareId";
+  private final static String PARAM_SOFTWARE_ID_FILTER = "softwareIdFilter";
   private final static String PARAM_TEST_PANEL_ID = "testPanelId";
   private final static String PARAM_VACCINE_GROUP_ID = "vaccineGroupId";
 
   private final static String PARAM_CATEGORY_NAME = "categoryName";
   private final static String PARAM_RUN_ALL = "runAll";
 
-  private final static HoverText HOVER_TEXT_TEST_CASE_FILE = new HoverText("Test Case File")
-      .add("<p>Select the file that you want to upload. </p>");
-  private final static HoverText HOVER_TEXT_FORMAT = new HoverText("Format")
-      .add("<p>Select the format of the data in the file. </p>")
+  private final static HoverText HOVER_TEXT_TEST_CASE_FILE = new HoverText("Test Case File").add("<p>Select the file that you want to upload. </p>");
+  private final static HoverText HOVER_TEXT_FORMAT = new HoverText("Format").add("<p>Select the format of the data in the file. </p>")
       .add("<ul><li><b>CDC</b>CSV formatted data from the CDSi test case spreadsheets. </li>")
       .add("<li><b>IHS</b> A simple format used by IHS to upload example test cases. </li>")
       .add("<li><b>MIIS</b> Massachusetts Immunization Information System CSV format.</li>")
       .add("<li><b>STC</b> Scientific Technologies Corporation CSV format. </li></ul>");
-  private final static HoverText HOVER_TEXT_FORMAT_EXPORT = new HoverText("Format")
-      .add("<p>Select the format of the test case data. </p>")
+  private final static HoverText HOVER_TEXT_FORMAT_EXPORT = new HoverText("Format").add("<p>Select the format of the test case data. </p>")
       .add("<ul><li><b>CDC</b>CSV formatted data from the CDSi test case spreadsheets. </li>")
       .add("<li><b>Epic</b>Epic's Immunization Scheduling Tester </li></ul>");
   private final static HoverText HOVER_TEXT_VACCINE_GROUP = new HoverText("Vaccine Group")
@@ -72,23 +70,21 @@ public class ToolsServlet extends MainServlet
       .add("<p>Set expectations for each test case based on actuals from the selected software. ")
       .add("  This option is used for test case formats that don't include expectations, such ")
       .add("  as those that are random samples from patient histories. </p>");
-  private final static HoverText HOVER_TEXT_TASK_GROUP = new HoverText("Task Group")
-      .add("<p>The currently selected Task Group. ")
+  private final static HoverText HOVER_TEXT_TASK_GROUP = new HoverText("Task Group").add("<p>The currently selected Task Group. ")
       .add("A different Task Group can be selected by returning to the Test Cases and ")
       .add("selecting the Task Group in the navigation box on the left. </p> ");
-  private final static HoverText HOVER_TEXT_TEST_PANEL = new HoverText("Test Panel")
-      .add("<p> The currently selected Test Panel. ")
+  private final static HoverText HOVER_TEXT_TEST_PANEL = new HoverText("Test Panel").add("<p> The currently selected Test Panel. ")
       .add("A different Test Panel can be selected by returning to the Test Cases and ")
       .add("selecting the Test Panel in the navigation box on the left. </p>");
-  private final static HoverText HOVER_TEXT_EXPORT_FOR = new HoverText("Export For")
-      .add("<p>Specify which categories to export. </p>");
+  private final static HoverText HOVER_TEXT_EXPORT_FOR = new HoverText("Export For").add("<p>Specify which categories to export. </p>");
   private final static HoverText HOVER_TEXT_LIMIT_BY_CATEGORIES = new HoverText("Limit by Categories")
       .add("<p>Select which categories to export. </p>");
+  private final static HoverText HOVER_TEXT_SOFTWARE = new HoverText("Software")
+      .add("<p>Select which software to export results for. (All software possible are listed, even if there are no results to export.)</p>");
   private final static HoverText HOVER_TEXT_ = new HoverText("").add("<p></p>");
 
   @Override
-  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show)
-      throws IOException {
+  public String execute(HttpServletRequest req, HttpServletResponse resp, String action, String show) throws IOException {
     Session dataSession = applicationSession.getDataSession();
     User user = applicationSession.getUser();
 
@@ -193,18 +189,23 @@ public class ToolsServlet extends MainServlet
         }
         VaccineGroup vaccineGroup = null;
         if (!req.getParameter(PARAM_VACCINE_GROUP_ID).equals("")) {
-          vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class,
-              Integer.parseInt(req.getParameter(PARAM_VACCINE_GROUP_ID)));
+          vaccineGroup = (VaccineGroup) dataSession.get(VaccineGroup.class, Integer.parseInt(req.getParameter(PARAM_VACCINE_GROUP_ID)));
         }
         WriterInterface writer;
         if (action.equals(ACTION_EXPORT_TEST_CASES)) {
           TestCaseWriterFormatType formatType = TestCaseWriterFormatType.valueOf(req.getParameter(PARAM_FORMAT_TYPE));
           writer = TestCaseWriterFactory.createTestCaseWriter(formatType);
         } else {
-          TestResultWriterFormatType formatType = TestResultWriterFormatType.valueOf(req
-              .getParameter(PARAM_FORMAT_TYPE));
+          TestResultWriterFormatType formatType = TestResultWriterFormatType.valueOf(req.getParameter(PARAM_FORMAT_TYPE));
           writer = TestResultWriterFactory.createTestResultWriter(formatType);
         }
+        
+        Set<Software> softwareSet = new HashSet<Software>();
+        for (String softwareId : req.getParameterValues(PARAM_SOFTWARE_ID_FILTER))
+        {
+          softwareSet.add((Software) dataSession.get(Software.class, Integer.parseInt(softwareId)));
+        }
+        writer.setSoftwareSet(softwareSet);
 
         writer.setVaccineGroup(vaccineGroup);
         writer.setCategoryNameSet(categoryNameSet);
@@ -225,8 +226,7 @@ public class ToolsServlet extends MainServlet
   }
 
   @Override
-  protected void printPage(HttpServletRequest req, HttpServletResponse resp, PrintWriter out, String show)
-      throws ServletException, IOException {
+  protected void printPage(HttpServletRequest req, HttpServletResponse resp, PrintWriter out, String show) throws ServletException, IOException {
     Session dataSession = applicationSession.getDataSession();
     User user = applicationSession.getUser();
     Software software = user.getSelectedSoftware();
@@ -235,10 +235,8 @@ public class ToolsServlet extends MainServlet
     out.println("<div class=\"leftColumn\">");
     out.println("<h2>Tools</h2>");
     out.println("<ul class=\"selectLevel1\">");
-    out.println("  <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW + "=" + SHOW_EXPORT_TEST_CASES
-        + "\">Export Test Cases</a></li>");
-    out.println("  <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW + "=" + SHOW_EXPORT_TEST_RESULTS
-        + "\">Export Test Results</a></li>");
+    out.println("  <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW + "=" + SHOW_EXPORT_TEST_CASES + "\">Export Test Cases</a></li>");
+    out.println("  <li class=\"selectLevel1\"><a href=\"tools?" + PARAM_SHOW + "=" + SHOW_EXPORT_TEST_RESULTS + "\">Export Test Results</a></li>");
     out.println("</ul>");
     out.println("</div>");
     if (show != null) {
@@ -268,8 +266,8 @@ public class ToolsServlet extends MainServlet
         out.println("          <option value=\"\">--select--</option>");
         out.println("        </select>");
         out.println("    </tr>");
-        out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION
-            + "\" size=\"15\" value=\"" + ACTION_IMPORT + "\"/></td>");
+        out.println("          <td colspan=\"2\" align=\"right\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+            + ACTION_IMPORT + "\"/></td>");
         out.println("  </table>");
         out.println("  </form>");
         out.println("</div>");
@@ -282,8 +280,7 @@ public class ToolsServlet extends MainServlet
 
   }
 
-  private void showExportTestCases(PrintWriter out, Session dataSession, User user, Software software,
-      TestPanel testPanel) {
+  private void showExportTestCases(PrintWriter out, Session dataSession, User user, Software software, TestPanel testPanel) {
     printShowExportAllScript(out);
     out.println("<div class=\"centerLeftColumn\">");
     out.println("<h3>Export Test Cases</h3>");
@@ -292,8 +289,7 @@ public class ToolsServlet extends MainServlet
     } else {
 
       out.println("  <form method=\"POST\" action=\"tools\" id=\"exportTestsForm\">");
-      out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID + "\" value=\"" + software.getSoftwareId()
-          + "\"/>");
+      out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID + "\" value=\"" + software.getSoftwareId() + "\"/>");
       out.println("  <table width=\"100%\"> ");
       printTaskGroupAndTestPanel(out, testPanel);
       out.println("    <tr>");
@@ -309,8 +305,8 @@ public class ToolsServlet extends MainServlet
       out.println("    </tr>");
       printFormatAndVaccineGroupRows(out, dataSession, user, testPanel);
       out.println("  <tr>");
-      out.println("    <td align=\"right\" colspan=\"2\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" size=\"15\" value=\"" + ACTION_EXPORT_TEST_CASES + "\"/></td>");
+      out.println("    <td align=\"right\" colspan=\"2\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+          + ACTION_EXPORT_TEST_CASES + "\"/></td>");
       out.println("  </tr>");
       out.println("  </table> ");
       out.println("</form>");
@@ -318,8 +314,7 @@ public class ToolsServlet extends MainServlet
     out.println("</div>");
   }
 
-  private void showExportTestResults(PrintWriter out, Session dataSession, User user, Software software,
-      TestPanel testPanel) {
+  private void showExportTestResults(PrintWriter out, Session dataSession, User user, Software software, TestPanel testPanel) {
     printShowExportAllScript(out);
     out.println("<div class=\"centerLeftColumn\">");
     out.println("<h3>Export Test Results</h3>");
@@ -328,8 +323,7 @@ public class ToolsServlet extends MainServlet
     } else {
 
       out.println("  <form method=\"POST\" action=\"tools\" id=\"exportTestsForm\">");
-      out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID + "\" value=\"" + software.getSoftwareId()
-          + "\"/>");
+      out.println("  <input type=\"hidden\" name=\"" + PARAM_SOFTWARE_ID + "\" value=\"" + software.getSoftwareId() + "\"/>");
       out.println("  <table width=\"100%\"> ");
       printTaskGroupAndTestPanel(out, testPanel);
       out.println("    <tr>");
@@ -344,9 +338,21 @@ public class ToolsServlet extends MainServlet
       out.println("      </td>");
       out.println("    </tr>");
       printFormatAndVaccineGroupRows(out, dataSession, user, testPanel);
+      {
+        out.println("    <tr>");
+        out.println("      <th>" + HOVER_TEXT_SOFTWARE + "</th>");
+        out.println("      <td>");
+        out.println("        <select name=\"" + PARAM_SOFTWARE_ID_FILTER + "\" multiple=\"true\" size=\"5\">");
+        for (Software s : SoftwareManager.getListOfUnrestrictedSoftware(user, dataSession)) {
+          out.println("              <option value=\"" + s.getSoftwareId() + "\" selected=\"true\">" + s.getLabel() + "</option>");
+        }
+        out.println("        </select>");
+        out.println("      </td>");
+        out.println("    </tr>");
+      }
       out.println("  <tr>");
-      out.println("    <td align=\"right\" colspan=\"2\"><input type=\"submit\" name=\"" + PARAM_ACTION
-          + "\" size=\"15\" value=\"" + ACTION_EXPORT_TEST_RESULTS + "\"/></td>");
+      out.println("    <td align=\"right\" colspan=\"2\"><input type=\"submit\" name=\"" + PARAM_ACTION + "\" size=\"15\" value=\""
+          + ACTION_EXPORT_TEST_RESULTS + "\"/></td>");
       out.println("  </tr>");
       out.println("  </table> ");
       out.println("</form>");
@@ -364,8 +370,7 @@ public class ToolsServlet extends MainServlet
       Query query = dataSession.createQuery("from VaccineGroup order by label");
       List<VaccineGroup> vaccineGroupList = query.list();
       for (VaccineGroup vaccineGroup : vaccineGroupList) {
-        out.println("              <option value=\"" + vaccineGroup.getVaccineGroupId() + "\">"
-            + vaccineGroup.getLabel() + "</option>");
+        out.println("              <option value=\"" + vaccineGroup.getVaccineGroupId() + "\">" + vaccineGroup.getLabel() + "</option>");
       }
     }
     out.println("        </select>");
@@ -395,11 +400,11 @@ public class ToolsServlet extends MainServlet
               && user.getSelectedTestPanelCase().getCategoryName().equals(testPanelCase.getCategoryName());
         }
         if (checked) {
-          out.println("        <input type=\"checkbox\" name=\"" + PARAM_CATEGORY_NAME + "\" value=\""
-              + testPanelCase.getCategoryName() + "\" checked=\"true\"/>" + testPanelCase.getCategoryName() + "<br/>");
+          out.println("        <input type=\"checkbox\" name=\"" + PARAM_CATEGORY_NAME + "\" value=\"" + testPanelCase.getCategoryName()
+              + "\" checked=\"true\"/>" + testPanelCase.getCategoryName() + "<br/>");
         } else {
-          out.println("        <input type=\"checkbox\" name=\"" + PARAM_CATEGORY_NAME + "\" value=\""
-              + testPanelCase.getCategoryName() + "\"/>" + testPanelCase.getCategoryName() + "<br/>");
+          out.println("        <input type=\"checkbox\" name=\"" + PARAM_CATEGORY_NAME + "\" value=\"" + testPanelCase.getCategoryName() + "\"/>"
+              + testPanelCase.getCategoryName() + "<br/>");
         }
       }
       categoryName = testPanelCase.getCategoryName();
