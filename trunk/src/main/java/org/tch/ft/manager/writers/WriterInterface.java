@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.util.Set;
 
 import org.hibernate.Session;
+import org.tch.fc.model.Software;
 import org.tch.fc.model.VaccineGroup;
 import org.tch.ft.model.TestPanel;
 import org.tch.ft.model.User;
@@ -23,4 +24,6 @@ public interface WriterInterface
   public void write(PrintWriter out);
 
   public String createFilename();
+  
+  public void setSoftwareSet(Set<Software> softwareSet);
 }
