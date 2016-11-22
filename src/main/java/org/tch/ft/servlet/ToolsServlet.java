@@ -200,12 +200,14 @@ public class ToolsServlet extends MainServlet {
           writer = TestResultWriterFactory.createTestResultWriter(formatType);
         }
         
-        Set<Software> softwareSet = new HashSet<Software>();
-        for (String softwareId : req.getParameterValues(PARAM_SOFTWARE_ID_FILTER))
-        {
-          softwareSet.add((Software) dataSession.get(Software.class, Integer.parseInt(softwareId)));
+        if (req.getParameterValues(PARAM_SOFTWARE_ID_FILTER) != null) {
+          Set<Software> softwareSet = new HashSet<Software>();
+          for (String softwareId : req.getParameterValues(PARAM_SOFTWARE_ID_FILTER))
+          {
+            softwareSet.add((Software) dataSession.get(Software.class, Integer.parseInt(softwareId)));
+          }
+          writer.setSoftwareSet(softwareSet);
         }
-        writer.setSoftwareSet(softwareSet);
 
         writer.setVaccineGroup(vaccineGroup);
         writer.setCategoryNameSet(categoryNameSet);
