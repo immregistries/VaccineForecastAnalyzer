@@ -86,20 +86,20 @@ public class EpicTestCaseWriter extends GeneralWriterSupport implements WriterIn
         out.print(f("Completion"));
       } else if (forecastExpected.getAdmin() == Admin.CONTRAINDICATED) {
         out.print(f("Contraindication"));
-      } else if (forecastExpected.getAdmin() == Admin.DUE || forecastExpected.getAdmin() == Admin.DUE_LATER
-          || forecastExpected.getAdmin() == Admin.OVERDUE || forecastExpected.getAdmin() == Admin.NOT_COMPLETE) {
+      } else if (forecastExpected.getAdmin() == Admin.ERROR) {
+        out.print(f("Error"));
+      } else if (forecastExpected.getAdmin() == Admin.NO_RESULTS) {
+        out.print(f("No Results"));
+      } else if (forecastExpected.getAdmin() == Admin.UNKNOWN)
+      {
+        out.print(f("Unknown"));
+      } else
+      {
         if (forecastExpected.getDueRule() == null) {
           out.print(f(forecastExpected.getDueDate()));
         } else {
           out.print(f(forecastExpected.getDueRule(), testEventList));
         }
-      } else if (forecastExpected.getAdmin() == Admin.ERROR) {
-        out.print(f("Error"));
-      } else if (forecastExpected.getAdmin() == Admin.NO_RESULTS) {
-        out.print(f("No Results"));
-      } else // if (forecastExpected.getAdmin() == Admin.UNKNOWN)
-      {
-        out.print(f("Unknown"));
       }
       out.print(f(testCase.getCategoryName() + ": " + testCase.getLabel() + " (" + testCase.getTestCaseId() + ")"));
       out.print(f(testCase.getDescription()));
