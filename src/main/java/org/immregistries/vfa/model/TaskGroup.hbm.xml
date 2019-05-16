@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.model">
+  <class name="TaskGroup" table="task_group">
+    <id name="taskGroupId" column="task_group_id">
+      <generator class="native"/>
+    </id>
+    <property name="label" column="label" type="string"/>
+    <many-to-one name="primarySoftware" column="primary_software_id" class="org.immregistries.vfa.connect.model.Software"/>
+  </class>
+</hibernate-mapping>

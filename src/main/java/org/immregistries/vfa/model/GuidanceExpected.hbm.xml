@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.model">
+  <class name="GuidanceExpected" table="guidance_expected">
+    <id name="guidanceExpectedId" column="guidance_expected_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="guidance" column="guidance_id" class="org.immregistries.vfa.connect.model.Guidance"/>
+    <many-to-one name="testCase" column="test_case_id" class="org.immregistries.vfa.connect.model.TestCase"/>
+    <many-to-one name="author" column="author_user_id" class="User"/>
+    <property name="updatedDate" column="updated_date" type="timestamp"/>
+    <many-to-one name="effectiveRule" column="effective_rule_id" class="org.immregistries.vfa.connect.model.RelativeRule"/>
+    <many-to-one name="expirationRule" column="expiration_rule_id" class="org.immregistries.vfa.connect.model.RelativeRule"/>
+  </class>
+</hibernate-mapping>

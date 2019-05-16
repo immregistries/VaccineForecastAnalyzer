@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.model">
+  <class name="EvaluationTarget" table="evaluation_target">
+    <id name="evaluationTargetId" column="evaluation_target_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="evaluationCompare" column="evaluation_compare_id" class="EvaluationCompare"/>
+    <many-to-one name="evaluationActual" column="evaluation_actual_id" class="org.immregistries.vfa.connect.model.EvaluationActual"/>
+  </class>
+</hibernate-mapping>

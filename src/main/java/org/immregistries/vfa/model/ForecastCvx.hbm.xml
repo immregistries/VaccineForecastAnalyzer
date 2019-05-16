@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.model">
+  <class name="ForecastCvx" table="forecast_cvx">
+    <id name="forecastCvxId" column="forecast_cvx_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="vaccineGroup" column="vaccine_group_id" class="org.immregistries.vfa.connect.model.VaccineGroup"/>
+    <property name="vaccineCvx" column="vaccine_cvx" type="string"/>
+  </class>
+</hibernate-mapping>

@@ -7,32 +7,32 @@
 	
 	<servlet>
 	  <servlet-name>ExternalTestServlet</servlet-name>
-	  <servlet-class>org.tch.ft.servlet.ExternalTestServlet</servlet-class>
+	  <servlet-class>org.immregistries.vfa.servlet.ExternalTestServlet</servlet-class>
 	</servlet>
 
 	<servlet>
 	  <servlet-name>HomeServlet</servlet-name>
-	  <servlet-class>org.tch.ft.servlet.HomeServlet</servlet-class>
+	  <servlet-class>org.immregistries.vfa.servlet.HomeServlet</servlet-class>
 	</servlet>
 	<servlet>
 	  <servlet-name>TestCasesServlet</servlet-name>
-	  <servlet-class>org.tch.ft.servlet.TestCasesServlet</servlet-class>
+	  <servlet-class>org.immregistries.vfa.servlet.TestCasesServlet</servlet-class>
 	</servlet>
 	<servlet>
 	  <servlet-name>SoftwareServlet</servlet-name>
-	  <servlet-class>org.tch.ft.servlet.SoftwareServlet</servlet-class>
+	  <servlet-class>org.immregistries.vfa.servlet.SoftwareServlet</servlet-class>
 	</servlet>
 	<servlet>
 	  <servlet-name>ConceptsServlet</servlet-name>
-	  <servlet-class>org.tch.ft.servlet.ConceptsServlet</servlet-class>
+	  <servlet-class>org.immregistries.vfa.servlet.ConceptsServlet</servlet-class>
 	</servlet>
 	<servlet>
 	  <servlet-name>ReportsServlet</servlet-name>
-	  <servlet-class>org.tch.ft.servlet.ReportsServlet</servlet-class>
+	  <servlet-class>org.immregistries.vfa.servlet.ReportsServlet</servlet-class>
 	</servlet>
 	<servlet>
 	  <servlet-name>ToolsServlet</servlet-name>
-	  <servlet-class>org.tch.ft.servlet.ToolsServlet</servlet-class>
+	  <servlet-class>org.immregistries.vfa.servlet.ToolsServlet</servlet-class>
 	</servlet>
 
   <servlet-mapping>
@@ -87,7 +87,7 @@
 		<filter-class>org.apache.wicket.protocol.http.WicketFilter</filter-class>
 		<init-param>
 			<param-name>applicationClassName</param-name>
-			<param-value>org.tch.ft.WicketApplication</param-value>
+			<param-value>org.immregistries.vfa.WicketApplication</param-value>
 		</init-param>
 	</filter>
 

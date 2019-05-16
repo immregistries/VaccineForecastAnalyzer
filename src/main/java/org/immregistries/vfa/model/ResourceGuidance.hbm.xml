@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.connect.model">
+  <class name="ResourceGuidance" table="resource_guidance">
+    <id name="resourceGuidanceId" column="resource_guidance_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="resource" column="resource_id" class="org.immregistries.vfa.connect.model.Resource"/>
+    <many-to-one name="guidance" column="guidance_id" class="org.immregistries.vfa.connect.model.Guidance"/>
+  </class>
+</hibernate-mapping>

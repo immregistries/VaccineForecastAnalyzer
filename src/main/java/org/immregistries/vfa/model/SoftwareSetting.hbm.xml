@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.connect.model">
+  <class name="SoftwareSetting" table="software_setting">
+    <id name="settingId" column="setting_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="software" column="software_id" class="org.immregistries.vfa.connect.model.Software"/>
+    <many-to-one name="serviceOption" column="option_id" class="ServiceOption"/>
+    <property name="optionValue" column="option_value" type="string"/>
+  </class>
+</hibernate-mapping>

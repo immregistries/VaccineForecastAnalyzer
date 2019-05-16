@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.model">
+  <class name="User" table="user">
+    <id name="userId" column="user_id">
+      <generator class="native"/>
+    </id>
+    <property name="name" column="name" type="string"/>
+    <property name="email" column="email" type="string"/>
+    <property name="password" column="password" type="string"/>
+    <property name="organization" column="organization" type="string"/>
+    <property name="position" column="position" type="string"/>
+    <property name="phone" column="phone" type="string"/>
+    <many-to-one name="agreement" column="agreement_id" class="Agreement"/>
+    <property name="agreementDate" column="agreement_date" type="timestamp"/>
+    <many-to-one name="selectedTaskGroup" column="selected_task_group_id" class="TaskGroup"/>
+    <many-to-one name="selectedTestPanel" column="selected_test_panel_id" class="TestPanel"/>
+    <many-to-one name="selectedSoftware" column="selected_software_id" class="org.immregistries.vfa.connect.model.Software"/>
+    <many-to-one name="selectedTestPanelCase" column="selected_test_panel_case_id" class="TestPanelCase"/>
+    <many-to-one name="selectedTestCase" column="selected_test_case_id" class="org.immregistries.vfa.connect.model.TestCase"/>
+    <many-to-one name="selectedSoftwareCompare" column="selected_software_compare_id" class="SoftwareCompare"/>
+    
+  </class>
+</hibernate-mapping>

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.connect.model">
+  <class name="EvaluationActual" table="evaluation_actual">
+    <id name="evaluationActualId" column="evaluation_actual_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="softwareResult" column="software_result_id" class="org.immregistries.vfa.connect.model.SoftwareResult"/>
+    <many-to-one name="testEvent" column="test_event_id" class="org.immregistries.vfa.connect.model.TestEvent"/>
+    <property name="evaluationStatus" column="evaluation_status" type="string"/>
+    <property name="evaluationReason" column="evaluation_reason" type="string"/>
+    <property name="evaluationReasonCode" column="evaluation_reason_code" type="string"/>
+    <many-to-one name="vaccineGroup" column="vaccine_group_id" class="org.immregistries.vfa.connect.model.VaccineGroup"/>
+    <property name="vaccineCvx" column="vaccine_cvx" type="string"/>
+    <property name="seriesUsedCode" column="series_used_code" type="string"/>
+    <property name="seriesUsedText" column="series_used_text" type="string"/>
+    <property name="doseNumber" column="dose_number" type="string"/>
+  </class>
+</hibernate-mapping>

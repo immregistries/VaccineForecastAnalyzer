@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.model">
+  <class name="LoginAttempt" table="login_attempt">
+    <id name="LoginAttemptId" column="login_attempt_id">
+      <generator class="native"/>
+    </id>
+    <property name="loginDate" column="login_date" type="timestamp"/>
+    <property name="name" column="name" type="string"/>
+    <property name="password" column="password" type="string"/>
+    <many-to-one name="user" column="user_id" class="User"/>
+  </class>
+</hibernate-mapping>

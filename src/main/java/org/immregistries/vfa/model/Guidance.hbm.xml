@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.connect.model">
+  <class name="Guidance" table="guidance">
+    <id name="guidanceId" column="guidance_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="vaccineGroup" column="vaccine_group_id" class="org.immregistries.vfa.connect.model.VaccineGroup"/>
+    <property name="effectiveDate" column="effective_date" type="date"/>
+    <property name="expirationDate" column="expiration_date" type="date"/>
+  </class>
+</hibernate-mapping>

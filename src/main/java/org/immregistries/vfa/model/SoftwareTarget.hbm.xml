@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.immregistries.vfa.model">
+  <class name="SoftwareTarget" table="software_target">
+    <id name="softwareTargetId" column="software_target_id">
+      <generator class="native"/>
+    </id>
+    <many-to-one name="softwareCompare" column="software_compare_id" class="SoftwareCompare"/>
+    <many-to-one name="software" column="software_id" class="org.immregistries.vfa.connect.model.Software"/>
+  </class>
+</hibernate-mapping>

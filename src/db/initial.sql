@@ -1,14 +1,15 @@
 -- mysql -uroot -pgoldenroot < initial.sql
 
  DROP DATABASE forecast_tester;
+ DROP DATABASE vaccine_forecast_analyzer;
 
- CREATE DATABASE forecast_tester;
+ CREATE DATABASE vaccine_forecast_analyzer;
 
  USE forecast_tester;
 
--- CREATE USER 'ft_web'@'localhost' IDENTIFIED BY 'cArn88rOw';
+-- CREATE USER 'vfa_web'@'localhost' IDENTIFIED BY 'cArn88rOw';
 
--- GRANT ALL PRIVILEGES ON forecast_tester.* TO 'ft_web'@'localhost';
+-- GRANT ALL PRIVILEGES ON vaccine_forecast_analyzer.* TO 'vfa_web'@'localhost';
 
 CREATE TABLE user 
 (
